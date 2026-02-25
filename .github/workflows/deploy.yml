@@ -1,0 +1,82 @@
+# Deploy VitePress Textbook to GitHub Pages
+# ─────────────────────────────────────────────────────────────────────────────
+# รายวิชา 21901-2003 การพัฒนาเว็บแอปพลิเคชัน
+# เอกสาร VitePress อยู่ใน docs/ — build แล้ว deploy ขึ้น GitHub Pages
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# ⚠️  ก่อน deploy ครั้งแรก ต้องตั้งค่า GitHub Repository:
+#     Settings → Pages → Source: "GitHub Actions"
+#
+# ⚠️  ถ้า deploy ไปที่ https://USERNAME.github.io/REPO-NAME/
+#     ให้แก้ไข base ใน docs/.vitepress/config.ts เป็น:
+#     base: '/REPO-NAME/'
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Deploy VitePress to GitHub Pages
+
+on:
+  # รัน workflow นี้ทุกครั้งที่ push ไป main
+  push:
+    branches: [main,master]
+    paths:
+      - 'docs/**'           # rebuild เฉพาะเมื่อแก้ไขไฟล์ใน docs/
+      - '.github/workflows/deploy.yml'
+
+  # รัน workflow นี้ด้วยมือได้จาก GitHub Actions tab
+  workflow_dispatch:
+
+# กำหนด permissions สำหรับ GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# ป้องกัน deploy ซ้อนกัน — ถ้า deploy ใหม่มา ยกเลิกอันเก่า
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # Job 1: Build VitePress
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # จำเป็นสำหรับ VitePress lastUpdated feature
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Install VitePress dependencies
+        run: cd docs && npm ci
+
+      - name: Build VitePress site
+        run: cd docs && npm run docs:build
+        # Output: docs/.vitepress/dist/
+
+      - name: Upload build artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  # Job 2: Deploy to GitHub Pages (รันหลัง build สำเร็จ)
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

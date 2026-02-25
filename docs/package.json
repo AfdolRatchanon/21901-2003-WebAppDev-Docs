@@ -1,0 +1,16 @@
+{
+  "name": "21901-2003-web-based-app-dev",
+  "version": "1.0.0",
+  "description": "เอกสารประกอบการสอนรายวิชา 21901-2003 การพัฒนาเว็บแอปพลิเคชัน",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "keywords": ["vitepress", "vocational", "web-development", "MIAP", "CLIL"],
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}
