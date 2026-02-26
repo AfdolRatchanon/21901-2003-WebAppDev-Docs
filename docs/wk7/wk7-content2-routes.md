@@ -3,94 +3,103 @@
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
-ระบบมีหลายหน้า: `/login`, `/` (รายการอุปกรณ์), `/admin` (จัดการ) — นักเรียนที่ไม่ได้ login ต้องไม่เข้า `/` ได้ และ student ต้องไม่เข้า `/admin` ต้องจัดการ routing และ authorization ด้วย React Router v6!
+ระบบเบิก-จ่ายอุปกรณ์มีหลายหน้า: `/login`, `/` (รายการอุปกรณ์), `/admin` (จัดการ) — นักเรียนที่ไม่ได้ login ต้องไม่เข้า `/` ได้ และ student ต้องไม่เข้า `/admin` ถ้าไม่มี guard ใครก็พิมพ์ URL เข้าได้ตรง ๆ
 :::
 
-> 💡 **เปรียบเทียบ:** React Router เหมือน "ป้ายบอกทาง" ในอาคาร — บอกว่า path ไหนนำไปห้องไหน ส่วน Protected Route เหมือน "รปภ." ที่เฝ้าห้องประชุม — ตรวจบัตรก่อนให้เข้า
+> 💡 **เปรียบเทียบ:** React Router เหมือน "ป้ายบอกทางในอาคาร" — บอกว่า URL ไหนนำไปยัง Component ไหน ส่วน ProtectedRoute เหมือน "รปภ." ที่เฝ้าประตูห้องสำคัญ — ตรวจบัตรก่อนให้เข้า
 
 ---
 
 ## 📖 I: Information
 
-### Routes ทั้งหมดในโปรเจกต์
+### ขั้นตอนที่ 1 — React Router: โครงสร้างพื้นฐาน
 
+```tsx [วิธีทำงานของ React Router v6]
+// [1] BrowserRouter ครอบทั้งแอป — จัดการ History API
+// [2] Routes คือ container ที่เลือก Route ที่ตรงกับ URL ปัจจุบัน
+// [3] Route แต่ละตัวกำหนด path → element ที่จะ render
+
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
+
+function App() {
+  return (
+    <BrowserRouter>  {/* [1] ครอบทั้งหมด */}
+      <Routes>       {/* [2] เลือก Route ที่ตรง */}
+
+        <Route path="/login"   element={<LoginPage />} />   {/* [3] exact match */}
+        <Route path="/"        element={<HomePage />} />
+        <Route path="/admin"   element={<AdminPage />} />
+        <Route path="*"        element={<Navigate to="/" replace />} />  {/* [4] catch-all */}
+
+      </Routes>
+    </BrowserRouter>
+  )
+}
 ```
-Path          Component         Guard
-─────────────────────────────────────────────────────
-/login        LoginPage         ถ้า login แล้ว → redirect /
-/             EquipmentPage     ต้อง login (ProtectedRoute)
-/admin        AdminPage         ต้อง login + role=admin
-/forbidden    403 page          -
-/*            redirect /        catch-all
-```
 
-### App.tsx — จุดกำหนด Routes
+**Routes ทั้งหมดในโปรเจกต์:**
 
-::: code-group
-```tsx [App.tsx]
+| Path | Component | Guard |
+| :--- | :--- | :--- |
+| `/login` | `LoginPage` | ถ้า login แล้ว → redirect `/` |
+| `/` | `EquipmentPage` | ต้อง login |
+| `/admin` | `AdminPage` | ต้อง login + role = admin |
+| `/forbidden` | 403 page | ไม่มี |
+| `/*` | redirect `/` | catch-all |
+
+---
+
+### ขั้นตอนที่ 2 — App.tsx: กำหนด Routes พร้อม Auth Guards
+
+```tsx [src/App.tsx]
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { Navbar } from './components/Navbar'
 
 function App() {
-  const auth = useAuth()  // auth state เดียวสำหรับทั้งแอป
+  const auth = useAuth()  // [1] auth state เดียวสำหรับทั้งแอป
 
   return (
     <BrowserRouter>
-      {/* Navbar แสดงเฉพาะเมื่อ login แล้ว */}
+
+      {/* [2] Navbar — ซ่อนถ้ายังไม่ login */}
       {auth.isAuthenticated && <Navbar auth={auth} />}
 
       <Routes>
 
-        {/* /login — redirect ไป / ถ้า login แล้ว */}
-        <Route
-          path="/login"
-          element={
-            auth.isAuthenticated
-              ? <Navigate to="/" replace />
-              : <LoginPage auth={auth} />
-          }
-        />
+        {/* [3] /login — redirect ไป / ถ้า login แล้ว (ไม่ให้เข้าหน้า login ซ้ำ) */}
+        <Route path="/login" element={
+          auth.isAuthenticated
+            ? <Navigate to="/" replace />    // [4] login แล้ว → ไปหน้าหลัก
+            : <LoginPage auth={auth} />      // [5] ยังไม่ login → แสดงหน้า login
+        } />
 
-        {/* / — ต้อง login */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
-              <EquipmentPage auth={auth} />
-            </ProtectedRoute>
-          }
-        />
+        {/* [6] / — ต้อง login ก่อน */}
+        <Route path="/" element={
+          <ProtectedRoute isAuthenticated={auth.isAuthenticated}>
+            <EquipmentPage auth={auth} />
+          </ProtectedRoute>
+        } />
 
-        {/* /admin — ต้อง login + role=admin */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute
-              isAuthenticated={auth.isAuthenticated}
-              userRole={auth.user?.role}
-              requiredRole="admin"
-            >
-              <AdminPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* [7] /admin — ต้อง login + role = admin */}
+        <Route path="/admin" element={
+          <ProtectedRoute
+            isAuthenticated={auth.isAuthenticated}
+            userRole={auth.user?.role}   // [8] optional chaining ป้องกัน null
+            requiredRole="admin"
+          >
+            <AdminPage />
+          </ProtectedRoute>
+        } />
 
-        {/* /forbidden — 403 page */}
-        <Route
-          path="/forbidden"
-          element={
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
-              <div className="text-center">
-                <p className="text-6xl font-black text-slate-300 mb-4">403</p>
-                <p className="text-slate-600 font-semibold">ไม่มีสิทธิ์เข้าถึงหน้านี้</p>
-              </div>
-            </div>
-          }
-        />
+        {/* [9] /forbidden — 403 */}
+        <Route path="/forbidden" element={
+          <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <p className="text-6xl font-black text-slate-300">403</p>
+          </div>
+        } />
 
-        {/* catch-all */}
+        {/* [10] catch-all — path ที่ไม่รู้จัก → ไปหน้าหลัก */}
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
@@ -99,52 +108,72 @@ function App() {
 }
 ```
 
-```tsx [components/ProtectedRoute.tsx]
+**สรุปการทำงาน:** `useAuth()` `[1]` เป็น Single Source of Truth → กำหนด Routes + Guards `[3]-[9]` → `path="*"` `[10]` จัดการ URL ที่ไม่รู้จัก
+
+---
+
+### ขั้นตอนที่ 3 — ProtectedRoute: ยามสองชั้น + Navigate replace
+
+```tsx [src/components/ProtectedRoute.tsx]
 import { Navigate } from 'react-router-dom'
 import type { UserRole } from '../types'
 
+// [1] Props interface — ครบทุก parameter
 interface ProtectedRouteProps {
-  children: React.ReactNode
+  children:        React.ReactNode  // [2] JSX ที่จะ render ถ้าผ่าน
   isAuthenticated: boolean
-  userRole?: UserRole | null
-  requiredRole?: UserRole
+  userRole?:       UserRole | null  // [3] optional — ไม่ส่ง = ไม่เช็ค role
+  requiredRole?:   UserRole         // [4] optional — ไม่ส่ง = ทุก role เข้าได้
 }
 
 export function ProtectedRoute({
-  children,
-  isAuthenticated,
-  userRole,
-  requiredRole,
+  children, isAuthenticated, userRole, requiredRole
 }: ProtectedRouteProps) {
-  // ยังไม่ได้ login → ไป /login
+
+  // [5] ชั้น 1: ยังไม่ได้ login → ไป /login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
-  // role ไม่ตรง → ไป /forbidden (403)
+  // [6] ชั้น 2: role ไม่ตรง → ไป /forbidden (403)
   if (requiredRole && userRole !== requiredRole) {
     return <Navigate to="/forbidden" replace />
   }
 
-  // ผ่านทั้งหมด → render children
+  // [7] ผ่านทั้งสอง → render children
   return <>{children}</>
 }
 ```
-:::
 
-::: tip 💡 TypeScript Tip — `React.ReactNode`
-`children: React.ReactNode` คือ type ที่รับได้ทุกอย่างที่ React render ได้ — string, number, JSX element, array, null ฯลฯ ใช้เมื่อต้องการ wrapper component ที่รับ children ของ type ใดก็ได้
-:::
-
-### `replace` prop ใน `<Navigate>`
-
-```tsx
-// replace = true: แทนที่ history entry (กด Back จะข้ามหน้านี้)
+::: code-group
+```tsx [✅ ใช้ replace ใน Navigate]
+// replace: true — แทนที่ history entry
+// กด Back หลัง redirect จะข้ามหน้าที่ redirect แล้วกลับไปก่อนหน้านั้น
 <Navigate to="/login" replace />
 
-// ถ้าไม่ใช้ replace: กด Back จะกลับมาหน้าที่ redirect แล้ว redirect อีกครั้ง
-// (เกิด redirect loop ถ้าไม่ได้ login)
+// ถ้าไม่ใช้ replace — กด Back จะกลับมาหน้าเดิม → redirect อีกครั้ง → วนซ้ำ
 ```
+```tsx [✅ Link vs window.location.href]
+// React Router Link — เปลี่ยน URL ไม่ reload หน้า (SPA)
+<Link to="/admin">จัดการ</Link>
+
+// window.location.href — reload หน้าทั้งหมด (state หาย)
+// ใช้เฉพาะตอน hard redirect จำเป็น เช่น หลัง 401 interceptor
+```
+```tsx [💡 useNavigate Hook — navigate ใน event handler]
+import { useNavigate } from 'react-router-dom'
+
+function SomeComponent() {
+  const navigate = useNavigate()
+
+  function handleClick() {
+    navigate('/')           // ไปหน้าหลัก
+    navigate(-1)            // Back (เหมือนกด Back button)
+    navigate('/login', { replace: true })  // replace mode
+  }
+}
+```
+:::
 
 ---
 
@@ -153,17 +182,55 @@ export function ProtectedRoute({
 ### 🤖 AI Prompt Guide
 
 ::: info 💬 ถาม AI
-"สร้างการตั้งค่า React Router v6 ด้วย TypeScript รวมถึง: component ชื่อ ProtectedRoute ที่ redirect ไป /login ถ้ายังไม่ได้ login และ redirect ไป /forbidden ถ้า role ของผู้ใช้ไม่ตรงกับ requiredRole และแสดงวิธีใช้งานใน App.tsx พร้อม BrowserRouter, Routes และ Route"
+"สร้าง ProtectedRoute component ด้วย TypeScript และ React Router v6 ที่: 1) redirect ไป /login ถ้า `isAuthenticated` เป็น false 2) redirect ไป /forbidden ถ้า `requiredRole` กำหนดมาแต่ `userRole` ไม่ตรง 3) render children ถ้าผ่านทั้งสองเงื่อนไข — อธิบายว่า `replace` ใน Navigate ต่างจากไม่ใช้ replace อย่างไร"
 :::
 
 ### 📝 PjBL Lab
 
-- [ ] ดู `App.tsx` — นับว่ามีกี่ Route และแต่ละ Route ใช้ guard อะไร
-- [ ] ดู `ProtectedRoute.tsx` — เข้าใจ logic 2 เงื่อนไข (auth + role)
-- [ ] ทดสอบทุก path: `/login`, `/`, `/admin`, `/forbidden`, `/something-random`
-- [ ] ทดสอบ: ลอง navigate ไป `/admin` โดยตรง (พิมพ์ใน URL bar) ขณะเป็น student
-- [ ] ทดสอบ: `replace` ใน Navigate — ลอง กด Back หลัง login แล้วดูว่าเกิดอะไร
-- [ ] เพิ่ม route `/about` ที่ทุกคนเข้าได้ (ไม่ต้องใช้ ProtectedRoute)
+**เป้าหมาย:** ทดสอบทุก Route + Guard behavior
+
+---
+
+#### ขั้น 0 — Student Identity
+
+เพิ่ม `<footer>` ชื่อ-รหัสของตนเองใน Component หลักที่แก้ไข
+
+---
+
+#### ขั้น 1 — ทดสอบทุก Path
+
+| Path | วิธีทดสอบ | ผลที่คาดหวัง |
+| :--- | :--- | :--- |
+| `/login` | เปิด URL ตรง (ขณะไม่ได้ login) | เห็นหน้า Login ✅ |
+| `/login` | เปิด URL ตรง (ขณะ login อยู่แล้ว) | redirect ไป `/` ✅ |
+| `/` | เปิด URL ตรง (ขณะไม่ได้ login) | redirect ไป `/login` ✅ |
+| `/admin` | login เป็น student → พิมพ์ URL ตรง | หน้า 403 ✅ |
+| `/admin` | login เป็น admin | เข้าได้ ✅ |
+| `/something-random` | พิมพ์ URL ที่ไม่มี | redirect ไป `/` ✅ |
+
+---
+
+#### ขั้น 2 — เพิ่ม Route ใหม่
+
+เพิ่ม `/about` route ที่ทุกคนเข้าได้ (ไม่ต้องผ่าน ProtectedRoute):
+
+```tsx [App.tsx — เพิ่ม route]
+<Route path="/about" element={
+  <div className="p-8">
+    <h1>เกี่ยวกับระบบ</h1>
+    <p>ระบบเบิก-จ่ายอุปกรณ์ไอที</p>
+  </div>
+} />
+```
+
+---
+
+#### ขั้น Submit — ส่งงาน
+
+- [ ] ถ่าย screenshot ทดสอบทุก case ในตาราง
+- [ ] `git commit -m "wk7: react router v6 routes and protected route testing"`
+- [ ] `git push origin main`
+- [ ] เขียนสรุป Google Doc: ProtectedRoute ทำงานยังไง, replace ใน Navigate คืออะไร
 
 ---
 
@@ -172,11 +239,22 @@ export function ProtectedRoute({
 ### 🗣️ Code Review
 
 ::: details ❓ ทำไม `<Navigate replace />` ดีกว่า `window.location.href = '/'`?
-**แนวคำตอบ:** `<Navigate>` ทำงานภายใน React Router — ไม่ reload หน้า, ไม่เสีย state, และ React re-render ถูกต้อง ส่วน `window.location.href` reload หน้าทั้งหมด ทำให้ React state หาย (เหมาะใช้เฉพาะเมื่อต้องการ hard reload เช่นหลัง 401)
+**แนวคำตอบ:** `<Navigate>` ทำงานภายใน React Router — ไม่ reload หน้า, React state ยังคงอยู่, history จัดการถูกต้อง ส่วน `window.location.href` reload หน้าทั้งหมด → React state หายหมด → ใช้เฉพาะเมื่อต้องการ hard redirect จริง ๆ (เช่นหลัง 401 interceptor ที่ต้องออกจาก React state เก่า)
 :::
 
-::: details ❓ `path="*"` ทำงานอย่างไร?
-**แนวคำตอบ:** `*` คือ wildcard — match ทุก path ที่ไม่ตรงกับ Route อื่น React Router v6 จัดเรียง routes ให้เอง โดย specific path มี priority สูงกว่า wildcard ดังนั้น `/login` ยังทำงานปกติ wildcard จะจับแค่ path ที่ไม่มีใครจัดการ
+::: details ❓ `path="*"` ทำงานอย่างไร — ทำไมถึงไม่ conflict กับ route อื่น?
+**แนวคำตอบ:** `*` คือ wildcard match ทุก path ที่ไม่ตรงกับ Route อื่น React Router v6 จัดเรียง specificity อัตโนมัติ: exact path (`/login`, `/admin`) มี priority สูงกว่า wildcard (`*`) ดังนั้น `/login` ยังทำงานปกติ wildcard จะจับเฉพาะ path ที่ไม่มีใครจัดการ
+:::
+
+::: details ❓ `React.ReactNode` ต่างจาก `JSX.Element` อย่างไร?
+**แนวคำตอบ:** `JSX.Element` คือ type ของ JSX expression เดียว เช่น `<Component />` ส่วน `React.ReactNode` กว้างกว่า — ครอบคลุมทุกสิ่งที่ React render ได้: JSX, string, number, null, undefined, boolean, array ใช้ `React.ReactNode` สำหรับ wrapper component ที่รับ `children` เสมอ เพราะ children อาจเป็น null (component ไม่มีลูก) ก็ได้
+:::
+
+::: details ❓ ทำไม `userRole?: UserRole | null` ต้องมีทั้ง `?` (optional) และ `| null`?
+**แนวคำตอบ:** สองอย่างนี้ต่างกัน:
+- `?` (optional prop) → ไม่ส่ง prop = `undefined` — ใช้เมื่อ Route ไม่ต้องการเช็ค role
+- `| null` → ส่งมาแต่ค่าเป็น null — เกิดจาก `auth.user?.role` เมื่อ `auth.user` เป็น null
+`auth.user?.role` return `UserRole | undefined` แต่ถ้า prop ไม่รับ null TypeScript จะ error ดังนั้นต้องระบุ `| null` เพื่อรับทั้งสองกรณี
 :::
 
 ### 📋 Rubric (10 คะแนน)
@@ -184,8 +262,8 @@ export function ProtectedRoute({
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
 | :--- | :--- | :--- | :--- |
 | Routes ครบ | ทุก path ทำงานถูกต้อง | บาง route ผิด | ไม่มี routing |
-| ProtectedRoute | auth + role guard ถูก | guard อย่างเดียว | ไม่มี guard |
-| Navigate replace | ใช้ replace ถูกที่ | ใช้ Navigate แต่ไม่มี replace | ไม่มี redirect |
+| ProtectedRoute | auth + role guard ถูกทั้งสองชั้น | guard อย่างเดียว | ไม่มี guard |
+| Navigate replace | ใช้ replace ถูกที่ ทุก redirect | ใช้ Navigate แต่ไม่มี replace | ไม่มี redirect |
 
 ---
 
@@ -195,7 +273,8 @@ export function ProtectedRoute({
 | :--- | :--- |
 | `React Router` | Library สำหรับจัดการ URL routing ใน React SPA |
 | `Route Guard` | ตัวตรวจสอบก่อนให้ผู้ใช้เข้าถึง route |
-| `Navigate` | React Router component ที่ทำ redirect |
-| `replace` | ใน Navigate: แทนที่ history แทนที่จะเพิ่ม entry ใหม่ |
-| `Wildcard` | `*` ใน path — match ทุกอย่างที่ไม่ตรงกับ route อื่น |
+| `Navigate` | React Router component ที่ทำ redirect โดยไม่ reload หน้า |
+| `replace` | ใน Navigate: แทนที่ history entry (กด Back ไม่วนกลับ) |
+| `Wildcard` | `*` ใน path — match ทุก URL ที่ไม่ตรงกับ route อื่น |
 | `SPA` | Single Page Application — เว็บที่ไม่ reload หน้าเมื่อ navigate |
+| `useNavigate` | React Router Hook สำหรับ navigate ใน event handler |

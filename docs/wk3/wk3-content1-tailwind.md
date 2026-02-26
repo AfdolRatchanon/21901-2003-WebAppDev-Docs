@@ -1,116 +1,229 @@
-# จัดหน้าจอด้วย Tailwind CSS <Badge type="info" text="TPQI 10302" />
+# Tailwind CSS — จาก inline style สู่ Utility Classes <Badge type="info" text="TPQI 10302" />
 
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
-**สถานการณ์:** ทีมพัฒนาระบบเบิก-จ่ายอุปกรณ์ไอที ต้องการแสดงการ์ดอุปกรณ์แต่ละชิ้นให้มีสีขอบต่างกันตามสถานะ (พร้อมใช้ = เขียว, ถูกยืม = แดง, ซ่อมบำรุง = เหลือง) แต่เขียน CSS แยกไฟล์แล้วชื่อ class ชนกัน แก้ที่หนึ่งพัง อีกที่หนึ่ง — จะแก้ปัญหาได้อย่างไร?
+ใน wk2 เขียน `style=&#123;&#123; backgroundColor: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: 12 &#125;&#125;` ทุกครั้งที่ต้องการ badge สีเขียว — ถ้าต้องการเปลี่ยนสีทีหลัง ต้องค้นหาและแก้ทุกที่ในไฟล์ นอกจากนี้ code ยาว อ่านยาก และถ้ามีหลาย Component แก้แล้วไม่ตรงกัน UI พัง — จะจัดการ Style อย่างไรให้ clean ขึ้น?
 :::
 
-> 💡 **เปรียบเทียบ:** Tailwind CSS เหมือนชุดเครื่องมือช่าง ที่มีอุปกรณ์พร้อมใช้ครบทุกชิ้น แทนที่จะต้องสร้างเครื่องมือเองทุกครั้ง แค่หยิบมาใช้ได้เลย เช่น `bg-green-500` แทนที่จะเขียน `background-color: #22c55e` ทุกครั้ง
+> 💡 **เปรียบเทียบ:** Tailwind CSS เหมือน "ชุดสีสำเร็จรูป" ของนักออกแบบ — แทนที่จะผสมสีใหม่ทุกครั้ง แค่บอกว่า `green-100` หรือ `red-500` Tailwind รู้ว่าสีนั้นคืออะไรเลย ประหยัดเวลา และทุก component ใช้ "ภาษาสี" เดียวกัน
 
 ---
 
 ## 📖 I: Information
 
-### Tailwind CSS คืออะไร?
+### ขั้นตอนที่ 1 — ติดตั้ง Tailwind CSS ใน Vite Project
 
-Tailwind CSS เป็น **Utility-First CSS Framework** — แทนที่จะสร้าง class เอง เราใช้ class สำเร็จรูปขนาดเล็กๆ ต่อกันใน HTML/JSX โดยตรง ทำให้ไม่มีปัญหา CSS ชนกันและง่ายต่อการดูแล
+::: code-group
+```bash [ติดตั้ง]
+# [1] ติดตั้ง Tailwind CSS v3 + PostCSS + Autoprefixer
+npm install -D tailwindcss@3 postcss autoprefixer
 
-### การติดตั้งกับ Vite
-
-```bash
-npm install -D tailwindcss postcss autoprefixer
+# [2] สร้างไฟล์ config ทั้ง 2 ไฟล์อัตโนมัติ (tailwind.config.js + postcss.config.js)
 npx tailwindcss init -p
 ```
 
-แก้ไข `tailwind.config.js` ให้ scan ไฟล์ของเรา:
-
-```js
-// tailwind.config.js
-export default {
-  content: ['./index.html', './src/**/*.{ts,tsx}'],
-  theme: { extend: {} },
+```js [tailwind.config.js]
+// [3] บอก Tailwind ให้ scan ไฟล์ไหนบ้าง — เพื่อลบ class ที่ไม่ได้ใช้ออกจาก build
+module.exports = {
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',   // [4] ครอบคลุมทุก component ใน src/
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        // [5] เพิ่ม font ภาษาไทย — ต้องโหลด Sarabun ใน index.html ด้วย
+        sans: ['Sarabun', 'Segoe UI', 'system-ui', 'sans-serif'],
+      },
+    },
+  },
   plugins: [],
 }
 ```
 
-เพิ่มใน `src/index.css`:
-
-```css
+```css [src/index.css]
+/* [6] นำเข้า Tailwind 3 ชั้น — ต้องมีครบทั้ง 3 บรรทัด */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-```
 
-### Grid Layout สำหรับแสดงการ์ดอุปกรณ์
+/* [7] ตั้งค่า Font ภาษาไทย ผ่าน @layer base */
+@layer base {
+  body {
+    font-family: 'Sarabun', 'Segoe UI', system-ui, sans-serif;
+  }
+}
+```
+:::
+
+**สรุปการทำงาน:** 3 คำสั่ง → 3 ไฟล์ → Tailwind พร้อมใช้ใน JSX ✅
+
+---
+
+### ขั้นตอนที่ 2 — แปลง inline style → Tailwind class
+
+เปรียบเทียบ code จาก wk2 (inline style) กับ wk3 (Tailwind):
 
 ::: code-group
-
-```tsx [EquipmentCard.tsx]
-// EquipmentCard ด้วย Tailwind CSS
-interface EquipmentCardProps {
-  name: string
-  category: string
-  serialNo: string
-  status: 'available' | 'borrowed' | 'maintenance'
-}
-
-export function EquipmentCard({ name, category, serialNo, status }: EquipmentCardProps) {
-  // Map สี border ตามสถานะ — TypeScript จะตรวจสอบให้ว่า key ถูกต้อง
-  const borderColor: Record<EquipmentCardProps['status'], string> = {
-    available: 'border-l-green-500',
-    borrowed: 'border-l-red-500',
-    maintenance: 'border-l-amber-500',
-  }
-
-  return (
-    <div
-      className={`bg-white rounded-xl border border-slate-200 border-l-4 ${borderColor[status]} p-4 shadow-sm hover:shadow-md transition-all`}
-    >
-      <h3 className="font-bold text-slate-800">{name}</h3>
-      <p className="text-xs text-slate-500">{category} · {serialNo}</p>
-    </div>
-  )
-}
+```tsx [✅ wk3 — Tailwind class (อ่านง่าย)]
+// Equipment card ด้วย Tailwind
+<div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+  <strong className="font-bold text-slate-800">{eq.name}</strong>
+  <span className="text-xs text-slate-500 ml-2">{eq.category} · {eq.serialNo}</span>
+  <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full ml-2">
+    ว่าง
+  </span>
+</div>
 ```
 
-```tsx [EquipmentGrid.tsx]
-// วาง EquipmentCard ลงใน Grid — Responsive ด้วย Tailwind
-import { EquipmentCard } from './EquipmentCard'
+```tsx [❌ wk2 — inline style (ยาว อ่านยาก)]
+// Equipment card ด้วย inline style — แบบเดิมจาก wk2
+<div style={{ background: 'white', borderRadius: 8, border: '1px solid #e2e8f0', padding: 12, marginBottom: 8 }}>
+  <strong>{eq.name}</strong>
+  <span style={{ marginLeft: 8, color: '#64748b', fontSize: 12 }}>{eq.category} · {eq.serialNo}</span>
+  <span style={{ backgroundColor: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 'bold', marginLeft: 8 }}>
+    ว่าง
+  </span>
+</div>
+```
 
-const mockEquipments = [
-  { id: 1, name: 'MacBook Pro 14"', category: 'Laptop', serialNo: 'MBP-001', status: 'available' as const },
-  { id: 2, name: 'iPad Pro 11"',    category: 'Tablet',  serialNo: 'IPD-002', status: 'borrowed' as const },
-  { id: 3, name: 'HDMI Switcher',   category: 'Adapter', serialNo: 'ADP-003', status: 'maintenance' as const },
+```tsx [💡 ตารางเทียบ inline → Tailwind]
+// ตัวอย่างการแปลงทีละ property:
+//
+// inline style                          Tailwind class
+// ─────────────────────────────────     ────────────────────────
+// background: 'white'                → bg-white
+// borderRadius: 8                    → rounded-lg   (8px)
+// borderRadius: 12                   → rounded-xl   (12px)
+// border: '1px solid #e2e8f0'       → border border-slate-200
+// padding: 12                        → p-3           (12px = 0.75rem)
+// padding: '4px 12px'               → py-1 px-3
+// marginLeft: 8                      → ml-2
+// fontSize: 12                       → text-xs
+// fontWeight: 'bold'                 → font-bold
+// color: '#64748b'                   → text-slate-500
+// color: '#166534'                   → text-green-700
+// backgroundColor: '#dcfce7'         → bg-green-100
+// display: 'flex', gap: 8           → flex gap-2
+// boxShadow: ...                     → shadow-sm / shadow-md
+```
+:::
+
+::: tip 💡 จำง่าย — ระบบขนาดของ Tailwind
+`p-1` = 4px, `p-2` = 8px, `p-3` = 12px, `p-4` = 16px, `p-6` = 24px
+ทุกหน่วยคูณ 4px — ใช้ 1-4 สำหรับ spacing ทั่วไป, 6-8 สำหรับ padding ใหญ่
+:::
+
+---
+
+### ขั้นตอนที่ 3 — statusConfig Pattern + Responsive Grid
+
+Pattern สำคัญในโปรเจกต์: แทนที่จะใช้ `if/else` เลือกสี ให้สร้าง object `statusConfig` รวม class ทั้งหมดของแต่ละ status ไว้ด้วยกัน:
+
+```tsx [src/pages/EquipmentPage.tsx — v3 (Tailwind + statusConfig)]
+import { useState } from 'react'
+import type { Equipment } from '../types'
+
+const mockEquipments: Equipment[] = [
+  { id: 1, name: 'MacBook Pro 14"', category: 'Notebook', serialNo: 'MB-001', status: 'available',   borrowedBy: null         },
+  { id: 2, name: 'iPad Air',        category: 'Tablet',   serialNo: 'IP-001', status: 'borrowed',    borrowedBy: 'สมชาย ใจดี' },
+  { id: 3, name: 'Projector Epson', category: 'AV',       serialNo: 'PJ-001', status: 'maintenance', borrowedBy: null         },
+  { id: 4, name: 'MacBook Pro 13"', category: 'Notebook', serialNo: 'MB-002', status: 'available',   borrowedBy: null         },
 ]
 
-export function EquipmentGrid() {
+const statusLabel: Record<string, string> = {
+  available:   'ว่าง',
+  borrowed:    'ถูกยืม',
+  maintenance: 'ซ่อมบำรุง',
+}
+
+// [1] statusConfig — รวม Tailwind classes ตามสถานะไว้ที่เดียว
+//     เปลี่ยนสีทีเดียวมีผลทุกการ์ดในหน้า
+const statusConfig: Record<string, { border: string; badge: string }> = {
+  available:   { border: 'border-l-green-500', badge: 'bg-green-100 text-green-700'   },
+  borrowed:    { border: 'border-l-red-500',   badge: 'bg-red-100 text-red-700'       },
+  maintenance: { border: 'border-l-amber-500', badge: 'bg-amber-100 text-amber-700'  },
+}
+
+export function EquipmentPage() {
+  const [equipments] = useState<Equipment[]>(mockEquipments)
+  const [filterStatus, setFilterStatus] = useState<string>('all')
+
+  const displayed = filterStatus === 'all'
+    ? equipments
+    : equipments.filter(eq => eq.status === filterStatus)
+
   return (
-    // sm: = 640px+  lg: = 1024px+  ทำ Responsive ด้วย prefix
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-      {mockEquipments.map(eq => (
-        <EquipmentCard key={eq.id} {...eq} />
-      ))}
-    </div>
+    // [2] max-w-6xl mx-auto — จำกัดความกว้าง, px-6 py-8 — padding
+    <main className="max-w-6xl mx-auto px-6 py-8">
+      <h1 className="text-2xl font-bold text-slate-800 mb-6">รายการอุปกรณ์</h1>
+
+      {/* [3] Filter Buttons */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {(['all', 'available', 'borrowed', 'maintenance'] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => setFilterStatus(s)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              filterStatus === s
+                ? 'bg-blue-500 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            {s === 'all' ? 'ทั้งหมด' : statusLabel[s]}
+          </button>
+        ))}
+      </div>
+
+      {/* [4] Responsive Grid — 1 คอลัมน์บนมือถือ, 2 บน sm, 3 บน lg */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {displayed.map(eq => {
+          // [5] ดึง config ของ status นี้ออกมาใช้
+          const config = statusConfig[eq.status]
+
+          return (
+            // [6] Template literal รวม static class + dynamic class จาก config
+            <div
+              key={eq.id}
+              className={`bg-white rounded-xl border border-slate-200 border-l-4 ${config.border} p-4 shadow-sm hover:shadow-md transition-all`}
+            >
+              {/* Card Header */}
+              <div className="flex justify-between items-start gap-2 mb-1">
+                <span className="font-bold text-slate-800 text-sm">{eq.name}</span>
+                {/* [7] badge ใช้ class จาก config.badge — เปลี่ยนสีตาม status */}
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${config.badge}`}>
+                  {statusLabel[eq.status]}
+                </span>
+              </div>
+
+              {/* รายละเอียด */}
+              <p className="text-xs text-slate-500">{eq.category} · {eq.serialNo}</p>
+
+              {/* [8] แสดงชื่อผู้ยืมเฉพาะเมื่อ borrowedBy ไม่ใช่ null */}
+              {eq.borrowedBy && (
+                <p className="text-xs text-red-500 font-semibold mt-1">ยืมโดย: {eq.borrowedBy}</p>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </main>
   )
 }
 ```
 
+**สรุปการทำงาน:**
+- `statusConfig` → เก็บ Tailwind class ตาม status ไว้ที่เดียว แก้ที่เดียวมีผลทุกการ์ด ✅
+- Template literal `` `static-class ${dynamic}` `` → รวม class คงที่กับ class แบบ dynamic ✅
+- `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` → Responsive โดยไม่เขียน Media Query ✅
+
+::: warning ⚠️ Dynamic class ต้องเขียนให้ครบในไฟล์ ts/tsx
+Tailwind ต้องเห็น class name เต็มในซอร์สโค้ด จึงจะ include ไว้ใน build
+`border-l-${color}-500` ❌ (Tailwind หา class ไม่เจอ)
+`border-l-green-500` ✅ (เขียนครบ — Tailwind เจอ)
+ดังนั้นใน `statusConfig` ต้องเขียนชื่อ class เต็มทุกตัว
 :::
-
-::: tip 💡 TypeScript Tip — Form Data Types
-`EquipmentCardProps['status']` คือการดึง type ของ field `status` ออกมาใช้ซ้ำ เรียกว่า **Indexed Access Type** ทำให้ `Record<..., string>` รู้ว่า key ที่ถูกต้องคือ `'available' | 'borrowed' | 'maintenance'` เท่านั้น — ถ้าพิมพ์ผิด TypeScript จะขีดเส้นแดงทันที
-:::
-
-### Responsive Classes ที่ใช้บ่อย
-
-| Class | ความหมาย |
-|---|---|
-| `grid-cols-1` | 1 คอลัมน์ (มือถือ) |
-| `sm:grid-cols-2` | 2 คอลัมน์ เมื่อหน้าจอ ≥ 640px |
-| `lg:grid-cols-3` | 3 คอลัมน์ เมื่อหน้าจอ ≥ 1024px |
-| `hover:shadow-md` | เพิ่มเงาเมื่อ hover |
-| `transition-all` | animation smooth ทุก property |
 
 ---
 
@@ -119,16 +232,44 @@ export function EquipmentGrid() {
 ### 🤖 AI Prompt Guide
 
 ::: info 💬 ถาม AI
-"มี React component ชื่อ EquipmentCard อยู่ ช่วยจัด style ด้วย Tailwind CSS ให้สีขอบซ้ายเปลี่ยนตาม prop `status` โดยใช้: available (เขียว), borrowed (แดง), maintenance (amber) และใช้ TypeScript ด้วย"
+"กำลังเรียน React 18 + TypeScript + Tailwind CSS v3 อยู่ มี component EquipmentPage ที่ใช้ inline style ทั้งหมด ช่วยแปลงเป็น Tailwind class โดย: 1) แสดงการ์ดด้วย `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4` 2) สร้าง statusConfig object ที่รวม class ของ border และ badge แต่ละ status ไว้ด้วยกัน 3) ใช้ template literal รวม static กับ dynamic class — ห้ามใช้ dynamic interpolation เช่น `border-l-${color}-500` เพราะ Tailwind หา class ไม่เจอ"
 :::
 
 ### 📝 PjBL Lab
 
-- [ ] ติดตั้ง Tailwind CSS ในโปรเจกต์ `equipment-system`
-- [ ] สร้าง `src/components/EquipmentCard.tsx` และใส่ props ตาม interface ที่กำหนด
-- [ ] ทดสอบสีขอบ 3 สถานะโดยเปลี่ยน `status` prop ใน mockup
-- [ ] สร้าง `EquipmentGrid` ที่ใช้ Grid Layout แบบ Responsive (1/2/3 คอลัมน์)
-- [ ] เปิด DevTools ลาก browser window ดูว่า Responsive ทำงานถูกต้อง
+**ขั้น 0: ระบุตัวตน (2 นาที)**
+
+- [ ] เปิด `EquipmentPage.tsx` → ตรวจสอบว่า `<footer>` ชื่อ-รหัสของตนเองอยู่ท้าย Component ✅
+
+**ขั้น 1: ติดตั้ง Tailwind CSS (10 นาที)**
+
+- [ ] รัน `npm install -D tailwindcss@3 postcss autoprefixer` ในโปรเจกต์
+- [ ] รัน `npx tailwindcss init -p` สร้าง config
+- [ ] แก้ `tailwind.config.js` ใส่ `content: ['./index.html', './src/**/*.{ts,tsx}']`
+- [ ] เปิด `src/index.css` เพิ่ม 3 บรรทัด `@tailwind base/components/utilities`
+- [ ] ทดสอบ: เพิ่ม `className="text-blue-500"` ที่ h1 ใด ๆ → ต้องเห็นสีน้ำเงิน ✅
+
+**ขั้น 2: แปลง inline style → Tailwind class (20 นาที)**
+
+- [ ] เปิด `EquipmentPage.tsx` (จาก wk2)
+- [ ] แปลง `style=&#123;&#123; padding: 24 &#125;&#125;` ที่ `<main>` → `className="px-6 py-8 max-w-6xl mx-auto"`
+- [ ] แปลง `style=&#123;&#123; ... &#125;&#125;` ของ filter buttons → Tailwind class ให้ครบ
+- [ ] แปลง `style=&#123;&#123; border: '1px solid #e2e8f0', ... &#125;&#125;` ของ card → Tailwind class
+- [ ] ลบ `badgeColor` และ `badgeTextColor` objects เดิมออก
+- [ ] ตรวจสอบ: ไม่มี `style=&#123;&#123; ... &#125;&#125;` เหลืออยู่ใน file ✅
+
+**ขั้น 3: statusConfig + Responsive Grid (15 นาที)**
+
+- [ ] สร้าง `statusConfig` object แบบ `Record<string, { border: string; badge: string }>` ใส่ class ของทั้ง 3 status
+- [ ] แก้ JSX ให้ใช้ `const config = statusConfig[eq.status]` แล้วใช้ `config.border` + `config.badge`
+- [ ] เปลี่ยน wrapper ของรายการจาก `<div>` ธรรมดาเป็น `<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">`
+- [ ] ทดสอบ Responsive: ลากขนาด browser → ต้องเห็น layout เปลี่ยนที่ 640px และ 1024px ✅
+- [ ] (Bonus) เพิ่ม `hover:shadow-md hover:-translate-y-0.5 transition-all` ที่การ์ด
+
+**ขั้นสุดท้าย: Submit**
+
+- [ ] `git add . && git commit -m "wk3: convert inline styles to Tailwind, add statusConfig and responsive grid"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: Tailwind คืออะไร, ทำไม statusConfig ถึงดีกว่า if/else, dynamic class ใน template literal ทำงานยังไง พร้อม screenshot UI ที่ตรวจสอบ Responsive แล้ว
 
 ---
 
@@ -136,30 +277,40 @@ export function EquipmentGrid() {
 
 ### 🗣️ Code Review
 
-::: details ❓ ทำไม Tailwind ถึงดีกว่าเขียน CSS เอง?
-**แนวคำตอบ:** Tailwind ป้องกัน CSS naming conflict เพราะไม่มี global class name — style อยู่ที่ element นั้นโดยตรง นอกจากนี้ยังลบ CSS ที่ไม่ใช้ออกอัตโนมัติ (PurgeCSS) ทำให้ไฟล์เล็กลงมาก
+::: details ❓ Tailwind CSS ต่างจาก CSS ปกติ (เช่น `.card { ... }`) อย่างไร?
+**แนวคำตอบ:** CSS ปกติสร้าง class name ที่เป็น global — ถ้าชื่อซ้ำกัน style ทับกัน (CSS Specificity conflict) ส่วน Tailwind ใช้ utility classes เล็กๆ ที่ scope ไว้กับ element โดยตรง ไม่มี global name ดังนั้นไม่มี naming conflict นอกจากนี้ Tailwind ลบ class ที่ไม่ได้ใช้ออกจาก production build อัตโนมัติ (PurgeCSS) ทำให้ CSS ขนาดเล็กมาก
 :::
 
-::: details ❓ `border-l-green-500` แตกต่างจาก `border-green-500` อย่างไร?
-**แนวคำตอบ:** `border-l-` ใช้สีกับขอบด้านซ้าย (left) เท่านั้น ในขณะที่ `border-` ใช้กับทุกด้าน การใช้ `border-l-4` ร่วมกับ `border-l-green-500` จึงสร้าง accent bar ด้านซ้ายของการ์ด
+::: details ❓ ทำไมต้องสร้าง statusConfig เป็น object แทนที่จะใช้ if/else?
+**แนวคำตอบ:** `statusConfig` รวม "กลุ่มของ class" ต่อ status ไว้ที่เดียว — ถ้าต้องการเปลี่ยนสีแก้แค่จุดเดียว ทุกการ์ดในหน้าเปลี่ยนตาม ต่างจาก `if/else` ที่ต้องแก้หลายที่และอาจลืม นอกจากนี้ยัง readable กว่า เพราะ `config.border` บอกความหมายชัดกว่า string ยาวๆ ใน template literal
+:::
+
+::: details ❓ `sm:grid-cols-2` หมายความว่าอะไร และ `sm:` คืออะไร?
+**แนวคำตอบ:** `sm:` คือ **responsive prefix** ของ Tailwind — หมายถึง "ใช้ class นี้เมื่อหน้าจอกว้าง ≥ 640px" `sm:grid-cols-2` จึงหมายถึง "2 คอลัมน์เมื่อหน้าจอ ≥ 640px" ส่วน `grid-cols-1` (ไม่มี prefix) ใช้กับทุกขนาดหน้าจอรวมถึงมือถือ Tailwind ใช้ Mobile-First: class ที่ไม่มี prefix ใช้กับขนาดเล็กสุด, prefix ใช้เฉพาะขนาดนั้นขึ้นไป
+:::
+
+::: details ❓ ทำไม `border-l-${color}-500` ถึงไม่ทำงาน ต้องเขียนอย่างไร?
+**แนวคำตอบ:** Tailwind สแกน source code ในขั้นตอน build เพื่อหา class ที่ใช้จริง ถ้าเขียน dynamic interpolation เช่น `` `border-l-${color}-500` `` Tailwind มองไม่เห็น class เต็ม จึงไม่ include ไว้ใน CSS ผลคือ style ไม่แสดง วิธีแก้คือเขียน class เต็มในซอร์สโค้ดเสมอ เช่น `'border-l-green-500'` หรือ `'border-l-red-500'` แล้วค่อย map ด้วย object ตาม key
 :::
 
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
-|---|---|---|---|
-| Tailwind ติดตั้งและทำงานได้ | ครบทุกขั้นตอน, config ถูก | ติดตั้งแล้วแต่ style ไม่แสดง | ยังไม่ติดตั้ง |
-| EquipmentCard interface | กำหนด type status ถูกต้อง | มี interface แต่ type หลวม | ไม่มี interface |
-| Responsive Grid | ทำงานทั้ง 3 breakpoint | ทำได้บางส่วน | ไม่มี responsive |
+| :--- | :--- | :--- | :--- |
+| Tailwind ติดตั้ง | config ถูกต้อง, style แสดงใน browser | ติดตั้งแต่ style ไม่แสดง | ยังไม่ได้ติดตั้ง |
+| แปลง inline → Tailwind | ไม่มี style=&#123;&#123; &#125;&#125; เหลือเลย | แปลงบางส่วน | ยังใช้ inline style ทั้งหมด |
+| statusConfig + Grid | object ครบ 3 status, responsive ทำงาน | มีแต่ไม่ครบ | ใช้ if/else หรือไม่มี responsive |
 
 ---
 
 ### 📚 CLIL Vocabulary
 
-| Term | Meaning |
-|---|---|
-| Utility-First | แนวคิดใช้ class เล็กๆ ต่อกันแทนการตั้งชื่อ component |
-| Breakpoint | จุดที่ layout เปลี่ยนตามขนาดหน้าจอ (sm, md, lg) |
-| Responsive Design | การออกแบบที่ปรับตัวได้ตามขนาดหน้าจอ |
-| PurgeCSS | กระบวนการลบ CSS ที่ไม่ถูกใช้ออกจาก bundle |
-| Transition | animation ที่เกิดเมื่อ CSS property เปลี่ยนค่า |
+| Technical Term | Meaning in Context |
+| :--- | :--- |
+| `Utility-First CSS` | แนวคิดใช้ class เล็กๆ สำเร็จรูปต่อกันใน HTML แทนเขียน CSS เอง |
+| `Responsive Prefix` | `sm:` `md:` `lg:` — บอก Tailwind ว่าใช้ class นี้เมื่อหน้าจอกว้างแค่ไหน |
+| `Mobile-First` | ออกแบบสำหรับมือถือก่อน แล้วขยายสำหรับหน้าจอใหญ่ด้วย prefix |
+| `PurgeCSS` | กระบวนการลบ Tailwind class ที่ไม่ได้ใช้ออกจาก production bundle |
+| `Template Literal` | `` `static ${dynamic}` `` รวม string คงที่กับตัวแปรใน JavaScript |
+| `Indexed Access Type` | `Type['field']` — ดึง type ของ field ออกมาใช้ซ้ำใน TypeScript |
+| `border-l-4` | Tailwind: ขอบซ้ายหนา 4px — ใช้สร้าง accent bar สีบนการ์ด |

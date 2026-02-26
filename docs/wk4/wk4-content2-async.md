@@ -12,77 +12,79 @@
 
 ## 📖 I: Information
 
-### 3 สถานะที่ทุก async operation ต้องจัดการ
+### ขั้นตอนที่ 1 — useEquipments Hook ด้วย try-catch-finally
+
+3 สถานะที่ทุก async operation ต้องจัดการ:
 
 | สถานะ | ความหมาย | แสดงใน UI |
 | :--- | :--- | :--- |
-| `isLoading = true` | กำลังรอผลจาก API | Spinner / "กำลังโหลด..." |
-| `error != null` | API ตอบกลับผิดพลาด | Error message |
-| ข้อมูลพร้อม | ได้ข้อมูลแล้ว | แสดงรายการ |
-
-### Pattern: try-catch-finally
+| `isLoading = true` | กำลังรอผลจาก API | "กำลังโหลดข้อมูล..." |
+| `error != null` | API ตอบกลับผิดพลาด | Error message สีแดง |
+| ข้อมูลพร้อม + `isLoading = false` | ได้ข้อมูลแล้ว | แสดงรายการ |
 
 ::: code-group
-```ts [useEquipments.ts]
+```ts [src/hooks/useEquipments.ts ✅]
 import { useState, useEffect, useCallback } from 'react'
 import { getEquipments } from '../api/equipmentApi'
 import type { Equipment } from '../types'
 
 export function useEquipments() {
-  const [equipments, setEquipments] = useState<Equipment[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  const [equipments,  setEquipments]  = useState<Equipment[]>([])
+  const [isLoading,   setIsLoading]   = useState<boolean>(true)
+  const [error,       setError]       = useState<string | null>(null)
 
+  // [1] useCallback — memo function ไม่ให้สร้างใหม่ทุก render
+  //     ถ้าไม่ wrap ด้วย useCallback → useEffect ด้านล่าง loop ซ้ำตลอด
   const fetchEquipments = useCallback(async () => {
-    setIsLoading(true)    // 1. เริ่ม: แสดง loading
-    setError(null)        // 2. reset error เก่า
-    try {
-      const data = await getEquipments()  // 3. รอ API
-      setEquipments(data)                 // 4. บันทึกข้อมูล
-    } catch {
-      setError('ไม่สามารถโหลดข้อมูลอุปกรณ์ได้')  // 5. แสดง error
-    } finally {
-      setIsLoading(false)  // 6. เสมอ: ปิด loading
-    }
-  }, [])
+    setIsLoading(true)   // [2] เปิด loading ก่อนเสมอ
+    setError(null)       // [3] ล้าง error เก่า
 
+    try {
+      const data = await getEquipments()  // [4] รอ API — ถ้า Error จะ throw ออกมา
+      setEquipments(data)                 // [5] บันทึกข้อมูลสำเร็จ
+    } catch {
+      setError('ไม่สามารถโหลดข้อมูลอุปกรณ์ได้')  // [6] จับ error ทุกชนิด
+    } finally {
+      setIsLoading(false)  // [7] ปิด loading เสมอ ไม่ว่าจะ success หรือ error
+    }
+  }, [])  // [] = ไม่ขึ้นกับ state ใด — สร้างครั้งเดียวตลอดชีวิต component
+
+  // [8] useEffect — เรียก fetchEquipments ครั้งแรกตอน mount
+  //     dependency [fetchEquipments] → เรียกใหม่เมื่อฟังก์ชันเปลี่ยน (ซึ่งไม่เปลี่ยน)
   useEffect(() => {
     fetchEquipments()
   }, [fetchEquipments])
 
+  // [9] return refetch ด้วย — ใช้ refresh ข้อมูลหลัง borrow/return/delete
   return { equipments, setEquipments, isLoading, error, refetch: fetchEquipments }
 }
 ```
 
-```tsx [EquipmentPage.tsx (loading + error UI)]
-export function EquipmentPage({ auth }: EquipmentPageProps) {
+```tsx [EquipmentPage.tsx — Loading/Error/Empty State ✅]
+export function EquipmentPage() {
   const { equipments, isLoading, error } = useEquipments()
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-8">
 
-      {/* Loading State */}
+      {/* [1] Loading State — แสดงขณะรอ API */}
       {isLoading && (
         <p className="text-center text-slate-400 py-16">กำลังโหลดข้อมูล...</p>
       )}
 
-      {/* Fetch Error */}
+      {/* [2] Fetch Error — แสดงเมื่อ API ไม่ตอบหรือ error */}
       {error && (
-        <p className="text-center text-red-600 bg-red-50 rounded-lg px-4 py-3 mb-4">
-          {error}
-        </p>
+        <p className="text-center text-red-600 bg-red-50 rounded-lg px-4 py-3 mb-4">{error}</p>
       )}
 
-      {/* Equipment Grid — แสดงเมื่อโหลดเสร็จและไม่มี error */}
+      {/* [3] Equipment Grid — แสดงเมื่อโหลดเสร็จ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {equipments.map(eq => (
-          <div key={eq.id} className="bg-white rounded-xl border p-4">
-            {eq.name}
-          </div>
+          <div key={eq.id} className="bg-white rounded-xl border p-4">{eq.name}</div>
         ))}
       </div>
 
-      {/* Empty State */}
+      {/* [4] Empty State — แสดงเมื่อ array ว่าง (ไม่ใช่ loading) */}
       {!isLoading && equipments.length === 0 && (
         <p className="text-center text-slate-400 py-16">ยังไม่มีอุปกรณ์ในระบบ</p>
       )}
@@ -93,25 +95,27 @@ export function EquipmentPage({ auth }: EquipmentPageProps) {
 ```
 :::
 
-::: tip 💡 TypeScript Tip — `useCallback` dependency array
-`useCallback(async () => { ... }, [])` — array ว่าง `[]` หมายถึง function นี้ไม่ขึ้นกับ state/props ใดเลย จึงสร้างครั้งเดียวตลอดชีวิต component ทำให้ `useEffect` ที่ depend on มันไม่ loop ซ้ำ
-:::
+**สรุป:** `try` ดึงข้อมูล → `catch` จัดการ error → `finally` ปิด loading เสมอ ✅
 
-### async function กับ action (Borrow/Return)
+---
 
-```tsx [EquipmentPage.tsx — handleBorrow]
-// ยืมอุปกรณ์ — PATCH status = 'borrowed'
-async function handleBorrow(equipmentId: number) {
-  if (!purpose.trim()) {
-    setActionError('กรุณาระบุวัตถุประสงค์การใช้งาน')
-    return
-  }
+### ขั้นตอนที่ 2 — async function สำหรับ action (Borrow/Return)
+
+Pattern ที่ต้องจัดการ loading + error ใน action แตกต่างจากการ fetch:
+
+```tsx [EquipmentPage.tsx — handleBorrow async]
+// [1] ยืมอุปกรณ์ — PATCH /api/equipments/:id
+async function handleBorrow(equipmentId: number, purpose: string) {
+  setActionError(null)
+  // [2] ไม่ต้องมี isLoading แยก — ใช้ disabled button แทน
   try {
-    await updateEquipmentStatus(equipmentId, 'borrowed', auth.user?.name ?? '')
-    setBorrowingId(null)
+    // [3] await — รอ PATCH request สำเร็จก่อนทำอย่างอื่น
+    await updateEquipmentStatus(equipmentId, 'borrowed', 'Mock User')
+    setBorrowingId(null)   // ปิด BorrowForm
     setPurpose('')
-    refetch()                    // ดึงข้อมูลใหม่หลัง action สำเร็จ
+    refetch()              // [4] ดึงข้อมูลใหม่หลัง action สำเร็จ
   } catch {
+    // [5] Error เกิดใน try → มาที่นี่ — ไม่ crash app
     setActionError('ไม่สามารถยืมอุปกรณ์ได้ กรุณาลองใหม่')
   }
 }
@@ -124,17 +128,43 @@ async function handleBorrow(equipmentId: number) {
 ### 🤖 AI Prompt Guide
 
 ::: info 💬 ถาม AI
-"สร้าง custom React hook ชื่อ `useEquipments` ด้วย TypeScript โดยมี states: `equipments: Equipment[]`, `isLoading: boolean`, `error: string | null` ใช้ `useCallback` ครอบฟังก์ชัน fetch และใช้ `useEffect` เรียกตอน mount ใช้ pattern try-catch-finally"
+"กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้าง custom hook `useEquipments` ที่: 1) มี states `equipments: Equipment[]`, `isLoading: boolean`, `error: string | null` 2) ใช้ `useCallback` ครอบ async fetch function พร้อม `try-catch-finally` 3) ใช้ `useEffect` เรียก fetch ตอน mount 4) return `refetch` ให้ Component เรียกหลัง action สำเร็จ 5) แสดง Loading/Error/Empty state ใน Component — ใช้ TypeScript types ถูกต้อง"
 :::
 
 ### 📝 PjBL Lab
 
-- [ ] อัปเดต `useEquipments.ts` ให้มี 3 states: `equipments`, `isLoading`, `error`
-- [ ] ใช้ `try-catch-finally` ใน `fetchEquipments` — `finally` ต้อง `setIsLoading(false)` เสมอ
-- [ ] แสดง "กำลังโหลดข้อมูล..." ขณะ `isLoading === true`
-- [ ] แสดง error message เมื่อ API ไม่ตอบ (ปิด Backend แล้วลองโหลด)
-- [ ] แสดง "ยังไม่มีอุปกรณ์" เมื่อ array ว่าง
-- [ ] ทดสอบ: เปิด Network tab → throttle เป็น "Slow 3G" ดู Loading state
+**ขั้น 0: ระบุตัวตน (2 นาที)**
+
+- [ ] เปิด `useEquipments.ts` → ตรวจสอบว่า `<footer>` ชื่อ-รหัสของตนเองอยู่ใน Component ที่ใช้ Hook ✅
+
+**ขั้น 1: อัปเดต useEquipments Hook (15 นาที)**
+
+- [ ] เปิด `src/hooks/useEquipments.ts`
+- [ ] ลบ Mock Data ออก แทนที่ด้วย `import { getEquipments } from '../api/equipmentApi'`
+- [ ] เพิ่ม state `isLoading: boolean` เริ่มต้น `true`
+- [ ] เพิ่ม state `error: string | null` เริ่มต้น `null`
+- [ ] ครอบ fetch ด้วย `useCallback(async () => {...}, [])` พร้อม `try-catch-finally`
+- [ ] ใช้ `useEffect(() => { fetchEquipments() }, [fetchEquipments])`
+- [ ] ทดสอบ: เปิด Backend → รายการแสดงจาก API จริง ✅
+
+**ขั้น 2: แสดง Loading/Error/Empty State (10 นาที)**
+
+- [ ] ใน `EquipmentPage.tsx` เพิ่ม `{isLoading && <p>กำลังโหลด...</p>}`
+- [ ] เพิ่ม `{error && <p className="text-red-600">{error}</p>}`
+- [ ] เพิ่ม `{!isLoading && equipments.length === 0 && <p>ยังไม่มีอุปกรณ์</p>}`
+- [ ] ทดสอบ: ปิด Backend → ต้องเห็น error message ✅
+- [ ] ทดสอบ: Network tab → Throttle "Slow 3G" → ต้องเห็น Loading state ✅
+
+**ขั้น 3: refetch หลัง action (10 นาที)**
+
+- [ ] เพิ่ม `handleBorrow` async function ด้วย `try-catch` + เรียก `updateEquipmentStatus`
+- [ ] เรียก `refetch()` หลัง action สำเร็จ
+- [ ] ทดสอบ: กดยืมอุปกรณ์ → status การ์ดเปลี่ยนหลัง refetch ✅
+
+**ขั้นสุดท้าย: Submit**
+
+- [ ] `git add . && git commit -m "wk4: useEquipments with loading/error state and real API"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: `try-catch-finally` ต่างกันอย่างไร, `useCallback` ป้องกัน infinite loop ยังไง พร้อม screenshot Loading state
 
 ---
 
@@ -142,21 +172,29 @@ async function handleBorrow(equipmentId: number) {
 
 ### 🗣️ Code Review
 
-::: details ❓ ทำไม `finally` ถึงสำคัญกว่า `setIsLoading(false)` ใน try/catch แยก?
-**แนวคำตอบ:** ถ้าใส่ `setIsLoading(false)` ทั้งใน `try` และ `catch` แยกกัน — ถ้าเกิด error ที่ไม่คาดคิด (ไม่ใช่ network error) อาจ throw หลุด catch แล้ว loading ค้างตลอด `finally` รันเสมอไม่ว่าจะ success หรือ error ทำให้แน่ใจ 100% ว่า loading จะปิด
+::: details ❓ ทำไม `finally` ถึงดีกว่าใส่ `setIsLoading(false)` ใน try และ catch แยกกัน?
+**แนวคำตอบ:** ถ้าใส่ `setIsLoading(false)` ใน try และ catch แยก — ถ้าเกิด error ที่ไม่คาดคิด (throw หลุด catch block ที่เขียนไว้) loading จะค้างตลอด `finally` รันเสมอ ไม่ว่าจะ success หรือ error หรือ unexpected throw ทำให้แน่ใจ 100% ว่า loading ปิด
 :::
 
-::: details ❓ `useCallback` กับ `useEffect` ทำงานร่วมกันอย่างไร?
-**แนวคำตอบ:** `useEffect(() => { fetchEquipments() }, [fetchEquipments])` — บอกว่า "รัน effect นี้ทุกครั้งที่ `fetchEquipments` เปลี่ยน" ถ้าไม่ wrap `fetchEquipments` ด้วย `useCallback` มันจะสร้างใหม่ทุก render ทำให้ useEffect loop ซ้ำตลอด
+::: details ❓ `useCallback` กับ `useEffect` ทำงานร่วมกันอย่างไร — ทำไมต้องมีทั้งคู่?
+**แนวคำตอบ:** `useEffect(() => { fetchEquipments() }, [fetchEquipments])` — รัน effect ทุกครั้งที่ `fetchEquipments` เปลี่ยน ถ้าไม่ wrap ด้วย `useCallback` ฟังก์ชันจะสร้างใหม่ทุก render → `fetchEquipments` เปลี่ยน → useEffect รันใหม่ → fetch → re-render → ฟังก์ชันสร้างใหม่ → loop ซ้ำตลอด `useCallback` กับ `[]` ทำให้สร้างครั้งเดียว
+:::
+
+::: details ❓ `refetch` vs `setEquipments` ต่างกันอย่างไร และควรใช้อันไหนหลัง action?
+**แนวคำตอบ:** `setEquipments` แก้ state โดยตรง (optimistic update — ไวแต่อาจไม่ sync กับ server) ส่วน `refetch` ดึงข้อมูลใหม่จาก API จริง (pessimistic update — ช้ากว่าแต่รับประกันว่า sync) ใน wk4 ใช้ `refetch` ก่อน ใน wk7 (Real-time) จะเปลี่ยนเป็น `setEquipments` โดยตรงเมื่อได้รับ Socket event
+:::
+
+::: details ❓ ทำไม Empty State (`equipments.length === 0`) ต้องตรวจ `!isLoading` ด้วย?
+**แนวคำตอบ:** ตอนเริ่มต้น `equipments = []` และ `isLoading = true` — ถ้าไม่ตรวจ `!isLoading` จะแสดง "ยังไม่มีอุปกรณ์" ทันทีก่อน API ตอบ ซึ่งผิด ผู้ใช้จะเห็น Loading กับ "ยังไม่มี" พร้อมกัน การเพิ่ม `!isLoading &&` ทำให้ Empty State แสดงเฉพาะเมื่อโหลดเสร็จแล้วจริงๆ ว่างเปล่า
 :::
 
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
 | :--- | :--- | :--- | :--- |
-| Loading State | แสดง/ซ่อนถูกต้อง ใช้ finally | มีแต่ไม่ใช้ finally | ไม่มี loading |
-| Error Handling | จับ error + แสดงใน UI | จับได้แต่ไม่แสดง | ไม่มี error handling |
-| Empty State | แสดงเมื่อ array ว่าง | - | ไม่มี empty state |
+| try-catch-finally | finally ปิด loading เสมอ, catch แสดง error | มีแต่ไม่ใช้ finally | ไม่มี error handling |
+| 3 States ครบ | loading/error/empty state แสดงถูกต้อง | มีบางส่วน | ไม่มี state แสดง |
+| refetch ทำงาน | กด borrow/return → ข้อมูล refresh | refetch มีแต่ไม่เรียก | ใช้ mock data ต่อ |
 
 ---
 
@@ -164,8 +202,9 @@ async function handleBorrow(equipmentId: number) {
 
 | Technical Term | Meaning in Context |
 | :--- | :--- |
-| `async/await` | Syntax สำหรับเขียนโค้ดที่ต้องรอผล (asynchronous) แบบอ่านง่าย |
-| `try-catch-finally` | โครงสร้างจัดการ error: ลอง → ถ้าพัง → เสมอ |
-| `Loading State` | สถานะ "กำลังโหลด" ที่บอกผู้ใช้ว่าระบบกำลังทำงาน |
+| `async/await` | Syntax สำหรับเขียน asynchronous code แบบอ่านง่าย เหมือน synchronous |
+| `try-catch-finally` | โครงสร้างจัดการ error: try=ลอง, catch=ถ้าพัง, finally=เสมอ |
+| `Loading State` | สถานะ "กำลังโหลด" ที่บอกผู้ใช้ว่าระบบกำลังรอผลจาก API |
 | `useCallback` | React Hook ที่ memo function ไม่ให้สร้างใหม่ทุก render |
-| `refetch` | ดึงข้อมูลใหม่จาก API (มักเรียกหลัง mutation สำเร็จ) |
+| `refetch` | เรียก fetch ใหม่จาก API เพื่อ sync ข้อมูลหลัง action สำเร็จ |
+| `Empty State` | UI ที่แสดงเมื่อไม่มีข้อมูล — ดีกว่าแสดงหน้าว่างเปล่า |

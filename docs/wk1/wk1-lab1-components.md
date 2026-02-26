@@ -180,6 +180,33 @@ Lab นี้ใช้ **Inline Styles** เพื่อให้เห็น co
 
 ### 📝 PjBL Lab
 
+**ขั้น 0: ระบุตัวตน (2 นาที)**
+
+- [ ] เพิ่ม footer แสดงชื่อของตนเองใน `App.tsx`:
+
+```tsx
+// src/App.tsx
+import { EquipmentCard } from './components/EquipmentCard'
+
+export default function App() {
+  return (
+    <div style={{ maxWidth: 600, margin: '0 auto', padding: 24 }}>
+      <h1>รายการอุปกรณ์ไอที</h1>
+      {/* การ์ดอุปกรณ์จะอยู่ตรงนี้ */}
+
+      {/* footer ระบุตัวตน — เปลี่ยนเป็นชื่อ-รหัสของตนเอง */}
+      <footer style={{ marginTop: 40, borderTop: '1px solid #eee', paddingTop: 12, color: '#aaa', fontSize: 12 }}>
+        จัดทำโดย: ชื่อ-นามสกุล · รหัสนักเรียน
+      </footer>
+    </div>
+  )
+}
+```
+
+- [ ] บันทึกไฟล์ → ต้องเห็นชื่อของตนเองที่ด้านล่างหน้าเว็บ ✅
+
+---
+
 **ขั้น 1: สร้าง Component พื้นฐาน (15 นาที)**
 
 - [ ] สร้างโฟลเดอร์ `src/components/` ใน VS Code
@@ -207,6 +234,21 @@ Lab นี้ใช้ **Inline Styles** เพื่อให้เห็น co
 - [ ] ลองส่ง `status="missing"` (ค่าที่ไม่ได้กำหนดไว้) → สังเกตว่า badge แสดงอะไร
 - [ ] (ถ้าเวลาเหลือ) เพิ่ม prop `serialNo: string` สำหรับแสดง Serial Number
 
+**ขั้น 5: ส่งงาน**
+
+- [ ] Push code ขึ้น GitHub repo ส่วนตัว:
+
+```bash
+git add .
+git commit -m "wk1-lab: EquipmentCard by ชื่อ-นามสกุล"
+git push
+```
+
+- [ ] เปิด Google Doc ประจำรายวิชา → เขียนสรุป 3-5 บรรทัด:
+  - เรียนรู้อะไรจาก Lab นี้?
+  - ปัญหาที่เจอและวิธีแก้?
+- [ ] แปะลิงก์ GitHub repo + screenshot หน้าเว็บที่มีชื่อของตนเอง ✅
+
 ---
 
 ## ✅ P: Progress
@@ -218,7 +260,7 @@ Lab นี้ใช้ **Inline Styles** เพื่อให้เห็น co
 :::
 
 ::: details ❓ Destructuring `{ name, category, status }` ต่างจาก `props.name` อย่างไร?
-**แนวคำตอบ:** ทั้งสองแบบให้ผลเหมือนกัน แต่ Destructuring อ่านง่ายกว่า — เขียน `{name}` ในโค้ดแทน `props.name` ทุกครั้ง ทำให้ Component code สั้นและสะอาดตากว่า ในโปรเจกต์จริงนิยม Destructuring แทบทุกที่
+**แนวคำตอบ:** ทั้งสองแบบให้ผลเหมือนกัน แต่ Destructuring อ่านง่ายกว่า — เขียน `&#123;name&#125;` ในโค้ดแทน `props.name` ทุกครั้ง ทำให้ Component code สั้นและสะอาดตากว่า ในโปรเจกต์จริงนิยม Destructuring แทบทุกที่
 :::
 
 ::: details ❓ `export function` กับ `export default function` ต่างกันอย่างไร?
@@ -254,4 +296,4 @@ Lab นี้ใช้ **Inline Styles** เพื่อให้เห็น co
 | `Destructuring` | แกะข้อมูลออกจาก Object โดยตรง เช่น `{ name, category }` |
 | `Named Export` | `export function Foo()` — import ด้วยชื่อเดิมคือ `{ Foo }` |
 | `Conditional Rendering` | แสดง UI ตามเงื่อนไข — ใช้ `? :` หรือ `&&` ใน JSX |
-| `Inline Style` | กำหนด CSS ตรงใน JSX ด้วย `style={{ ... }}` |
+| `Inline Style` | กำหนด CSS ตรงใน JSX ด้วย `style=&#123;&#123; ... &#125;&#125;` |

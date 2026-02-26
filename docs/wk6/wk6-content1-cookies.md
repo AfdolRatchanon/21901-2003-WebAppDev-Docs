@@ -1,97 +1,157 @@
-# Cookies กับการจัดเก็บ Session <Badge type="info" text="TPQI 10302" />
+# Cookies & localStorage — บันทึก/อ่าน/ลบข้อมูล Browser <Badge type="info" text="TPQI 10302" />
 
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
-หลัง login สำเร็จ — ถ้า Refresh หน้า ผู้ใช้จะต้อง login ใหม่ทุกครั้ง เพราะ state ใน React หายไปเมื่อ Browser โหลดหน้าใหม่ ต้องเลือกวิธีเก็บข้อมูล session ให้คงอยู่: **Cookies** หรือ **localStorage**?
+หลัง login สำเร็จ — ถ้า Refresh หน้า React state จะ reset เป็นค่าเริ่มต้นทั้งหมด ผู้ใช้ต้อง login ใหม่ทุกครั้งที่เปิด Browser ระบบเบิก-จ่ายอุปกรณ์ที่ใช้งานจริงต้องจำ session ไว้ได้ต้องเลือกวิธีเก็บข้อมูลให้คงอยู่: **localStorage** หรือ **Cookies**?
 :::
 
-> 💡 **เปรียบเทียบ:** Cookies เหมือน "สมุดนัด" ที่ Browser พกไปส่งให้ Server ทุกครั้งที่ Request ส่วน localStorage เหมือน "กล่องเก็บของ" ในห้อง — ไม่ส่งอัตโนมัติ แต่ JavaScript ดึงมาใช้ได้เมื่อต้องการ
+> 💡 **เปรียบเทียบ:** localStorage เหมือน "โน้ตบุ๊กของตัวเอง" ที่วางไว้บนโต๊ะ — เปิดและเขียนได้เองเมื่อต้องการ ส่วน Cookie เหมือน "บัตรผ่าน" ที่ Browser พกไปส่งให้ Server อัตโนมัติทุกครั้งที่ออกนอกบ้าน
 
 ---
 
 ## 📖 I: Information
 
-### เปรียบเทียบวิธีเก็บ Session
+### ขั้นตอนที่ 1 — localStorage API: บันทึก/อ่าน/ลบ
 
-| | Cookies | localStorage | sessionStorage |
-| :--- | :--- | :--- | :--- |
-| อายุ | กำหนดได้ (`Expires`/`Max-Age`) | คงอยู่จนลบ | หายเมื่อปิด tab |
-| ส่งอัตโนมัติ | ✅ ทุก HTTP request | ❌ ต้อง set header เอง | ❌ |
-| ความจุ | ~4 KB | ~5 MB | ~5 MB |
-| XSS Protection | `HttpOnly` ป้องกันได้ | ❌ JavaScript อ่านได้ | ❌ |
-| CSRF Risk | ⚠️ ต้องป้องกัน | ✅ ไม่มีปัญหา | ✅ |
+localStorage เป็น Web Storage API ที่ Browser ทุกตัวรองรับ — เก็บข้อมูลแบบ key-value (string เท่านั้น):
 
-### โปรเจกต์ใช้ `localStorage` — ทำไม?
+```ts [localStorage API — 4 คำสั่งหลัก]
+// [1] setItem — บันทึก string
+localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiJ9...')
 
-โปรเจกต์นี้เลือก `localStorage` เพราะ:
-1. **ง่ายกว่า** — ไม่ต้องตั้งค่า CORS credentials, SameSite cookie บน Backend
-2. **Vite proxy** — Frontend + Backend อยู่ domain เดียว (ผ่าน proxy) จึงไม่มี CORS issue
-3. **สอน JWT concept** — เน้นให้นักเรียนเข้าใจ Authorization header มากกว่า Cookie
+// [2] getItem — อ่านกลับมา (คืน null ถ้าไม่มี key นั้น)
+const token = localStorage.getItem('token')  // string | null
 
-```ts [hooks/useAuth.ts — เก็บ token ใน localStorage]
-async function login(email: string, password: string): Promise<boolean> {
+// [3] removeItem — ลบ key นั้น
+localStorage.removeItem('token')
+
+// [4] Object ต้อง JSON.stringify ก่อนเก็บ — localStorage เก็บ string เท่านั้น
+const user = { id: 1, name: 'สมชาย', role: 'admin' }
+localStorage.setItem('user', JSON.stringify(user))    // แปลง object → string
+
+// [5] ต้อง JSON.parse เพื่ออ่านกลับเป็น object
+const stored = localStorage.getItem('user')           // string | null
+const parsed = stored ? JSON.parse(stored) : null     // object | null
+```
+
+**สรุป:** `setItem` → บันทึก, `getItem` → อ่าน, `removeItem` → ลบ, `JSON.stringify/parse` → แปลงระหว่าง object กับ string
+
+::: code-group
+```ts [✅ ใช้ try-catch กับ JSON.parse]
+// JSON.parse โยน SyntaxError ถ้า string เสียหาย
+// เช่น ผู้ใช้แก้ localStorage ด้วยมือใน DevTools
+function getStoredUser(): User | null {
+  const stored = localStorage.getItem('user')
   try {
-    const { token: newToken, user: loggedInUser } = await loginApi(email, password)
-
-    // บันทึกลง localStorage
-    localStorage.setItem('token', newToken)
-    localStorage.setItem('user', JSON.stringify(loggedInUser))
-
-    // ตั้ง Axios default header
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
-
-    setToken(newToken)
-    setUser(loggedInUser)
-    return true
+    return stored ? (JSON.parse(stored) as User) : null  // [1] cast เป็น User type
   } catch {
-    return false
+    localStorage.removeItem('user')  // [2] ล้างข้อมูลที่เสียหาย
+    return null
   }
 }
+```
+```ts [❌ ไม่มี try-catch — แอปอาจ crash]
+function getStoredUser() {
+  const stored = localStorage.getItem('user')
+  return stored ? JSON.parse(stored) : null
+  // ❌ ถ้า stored เป็น "not-valid-json" → SyntaxError → แอป crash
+  // ❌ ไม่มี type annotation → TypeScript ไม่รู้ว่า return อะไร
+}
+```
+```ts [💡 ทดสอบด้วย DevTools]
+// เปิด DevTools → Console แล้วลองพิมพ์:
+localStorage.setItem('test', 'hello')
+localStorage.getItem('test')          // → 'hello'
+localStorage.removeItem('test')
+localStorage.getItem('test')          // → null
 
-function logout() {
-  // ลบออกจาก localStorage
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  delete apiClient.defaults.headers.common['Authorization']
-  setToken(null)
-  setUser(null)
+// ดู Application tab → Local Storage → localhost:5173
+// เห็น key-value ทั้งหมดที่เก็บอยู่
+```
+:::
+
+---
+
+### ขั้นตอนที่ 2 — เปรียบเทียบ 3 วิธีเก็บข้อมูล
+
+| | **localStorage** | **sessionStorage** | **Cookie** |
+| :--- | :--- | :--- | :--- |
+| อายุข้อมูล | คงอยู่จนลบ | หายเมื่อปิด Tab | กำหนดด้วย `Expires`/`Max-Age` |
+| ส่งไป Server อัตโนมัติ | ❌ ต้องส่งเอง (header) | ❌ | ✅ ทุก HTTP request |
+| ความจุ | ~5 MB | ~5 MB | ~4 KB |
+| ป้องกัน XSS | ❌ JavaScript อ่านได้ | ❌ | ✅ (`HttpOnly` flag) |
+| ป้องกัน CSRF | ✅ | ✅ | ⚠️ ต้องตั้งค่า `SameSite` |
+| ความง่ายในการใช้ | ⭐⭐⭐ ง่ายมาก | ⭐⭐⭐ ง่ายมาก | ⭐⭐ ต้องตั้งค่าหลายอย่าง |
+
+**โปรเจกต์นี้เลือก `localStorage` เพราะ:**
+1. **ง่ายกว่า** — ไม่ต้องตั้งค่า CORS credentials หรือ SameSite cookie บน Backend
+2. **ครูตรวจได้ง่าย** — นักเรียนเห็น token ได้ตลอดใน DevTools Application tab
+3. **เน้นสอน JWT concept** — ฝึกการส่ง `Authorization: Bearer <token>` ด้วยตนเอง
+
+::: code-group
+```ts [✅ โปรเจกต์นี้ — localStorage + Axios header]
+// useAuth.ts: หลัง login สำเร็จ
+localStorage.setItem('token', newToken)                          // [1] บันทึก token
+localStorage.setItem('user', JSON.stringify(loggedInUser))      // [2] บันทึก user
+apiClient.defaults.headers.common['Authorization'] =
+  `Bearer ${newToken}`                                          // [3] ตั้ง Axios header
+```
+```ts [💡 Production จริง — HttpOnly Cookie (ปลอดภัยกว่า)]
+// Backend ส่ง Set-Cookie header
+// Set-Cookie: token=eyJhb...; HttpOnly; Secure; SameSite=Strict
+
+// Frontend ไม่ต้องทำอะไร — Browser ส่ง cookie อัตโนมัติ
+// ❌ JavaScript อ่าน cookie HttpOnly ไม่ได้ → ป้องกัน XSS
+// ✅ เหมาะกับ production มากกว่า แต่ซับซ้อนกว่า
+```
+:::
+
+---
+
+### ขั้นตอนที่ 3 — Restore State เมื่อ Refresh
+
+ปัญหาหลัก: React state หายเมื่อ refresh → แก้ด้วยการอ่าน localStorage ตอน component mount:
+
+```ts [src/hooks/useAuth.ts — Lazy Initializer ป้องกัน state หาย]
+export function useAuth(): AuthContextType {
+
+  // [1] Lazy Initializer — ฟังก์ชัน () => {...} รันครั้งเดียวตอน mount
+  //     อ่าน localStorage ก่อน render แรก → user ไม่หาย
+  const [user, setUser] = useState<User | null>(() => {
+    const stored = localStorage.getItem('user')       // [2] อ่าน JSON string
+    try {
+      return stored ? (JSON.parse(stored) as User) : null  // [3] parse → object
+    } catch {
+      return null                                       // [4] ป้องกัน JSON เสีย
+    }
+  })
+
+  // [5] อ่าน token ตอน mount เช่นกัน
+  const [token, setToken] = useState<string | null>(
+    () => localStorage.getItem('token')               // [6] string | null
+  )
+
+  // [7] logout: ลบออกทุกที่
+  function logout() {
+    localStorage.removeItem('token')                  // [8] ลบ localStorage
+    localStorage.removeItem('user')
+    delete apiClient.defaults.headers.common['Authorization']  // [9] ลบ Axios header
+    setToken(null)
+    setUser(null)
+  }
+
+  return { user, token, login, logout, isAuthenticated: token !== null }
 }
 ```
 
-### Restore State เมื่อ Refresh
+**สรุปการทำงาน:** Lazy Initializer `[1]` อ่าน localStorage ก่อน render แรก → ถ้ามี token = ยังอยู่ในระบบ (ไม่ต้อง login ใหม่) → `logout()` ล้างทุกที่พร้อมกัน
 
-```ts [hooks/useAuth.ts — lazy initializer]
-// useState lazy initializer — รันครั้งเดียวตอน mount
-const [user, setUser] = useState<User | null>(() => {
-  const stored = localStorage.getItem('user')
-  try { return stored ? (JSON.parse(stored) as User) : null }
-  catch { return null }  // ถ้า JSON เสีย → return null (ปลอดภัย)
-})
-
-const [token, setToken] = useState<string | null>(
-  () => localStorage.getItem('token')
-)
-```
-
-::: tip 💡 TypeScript Tip — Lazy Initializer
-`useState(() => someExpensiveOp())` — การส่ง **function** ให้ useState แทน value ตรง ๆ เรียกว่า "lazy initializer" — React จะเรียกมันครั้งเดียวตอน component mount เท่านั้น เหมาะกับการอ่าน localStorage ที่ไม่อยาก re-run ทุก render
-:::
-
-### Cookie vs localStorage: เมื่อไรใช้อะไร
-
-```
-ระบบ Production จริง (Security สำคัญ):
-✅ ใช้ HttpOnly Cookie เก็บ JWT
-✅ Backend ส่ง Set-Cookie header
-✅ ป้องกัน XSS (JavaScript อ่าน cookie ไม่ได้)
-⚠️ ต้องจัดการ CSRF protection (SameSite=Strict/Lax)
-
-ระบบการเรียนการสอน / Prototype:
-✅ ใช้ localStorage เก็บ JWT
-✅ Simple, explicit — นักเรียนเห็นได้ใน DevTools
-✅ ไม่มี CORS/CSRF complexity
-```
+| กรณี | ผลลัพธ์ |
+| :--- | :--- |
+| เปิดแอปครั้งแรก (ไม่มีข้อมูลใน localStorage) | `user = null`, `token = null` → แสดงหน้า Login |
+| Login สำเร็จ → Refresh | อ่านจาก localStorage → ไม่ต้อง Login ใหม่ |
+| Logout แล้ว Refresh | localStorage ว่าง → กลับไปหน้า Login |
 
 ---
 
@@ -100,17 +160,66 @@ const [token, setToken] = useState<string | null>(
 ### 🤖 AI Prompt Guide
 
 ::: info 💬 ถาม AI
-"อธิบายความแตกต่างระหว่างการเก็บ JWT ใน cookies กับ localStorage ในแอป React ควรใช้วิธีไหนในสถานการณ์แบบใด และมี trade-off ด้านความปลอดภัยอย่างไร"
+"กำลังเรียน React 18 + TypeScript อยู่ อธิบายความแตกต่างระหว่าง localStorage, sessionStorage, และ Cookies สำหรับเก็บ JWT token — ควรใช้วิธีไหน, ทำไม production ควรใช้ HttpOnly Cookie, และแสดงตัวอย่าง useState Lazy Initializer ที่อ่านข้อมูลจาก localStorage พร้อม try-catch"
 :::
 
 ### 📝 PjBL Lab
 
-- [ ] เปิด DevTools → Application tab → Local Storage → localhost:5173
-- [ ] Login แล้วดูว่ามี key `token` และ `user` ปรากฏขึ้น
-- [ ] Refresh หน้า — ตรวจสอบว่า state คงอยู่ (ไม่ต้อง login ใหม่)
-- [ ] กด Logout — ตรวจสอบว่า localStorage ถูกล้างออก
-- [ ] ดู `useAuth.ts` — อธิบาย lazy initializer ให้เพื่อนฟัง
-- [ ] เปิด Application tab → Cookies — ดูว่าโปรเจกต์นี้ใช้ cookie ไหม?
+**เป้าหมาย:** ทำความเข้าใจว่าโปรเจกต์เก็บ session อย่างไร + ทดสอบพฤติกรรม refresh
+
+---
+
+#### ขั้น 0 — Student Identity
+
+เพิ่ม `<footer>` ชื่อ-รหัสของตนเองใน Component หลักที่แก้ไขในสัปดาห์นี้
+
+---
+
+#### ขั้น 1 — ทดสอบ localStorage ด้วย DevTools Console
+
+1. เปิดโปรเจกต์ด้วย `npm run dev`
+2. เปิด DevTools → Console → ลองพิมพ์:
+
+```ts
+// ทดสอบ localStorage API
+localStorage.setItem('testKey', 'สวัสดี React')
+localStorage.getItem('testKey')          // → 'สวัสดี React'
+
+// ทดสอบกับ Object
+const obj = { name: 'ทดสอบ', role: 'student' }
+localStorage.setItem('testObj', JSON.stringify(obj))
+JSON.parse(localStorage.getItem('testObj') || '')   // → { name: 'ทดสอบ', role: 'student' }
+
+localStorage.removeItem('testKey')
+localStorage.removeItem('testObj')
+```
+
+3. ดู DevTools → Application → Local Storage → `localhost:5173`
+
+---
+
+#### ขั้น 2 — ตรวจสอบ Auth Flow จริงของโปรเจกต์
+
+1. Login ด้วย `admin@school.ac.th / password123`
+2. DevTools → Application → Local Storage → ตรวจว่ามี key `token` และ `user`
+3. **กด Refresh** → ยังอยู่ในหน้าหลัก ไม่ต้อง Login ใหม่ ✅
+4. กด Logout → ตรวจว่า localStorage ถูกล้อง + redirect ไป /login ✅
+
+---
+
+#### ขั้น 3 — ทดสอบ Edge Cases
+
+1. Login แล้วเปิด DevTools → แก้ค่า `token` ใน localStorage ให้ผิด → Refresh → แอปต้องจัดการได้ (ไม่ crash)
+2. ลองลบ key `user` ออกจาก localStorage ด้วยมือ → Refresh → แอปต้องไม่ crash (lazy initializer ใช้ try-catch)
+
+---
+
+#### ขั้น Submit — ส่งงาน
+
+- [ ] ตอบคำถาม: "localStorage กับ Cookie ต่างกันอย่างไร" ใน Google Doc
+- [ ] บันทึก screenshot DevTools Application tab ที่เห็น `token` และ `user`
+- [ ] `git add . && git commit -m "wk6: understand localStorage vs cookies auth session"`
+- [ ] `git push origin main`
 
 ---
 
@@ -118,21 +227,34 @@ const [token, setToken] = useState<string | null>(
 
 ### 🗣️ Code Review
 
-::: details ❓ ทำไม `localStorage.getItem('user')` ต้อง `JSON.parse()`?
-**แนวคำตอบ:** localStorage เก็บได้แค่ string — เมื่อ login เราใช้ `JSON.stringify(user)` แปลง object เป็น string ก่อนเก็บ ดังนั้นเมื่อจะอ่านกลับต้องใช้ `JSON.parse()` แปลง string กลับเป็น object ส่วน `try-catch` ป้องกันกรณี string เสียหาย (corrupt)
+::: details ❓ ทำไม `localStorage.getItem('user')` ต้อง `JSON.parse()` ก่อนใช้?
+**แนวคำตอบ:** localStorage รับและคืนค่าเป็น string เท่านั้น — เมื่อ login เราใช้ `JSON.stringify(user)` แปลง object เป็น string ก่อนเก็บ ดังนั้นเมื่ออ่านกลับต้องแปลงคืนด้วย `JSON.parse()` ถ้าไม่ parse ค่าที่ได้จะเป็น string เช่น `"{"id":1,"name":"สมชาย"}"` ไม่ใช่ object ที่เข้าถึง `.id` ได้
 :::
 
-::: details ❓ HttpOnly Cookie ดีกว่า localStorage ยังไง?
-**แนวคำตอบ:** HttpOnly Cookie ไม่สามารถอ่านได้จาก JavaScript ทำให้ถ้ามี XSS attack (code แปลกปลอมรันใน browser) ก็ขโมย token ไม่ได้ ส่วน localStorage อ่านได้ด้วย `localStorage.getItem()` ใน console ทำให้ XSS อ่าน token ได้
+::: details ❓ Lazy Initializer ใน `useState(() => {...})` ต่างจาก `useState(getValue())` อย่างไร?
+**แนวคำตอบ:** `useState(getValue())` — `getValue()` ถูกเรียกทุกครั้งที่ Component re-render (แต่ผลลัพธ์ไม่ถูกใช้หลัง mount แรก — เปลือง)
+`useState(() => getValue())` — ฟังก์ชันถูกเรียกครั้งเดียวตอน mount เท่านั้น เหมาะกับ operation ที่แพง เช่น localStorage read หรือ JSON.parse ที่ไม่อยาก run ซ้ำทุก render
+:::
+
+::: details ❓ ทำไม `logout()` ต้องลบทั้ง localStorage และ `apiClient.defaults.headers`?
+**แนวคำตอบ:** ทั้งสองที่เก็บ token ไว้คนละที่:
+- `localStorage` — เก็บถาวร ถ้าไม่ลบ refresh แล้วก็ยังมี token เก่า
+- `apiClient.defaults.headers.common['Authorization']` — เก็บไว้ใน Axios instance ที่กำลัง run อยู่ ถ้าไม่ล้าง request ที่ส่งหลัง logout ยังจะแนบ token เก่าไปด้วย
+ต้องล้างทั้งสองที่ถึงจะ logout สมบูรณ์
+:::
+
+::: details ❓ `HttpOnly Cookie` ปลอดภัยกว่า localStorage ยังไง — แล้วทำไมโปรเจกต์นี้ยังใช้ localStorage?
+**แนวคำตอบ:** HttpOnly Cookie — JavaScript อ่านค่าไม่ได้ (Browser บล็อก) ทำให้ถ้ามี XSS attack ผู้โจมตีขโมย token ไม่ได้ ส่วน localStorage อ่านได้ด้วย `localStorage.getItem()` ทำให้ XSS อ่าน token ได้
+โปรเจกต์ใช้ localStorage เพราะ: (1) เน้นการสอน JWT + Authorization header (2) ง่ายกว่า ไม่ต้องตั้งค่า Backend cookie (3) เหมาะกับ prototype และการเรียน — production จริงควรใช้ HttpOnly Cookie
 :::
 
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
 | :--- | :--- | :--- | :--- |
-| localStorage ใช้ถูก | set/get/remove ครบ + parse | บางส่วนขาด | ไม่ได้เก็บ session |
-| Restore on refresh | lazy initializer ถูกต้อง | restore ได้แต่ไม่ใช้ lazy | ต้อง login ใหม่ทุกครั้ง |
-| เข้าใจ Cookie vs localStorage | อธิบายได้ครบพร้อม trade-off | อธิบายได้บางส่วน | ไม่เข้าใจ |
+| localStorage API | ใช้ set/get/remove + JSON ครบ | ใช้ได้บางส่วน | ไม่เข้าใจ API |
+| Restore on refresh | lazy initializer + try-catch ถูกต้อง | restore ได้ แต่ไม่มี try-catch | ต้อง login ใหม่ทุกครั้ง |
+| เข้าใจ Cookie vs localStorage | อธิบายได้พร้อม trade-off | อธิบายได้บางส่วน | ไม่เข้าใจ |
 
 ---
 
@@ -140,9 +262,11 @@ const [token, setToken] = useState<string | null>(
 
 | Technical Term | Meaning in Context |
 | :--- | :--- |
-| `Cookie` | ข้อมูลเล็กๆ ที่ Browser เก็บและส่งไปกับทุก Request |
-| `localStorage` | Web Storage API เก็บข้อมูลใน Browser ข้าม session |
-| `HttpOnly` | Cookie attribute ที่ป้องกัน JavaScript อ่าน cookie |
-| `XSS` | Cross-Site Scripting — ช่องโหว่ที่ code แปลกปลอมรันใน browser |
-| `CSRF` | Cross-Site Request Forgery — การโจมตีโดยใช้ cookie ที่ส่งอัตโนมัติ |
-| `Lazy Initializer` | Function ที่ส่งให้ useState รันครั้งเดียวตอน mount |
+| `localStorage` | Web Storage API เก็บข้อมูลใน Browser ข้าม session (คงอยู่จนลบ) |
+| `sessionStorage` | Web Storage API เก็บชั่วคราว หายเมื่อปิด Tab |
+| `Cookie` | ข้อมูลเล็กๆ ที่ Browser เก็บและส่งไปกับทุก HTTP Request อัตโนมัติ |
+| `HttpOnly` | Cookie flag ที่ป้องกัน JavaScript อ่าน cookie — ป้องกัน XSS |
+| `XSS` | Cross-Site Scripting — ช่องโหว่ที่ code แปลกปลอมรันใน browser ผู้ใช้ |
+| `Lazy Initializer` | Function ที่ส่งให้ useState — รันครั้งเดียวตอน mount |
+| `JSON.stringify` | แปลง JavaScript object → JSON string (เพื่อเก็บใน localStorage) |
+| `JSON.parse` | แปลง JSON string → JavaScript object (เพื่ออ่านจาก localStorage) |

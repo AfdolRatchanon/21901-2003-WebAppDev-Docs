@@ -1,78 +1,50 @@
-# Lab: จัดการ State ข้อมูลรายการอุปกรณ์ <Badge type="info" text="TPQI 10302" />
+# Lab: State + Mock Data Array <Badge type="info" text="TPQI 10302" />
 
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
-ก่อนจะเชื่อมต่อ API จริง (wk4) ต้องทดสอบ UI ก่อนว่าแสดงผลถูกต้อง — ถ้ารอ API พร้อมก่อนค่อยทดสอบ UI จะเสียเวลามาก ทีม Frontend จึงใช้ **Mock Data** แทน API เพื่อพัฒนา UI ไปพร้อมกับทีม Backend ได้เลย
+ก่อนจะเชื่อมต่อ API จริงใน wk4 ต้องมั่นใจก่อนว่า UI แสดงผลถูกต้อง — ถ้ารอ API พร้อมก่อนค่อยทำ UI จะเสียเวลาและ Bug ปนกัน ทีม Frontend แก้ปัญหาด้วยการใช้ **Mock Data** แทน API ชั่วคราว เมื่อ API พร้อมแค่เปลี่ยนแหล่งข้อมูล UI ไม่ต้องแตะเลย
 :::
 
-> 💡 **เปรียบเทียบ:** Mock Data เหมือน "ตัวอย่างอาหาร" ที่ร้านค้า — ใช้ทดสอบว่าจัดวางสวยไหม รสชาติดีไหม ก่อนทำของจริงขาย
+> 💡 **เปรียบเทียบ:** Mock Data เหมือน "ตัวอย่างอาหารจำลอง" ที่ร้าน — ใช้ตกแต่งร้าน จัดวางโต๊ะ ถ่ายภาพเมนูได้เลย โดยไม่ต้องรอทำอาหารจริง
 
 ---
 
 ## 📖 I: Information
 
-ใช้ **`useState<Equipment[]>`** เก็บรายการอุปกรณ์ และสร้าง **Mock Data** แทน API ชั่วคราว
+### ขั้นตอนที่ 1 — สร้าง Mock Data + useState&lt;Equipment[]&gt;
 
-::: code-group
-```tsx [EquipmentPage.tsx (wk2 version)]
+Mock Data คือ array ของ Object ที่สร้างขึ้นแทน API จริง:
+
+```tsx [src/pages/EquipmentPage.tsx — v1]
 import { useState } from 'react'
-import type { Equipment } from '../types'
+import type { Equipment } from '../types'  // นำเข้า interface จาก wk2-content4
 
-// Mock Data — อุปกรณ์จำลอง 4 รายการ (wk4 จะเปลี่ยนเป็น API จริง)
+// [1] Mock Data — อุปกรณ์จำลอง 4 รายการ
+//     wk4: เปลี่ยนส่วนนี้เป็น useEquipments() Hook แทน
 const mockEquipments: Equipment[] = [
-  { id: 1, name: 'MacBook Pro 14"', category: 'Notebook',   serialNo: 'MB-001', status: 'available',    borrowedBy: null },
-  { id: 2, name: 'MacBook Pro 14"', category: 'Notebook',   serialNo: 'MB-002', status: 'borrowed',     borrowedBy: 'นักเรียนสมหญิง' },
-  { id: 3, name: 'iPad Air',        category: 'Tablet',     serialNo: 'IP-001', status: 'available',    borrowedBy: null },
-  { id: 4, name: 'Dell Monitor 27"',category: 'Monitor',    serialNo: 'DL-001', status: 'maintenance',  borrowedBy: null },
+  { id: 1, name: 'MacBook Pro 14"', category: 'Notebook', serialNo: 'MB-001', status: 'available',    borrowedBy: null          },
+  { id: 2, name: 'iPad Air',        category: 'Tablet',   serialNo: 'IP-001', status: 'borrowed',     borrowedBy: 'สมชาย ใจดี'  },
+  { id: 3, name: 'Projector Epson', category: 'AV',       serialNo: 'PJ-001', status: 'maintenance',  borrowedBy: null          },
+  { id: 4, name: 'MacBook Pro 13"', category: 'Notebook', serialNo: 'MB-002', status: 'available',    borrowedBy: null          },
 ]
 
-// Map สถานะเป็นภาษาไทย
-const statusLabel: Record<string, string> = {
-  available:   'ว่าง',
-  borrowed:    'ถูกยืม',
-  maintenance: 'ซ่อมบำรุง',
-}
-
 export function EquipmentPage() {
-  // useState<Equipment[]> — กำหนด Type ให้ array
-  const [equipments, setEquipments] = useState<Equipment[]>(mockEquipments)
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-
-  // กรองรายการตามสถานะที่เลือก
-  const displayed = filterStatus === 'all'
-    ? equipments
-    : equipments.filter(eq => eq.status === filterStatus)
+  // [2] useState<Equipment[]> — กำหนด Type ให้ array
+  //     ถ้าใส่ข้อมูลที่ไม่ใช่ Equipment TypeScript แจ้ง Error ทันที
+  const [equipments] = useState<Equipment[]>(mockEquipments)
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">รายการอุปกรณ์</h1>
-        {/* Filter Buttons */}
-        <div className="flex gap-2">
-          {['all', 'available', 'borrowed', 'maintenance'].map(s => (
-            <button
-              key={s}
-              onClick={() => setFilterStatus(s)}
-              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-                filterStatus === s
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {s === 'all' ? 'ทั้งหมด' : statusLabel[s]}
-            </button>
-          ))}
-        </div>
-      </div>
+    <main style={{ padding: 24 }}>
+      <h1>รายการอุปกรณ์ ({equipments.length} รายการ)</h1>
 
-      {/* Equipment Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {displayed.map(eq => (
-          <div key={eq.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-            <p className="font-bold text-slate-800">{eq.name}</p>
-            <p className="text-xs text-slate-500">{eq.category} · {eq.serialNo}</p>
-            <p className="text-xs mt-1">{statusLabel[eq.status]}</p>
+      {/* [3] .map() วนแสดงทุกรายการ */}
+      <div>
+        {equipments.map(eq => (
+          <div key={eq.id} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12, marginBottom: 8 }}>
+            <strong>{eq.name}</strong>
+            <span style={{ marginLeft: 8, color: '#64748b', fontSize: 12 }}>{eq.category} · {eq.serialNo}</span>
+            <div style={{ marginTop: 4, fontSize: 12 }}>{eq.status}</div>
           </div>
         ))}
       </div>
@@ -80,11 +52,112 @@ export function EquipmentPage() {
   )
 }
 ```
+
+**สรุป:** Mock Data 4 รายการ → `useState<Equipment[]>` เก็บ → `.map()` แสดง ✅
+
+---
+
+### ขั้นตอนที่ 2 — เพิ่ม Filter ด้วย useState + Array.filter()
+
+```tsx [src/pages/EquipmentPage.tsx — v2 (เพิ่ม filter)]
+import { useState } from 'react'
+import type { Equipment } from '../types'
+
+const mockEquipments: Equipment[] = [/* เหมือนเดิม */]
+
+// [1] แปลง status เป็นภาษาไทย
+const statusLabel: Record<string, string> = {
+  available:   'ว่าง',
+  borrowed:    'ถูกยืม',
+  maintenance: 'ซ่อมบำรุง',
+}
+
+export function EquipmentPage() {
+  const [equipments]    = useState<Equipment[]>(mockEquipments)
+  // [2] filterStatus เก็บว่ากดปุ่มไหน — เริ่มต้นแสดงทั้งหมด
+  const [filterStatus, setFilterStatus] = useState<string>('all')
+
+  // [3] กรองรายการตาม filterStatus
+  //     ถ้า 'all' → แสดงทั้งหมด
+  //     ถ้าเป็นค่าอื่น → กรองเฉพาะที่ status ตรงกัน
+  const displayed = filterStatus === 'all'
+    ? equipments
+    : equipments.filter(eq => eq.status === filterStatus)
+
+  return (
+    <main style={{ padding: 24 }}>
+      <h1>รายการอุปกรณ์</h1>
+
+      {/* [4] ปุ่ม Filter */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        {(['all', 'available', 'borrowed', 'maintenance'] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => setFilterStatus(s)}
+            style={{
+              padding: '4px 12px',
+              borderRadius: 20,
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: filterStatus === s ? 'bold' : 'normal',
+              backgroundColor: filterStatus === s ? '#3b82f6' : '#e2e8f0',
+              color: filterStatus === s ? 'white' : '#374151',
+            }}
+          >
+            {s === 'all' ? 'ทั้งหมด' : statusLabel[s]}
+          </button>
+        ))}
+      </div>
+
+      {/* [5] แสดงรายการที่กรองแล้ว */}
+      <div>
+        {displayed.map(eq => (
+          <div key={eq.id} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12, marginBottom: 8 }}>
+            <strong>{eq.name}</strong>
+            <span style={{ fontSize: 12, color: '#64748b', marginLeft: 8 }}>{eq.category} · {eq.serialNo}</span>
+            <div style={{ marginTop: 4, fontSize: 12 }}>{statusLabel[eq.status]}</div>
+          </div>
+        ))}
+      </div>
+    </main>
+  )
+}
+```
+
+::: tip 💡 Tailwind CSS จะสวยกว่า inline style
+Lab นี้ใช้ **inline style** เพราะยังไม่ได้เรียน Tailwind — ใน **wk3** จะเปลี่ยน `style=&#123;&#123; ... &#125;&#125;` ทั้งหมดเป็น Tailwind class `className="..."` ให้ UI สวยขึ้นมาก
 :::
 
-::: tip 💡 TypeScript Tip — Array Type
-`useState<Equipment[]>([])` บอก TypeScript ว่า state นี้เป็น array ของ Equipment ถ้าพยายามใส่ข้อมูลที่ไม่ใช่ Equipment เข้าไป TypeScript จะแจ้ง error ทันที
-:::
+---
+
+### ขั้นตอนที่ 3 — เพิ่ม Badge สีตาม Status
+
+```tsx [เพิ่มสี badge ใน .map()]
+// กำหนดสีพื้นหลัง badge ตาม status
+const badgeColor: Record<string, string> = {
+  available:   '#dcfce7',  // เขียวอ่อน
+  borrowed:    '#fee2e2',  // แดงอ่อน
+  maintenance: '#fef9c3',  // เหลืองอ่อน
+}
+const badgeTextColor: Record<string, string> = {
+  available:   '#166534',  // เขียวเข้ม
+  borrowed:    '#991b1b',  // แดงเข้ม
+  maintenance: '#854d0e',  // เหลืองเข้ม
+}
+
+// ใช้ใน .map():
+<span style={{
+  backgroundColor: badgeColor[eq.status],
+  color: badgeTextColor[eq.status],
+  padding: '2px 8px',
+  borderRadius: 12,
+  fontSize: 11,
+  fontWeight: 'bold',
+  marginLeft: 8,
+}}>
+  {statusLabel[eq.status]}
+</span>
+```
 
 ---
 
@@ -93,18 +166,41 @@ export function EquipmentPage() {
 ### 🤖 AI Prompt Guide
 
 ::: info 💬 ถาม AI
-"สร้าง React component ที่แสดงรายการอุปกรณ์แบบ filter ด้วย useState โดยให้ array ใช้ TypeScript type เป็น `Equipment[]` เพิ่มปุ่ม filter ตามสถานะ: all, available, borrowed, maintenance และใช้ Tailwind CSS"
+"กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้าง component ชื่อ `EquipmentPage` ที่: 1) มี Mock Data array ของ Equipment (id, name, category, serialNo, status, borrowedBy) 2) ใช้ `useState<Equipment[]>` เก็บ array 3) มีปุ่ม filter ตาม status ใช้ `useState<string>` + `Array.filter()` 4) แสดง badge สีต่างกันตาม status ด้วย inline style — ใช้ TypeScript types พร้อม import จาก types/index.ts"
 :::
 
 ### 📝 PjBL Lab
 
-- [ ] คัดลอก Mock Data 4-6 รายการลงใน `EquipmentPage.tsx`
-- [ ] ใช้ `useState<Equipment[]>` เก็บรายการ
-- [ ] แสดงรายการอุปกรณ์เป็น Grid 3 คอลัมน์ด้วย Tailwind
-- [ ] สร้างปุ่ม Filter แยกตาม status (all / available / borrowed / maintenance)
-- [ ] ใช้ `Array.filter()` กรองรายการตามปุ่มที่เลือก
-- [ ] แสดงสี border ต่างกัน: เขียว=ว่าง, แดง=ถูกยืม, เหลือง=ซ่อม
-- [ ] ทดสอบ: กดปุ่ม filter แล้วรายการเปลี่ยนตาม
+**ขั้น 0: ระบุตัวตน (2 นาที)**
+
+- [ ] เปิด `EquipmentPage.tsx` → ตรวจสอบว่า `<footer>` ชื่อ-รหัสของตนเองอยู่ท้าย Component ✅
+
+**ขั้น 1: Mock Data + แสดงรายการ (15 นาที)**
+
+- [ ] สร้าง array `mockEquipments: Equipment[]` มีข้อมูลอย่างน้อย 4 รายการ (ครบ 3 status)
+- [ ] ใช้ `useState<Equipment[]>(mockEquipments)` เก็บรายการ
+- [ ] ใช้ `.map()` แสดงรายการ — ต้องเห็น 4 รายการใน Browser ✅
+- [ ] แต่ละรายการแสดง: ชื่อ, category, serialNo, status
+
+**ขั้น 2: Filter ตาม Status (15 นาที)**
+
+- [ ] เพิ่ม `filterStatus` state เริ่มต้น `'all'`
+- [ ] สร้างปุ่ม Filter 4 ปุ่ม: ทั้งหมด / ว่าง / ถูกยืม / ซ่อมบำรุง
+- [ ] เพิ่ม `displayed` ที่ใช้ `Array.filter()` กรองตาม `filterStatus`
+- [ ] กดปุ่ม "ถูกยืม" → แสดงเฉพาะ `status: 'borrowed'` ✅
+- [ ] กดปุ่ม "ทั้งหมด" → กลับมาแสดงครบ ✅
+
+**ขั้น 3: Badge สีตาม Status (10 นาที)**
+
+- [ ] สร้าง `badgeColor` และ `badgeTextColor` แบบ `Record<string, string>`
+- [ ] เพิ่ม badge แสดง statusLabel พร้อมสีที่ถูกต้องทุกรายการ
+- [ ] ต้องเห็น: เขียว=ว่าง · แดง=ถูกยืม · เหลือง=ซ่อม ✅
+- [ ] (Bonus) เพิ่มข้อความ "ยืมโดย: ..." แสดงเฉพาะเมื่อ `borrowedBy` ไม่ใช่ null
+
+**ขั้นสุดท้าย: Submit**
+
+- [ ] `git add . && git commit -m "wk2: equipment list with mock data and filter"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: Mock Data คืออะไร, ทำไมต้องใช้ก่อน API จริง, `Array.filter()` ทำงานยังไง พร้อม screenshot หน้าเว็บที่กดปุ่ม filter แล้ว
 
 ---
 
@@ -112,21 +208,29 @@ export function EquipmentPage() {
 
 ### 🗣️ Code Review
 
-::: details ❓ ทำไม `useState<Equipment[]>` ดีกว่า `useState<any[]>`?
-**แนวคำตอบ:** การใช้ `any` ทำให้ TypeScript ไม่ตรวจสอบ type ให้ เช่น `eq.naem` (พิมพ์ผิด) จะไม่แจ้ง error ส่วน `Equipment[]` TypeScript จะตรวจสอบทุก property ให้ ลด Bug ได้มาก
+::: details ❓ ทำไมต้องใช้ `useState<Equipment[]>` ไม่ใช่ `useState<any[]>`?
+**แนวคำตอบ:** `any[]` ปิด type checking ทั้งหมด เช่น `eq.naem` (พิมพ์ผิด) จะไม่ Error ส่วน `Equipment[]` TypeScript ตรวจสอบทุก property ให้ ถ้า field ไม่มีหรือพิมพ์ผิด Error ทันที ลด Bug ที่ควรเจอตอน runtime มาเจอตอน compile time แทน
 :::
 
-::: details ❓ ทำไมต้องใช้ Mock Data แทนการรอ API จริง?
-**แนวคำตอบ:** ทีม Frontend และ Backend ทำงานพร้อมกันได้ (Parallel Development) โดย Frontend ใช้ Mock Data ทดสอบ UI ก่อน เมื่อ API พร้อมค่อยเปลี่ยนแค่ส่วน data fetching โดย UI ไม่ต้องแก้
+::: details ❓ `Array.filter()` ทำงานอย่างไร — ต่างจาก `.map()` ยังไง?
+**แนวคำตอบ:** `.map()` แปลงทุก item ให้ได้ array ใหม่ขนาดเท่าเดิม ส่วน `.filter()` เลือกเฉพาะ item ที่ผ่านเงื่อนไข (return true) array ใหม่อาจมีขนาดเล็กกว่า ตัวอย่าง: `equipments.filter(eq => eq.status === 'borrowed')` คืน array เฉพาะ item ที่ status เป็น borrowed
+:::
+
+::: details ❓ ทำไม Mock Data ถึงสำคัญในงาน Frontend?
+**แนวคำตอบ:** Parallel Development — Frontend และ Backend ทำงานพร้อมกันได้โดยไม่รอกัน Frontend ใช้ Mock Data พัฒนา UI ให้เสร็จก่อน เมื่อ API พร้อมแค่เปลี่ยนแหล่งข้อมูล (wk4) UI ไม่ต้องแก้ นอกจากนี้ยังง่ายต่อการทดสอบเพราะควบคุมข้อมูลได้ 100%
+:::
+
+::: details ❓ `as const` หลัง array ใน .map() คืออะไร?
+**แนวคำตอบ:** `(['all', 'available', ...] as const)` บอก TypeScript ว่า array นี้เป็น readonly tuple ไม่ใช่ `string[]` ธรรมดา ทำให้ TypeScript รู้ค่าที่แน่นอนของแต่ละ element เหมาะใช้กับ literal values เช่น status ที่มีค่าแน่นอน
 :::
 
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
 | :--- | :--- | :--- | :--- |
-| Mock Data ครบ | มีข้อมูลครบทุก field และ status | บางส่วนขาด field | ไม่มี Mock Data |
-| Filter ทำงาน | กรองได้ถูกต้องทุก status | กรองได้บางส่วน | ไม่มี Filter |
-| UI แสดงผล | Grid + Tailwind สวยงาม responsive | แสดงได้แต่ไม่ responsive | UI ไม่แสดง |
+| Mock Data ครบ | ข้อมูลครบทุก field, ครบ 3 status | บาง field ขาด | ไม่มี Mock Data |
+| Filter ทำงาน | กดปุ่มแล้วกรองถูกต้องทุก status | กรองได้บางส่วน | ไม่มี filter |
+| Badge สีถูกต้อง | เขียว/แดง/เหลืองถูกทุกรายการ | มีบางสถานะ | ไม่มี badge |
 
 ---
 
@@ -134,8 +238,9 @@ export function EquipmentPage() {
 
 | Technical Term | Meaning in Context |
 | :--- | :--- |
-| `Mock Data` | ข้อมูลจำลองสำหรับทดสอบ ก่อนใช้ข้อมูลจริง |
-| `Array.filter()` | ฟังก์ชัน JavaScript กรองอาร์เรย์ตามเงื่อนไข |
-| `useState<T>` | React Hook เก็บ State พร้อม TypeScript Generic |
-| `Parallel Development` | การทำงานพร้อมกันหลาย ๆ ส่วนโดยไม่รอกัน |
-| `Record<K, V>` | TypeScript built-in type สำหรับ Object ที่ key เป็น K และ value เป็น V |
+| `Mock Data` | ข้อมูลจำลองใช้แทน API จริงในระหว่างพัฒนา |
+| `Array.filter()` | กรอง array คืน array ใหม่เฉพาะ item ที่ผ่านเงื่อนไข |
+| `Record<K, V>` | TypeScript type สำหรับ object ที่ key เป็น K และ value เป็น V |
+| `Parallel Development` | Frontend และ Backend พัฒนาพร้อมกันโดยไม่รอกัน |
+| `as const` | บอก TypeScript ว่าค่านี้เป็น literal ที่แน่นอน ไม่เปลี่ยนแปลง |
+| `inline style` | กำหนด CSS ผ่าน `style=&#123;&#123; &#125;&#125;` ใน JSX โดยตรง (ก่อนใช้ Tailwind) |

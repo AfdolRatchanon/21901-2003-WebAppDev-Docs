@@ -3,93 +3,119 @@
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
-ถึงเวลา "เปิดตัวระบบ" — Lab นี้จำลอง go-live process จริง: build, ทดสอบ production mode, ตรวจสอบ checklist สุดท้าย และ demo ให้ผู้ใช้จริง (ครูและนักเรียนคนอื่น) ลองใช้งาน
+ถึงเวลา "เปิดตัวระบบ" — Lab นี้จำลอง go-live process จริง: build production, ทดสอบ checklist สุดท้ายครบทุก feature และ demo ให้ผู้ใช้จริง (ครูและเพื่อน) ลองใช้งาน นี่คือขั้นตอนสุดท้ายของ wk1-8 ทั้งหมด
 :::
 
-> 💡 **เป้าหมาย Lab นี้:** ผ่าน pre-launch checklist ทั้งหมด และ demo ระบบให้ทำงานได้จริงต่อหน้า "ผู้ใช้งาน"
+> 💡 **เป้าหมาย Lab นี้:** ผ่าน pre-launch checklist ครบทุกข้อ และ demo ระบบสด ๆ ต่อหน้าผู้ใช้จริง
 
 ---
 
 ## 📖 I: Information
 
-### Pre-Launch Checklist
-
-#### ✅ Frontend Build
+### ขั้นตอนที่ 1 — Pre-Launch: TypeScript + Build
 
 ```bash
+# [1] เข้าไปใน project/frontend
 cd project/frontend
 
-# 1. TypeScript check — ไม่มี error เลย
+# [2] ตรวจ TypeScript — ต้องได้ 0 errors ก่อน build เสมอ
 npx tsc --noEmit
 
-# 2. Build production
+# [3] Build production — TypeScript + JSX → minified JavaScript
 npm run build
+# terminal จะแสดง bundle size:
+# dist/index.html          1.xx kB
+# dist/assets/index-[hash].css   xx kB │ gzip: xx kB
+# dist/assets/index-[hash].js   xxx kB │ gzip: xxx kB
 
-# 3. Preview production build
+# [4] Preview production build ที่ port ต่างจาก dev
 npm run preview
-# เปิด http://localhost:4173
-
-# 4. ตรวจ Bundle Size
-# ควรได้ประมาณ:
-# dist/index.html          x.xx kB
-# dist/assets/index-[hash].css    xx kB │ gzip: xx kB
-# dist/assets/index-[hash].js    xxx kB │ gzip: xxx kB
+# เปิด http://localhost:4173 — ทดสอบ production mode โดยไม่ต้อง deploy จริง
 ```
 
-#### ✅ Backend Check
+**สรุป:** `tsc --noEmit` `[2]` → `npm run build` `[3]` → `npm run preview` `[4]` — ทำตามลำดับนี้เสมอก่อน deploy จริง
 
-```bash
+::: code-group
+```bash [✅ ตรวจสอบ Backend ก่อน demo]
 cd project/backend
+npm run dev   # Backend รันที่ port 3000
 
-# ตรวจสอบ API endpoints ทำงาน
+# ทดสอบ API ด้วย curl:
 curl http://localhost:3000/api/equipments
 # ต้องได้: { "success": true, "data": [...] }
 
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@school.ac.th","password":"admin123"}'
+  -d '{"email":"admin@school.ac.th","password":"password123"}'
 # ต้องได้: { "success": true, "data": { "token": "...", "user": {...} } }
 ```
 
-#### ✅ Full System Test
+```bash [💡 ถ้า build มี TypeScript error]
+# รัน tsc --noEmit ก่อนเพื่อดู error รายละเอียด
+npx tsc --noEmit
+
+# Error ที่พบบ่อย:
+# error TS2322: Type 'string | null' is not assignable to type 'string'
+# → แก้: เพิ่ม null check หรือใช้ '!' assertion
+# error TS2339: Property 'xxx' does not exist on type 'Equipment'
+# → แก้: เพิ่ม field ใน types/index.ts
+
+# ต้องแก้ให้ครบก่อน — อย่า ignore TypeScript errors
+```
+:::
+
+---
+
+### ขั้นตอนที่ 2 — Full System Test Checklist
+
+ทดสอบทุกข้อก่อน demo — ทำเครื่องหมาย ✅ เมื่อผ่าน:
 
 | Test | สิ่งที่ตรวจสอบ | ผล |
 | :--- | :--- | :--- |
 | Login ทุก role | admin/teacher/student เข้าได้ทุกบัญชี | ⬜ |
-| Navbar แสดงถูกต้อง | ชื่อ + role badge + เมนูตาม role | ⬜ |
-| รายการอุปกรณ์ | โหลดจาก Backend จริง | ⬜ |
-| ยืม/คืนอุปกรณ์ | flow ทำงานถูกต้อง | ⬜ |
-| Real-time | 2 tab เห็นการเปลี่ยนแปลงพร้อมกัน | ⬜ |
-| Admin CRUD | เพิ่ม/ลบอุปกรณ์ได้ | ⬜ |
-| 403 Page | student เข้า /admin ไม่ได้ | ⬜ |
-| Error handling | ปิด Backend → เห็น error message | ⬜ |
+| Navbar แสดงถูกต้อง | ชื่อ + role badge สีถูกต้อง + เมนูตาม role | ⬜ |
+| รายการอุปกรณ์ | โหลดจาก Backend จริง — แสดงครบ | ⬜ |
+| ยืม/คืนอุปกรณ์ | flow ทำงานถูกต้อง — สถานะเปลี่ยน | ⬜ |
+| Real-time | 2 tab เห็นการเปลี่ยนแปลงพร้อมกันทันที | ⬜ |
+| Admin CRUD | เพิ่ม/ลบอุปกรณ์ได้ — แสดงใน stats cards | ⬜ |
+| 403 Page | student เข้า /admin → เห็น 403 Forbidden | ⬜ |
+| Error handling | ปิด Backend → เห็น error message (ไม่ crash) | ⬜ |
 | Responsive | ทำงานได้ทั้งมือถือและ desktop | ⬜ |
-| Persist login | Refresh → ยังอยู่ใน session | ⬜ |
+| Persist login | F5 Refresh → ยังอยู่ใน session | ⬜ |
 
-### Demo Script — นำเสนอต่อผู้ใช้
+**เกณฑ์ผ่าน:** ✅ ≥ 8/10 ข้อ ก่อนเริ่ม demo
+
+---
+
+### ขั้นตอนที่ 3 — Demo Script
 
 ```markdown
-## Demo Script: ระบบเบิก-จ่ายอุปกรณ์ไอที
+## Demo Script: ระบบเบิก-จ่ายอุปกรณ์ไอที — 7 นาที
 
-### 1. แนะนำระบบ (1 นาที)
-"ระบบนี้ใช้แทนการบันทึกกระดาษ — ดูสถานะอุปกรณ์ real-time ได้"
+### [0:00-1:00] แนะนำระบบ
+"ระบบนี้แทนการบันทึกกระดาษแบบเดิม ทุกคนเห็นสถานะอุปกรณ์ real-time พร้อมกัน"
+- ชี้หน้า Login → อธิบายว่ามี 3 role: admin, teacher, student
+- บอก tech stack ที่ใช้: React + TypeScript + Node.js + MySQL + Socket.io
 
-### 2. Demo Login (1 นาที)
-- เปิดหน้าเว็บ → แสดงหน้า Login
-- Login เป็น student → แสดง Navbar + รายการอุปกรณ์
-- ชี้ connection indicator "เชื่อมต่อแล้ว (Real-time)"
+### [1:00-2:00] Demo Login
+- Login เป็น student → Navbar แสดงชื่อ + badge "นักเรียน" สีเขียว
+- ชี้ connection indicator "● เชื่อมต่อแล้ว (Real-time)"
+- ชี้ว่าเมนู "จัดการ" ไม่แสดงสำหรับ student
 
-### 3. Demo ยืมอุปกรณ์ (2 นาที)
-- เปิด 2 browser tab พร้อมกัน
+### [2:00-4:00] Demo ยืมอุปกรณ์ (Real-time)
+- เปิด Browser tab ที่ 2 — Login เป็น student คนละคน
 - Tab 1: กดยืม MacBook Pro → กรอก purpose + วันคืน → ยืนยัน
-- Tab 2: แสดงการ์ดเปลี่ยนสีเป็นแดงทันที (real-time!)
+- Tab 2: การ์ดต้องเปลี่ยนสีเป็นแดงทันที — ไม่ต้อง refresh!
+- อธิบาย: "นี่คือ WebSocket — Server push ข้อมูลหาทุก Client พร้อมกัน"
 
-### 4. Demo Admin (2 นาที)
-- Login ใหม่เป็น admin
-- แสดง Stats cards (ทั้งหมด/ว่าง/ถูกยืม/ซ่อม)
-- เพิ่มอุปกรณ์ใหม่ → ปรากฏในตาราง
+### [4:00-6:00] Demo Admin
+- Login ใหม่เป็น admin → เห็นเมนู "จัดการ" เพิ่มขึ้น
+- เข้าหน้า /admin → แสดง Stats cards (ทั้งหมด/ว่าง/ถูกยืม/ซ่อม)
+- เพิ่มอุปกรณ์ใหม่ → ปรากฏในตารางทันที
 
-### 5. Q&A + ขอ Feedback
+### [6:00-7:00] Q&A + Feedback
+- ถามผู้ใช้: "มีอะไรที่อยากให้ปรับปรุง?"
+- บันทึก feedback ในโน้ต
 ```
 
 ---
@@ -99,26 +125,71 @@ curl -X POST http://localhost:3000/api/auth/login \
 ### 🤖 AI Prompt Guide
 
 ::: info 💬 ถาม AI
-"สร้าง pre-launch checklist สำหรับเว็บแอปพลิเคชันที่สร้างด้วย React และ Node.js รวมถึง: การตรวจสอบ TypeScript build, การทดสอบ API endpoints, security checklist และ demo script สำหรับนำเสนอต่อผู้ใช้งานจริง"
+"สร้าง pre-launch checklist สำหรับเว็บแอปพลิเคชัน React + Node.js ก่อน go-live รวมถึง: TypeScript type checking, production build verification, API endpoint testing, security checklist (JWT secret, CORS, env vars) และ demo script สำหรับนำเสนอ 7 นาทีต่อผู้ใช้จริง — อธิบายทำไม 0 TypeScript errors ถึงสำคัญก่อน deploy"
 :::
 
 ### 📝 PjBL Lab — Go-Live Simulation
 
-**Phase 1: Build & Verify (30 นาที)**
-- [ ] รัน `npx tsc --noEmit` — 0 errors
-- [ ] รัน `npm run build` — สำเร็จ ไม่มี error
-- [ ] รัน `npm run preview` — ทดสอบ production build
-- [ ] ทำ Full System Test checklist ด้านบน — ผ่านทุกข้อ
+**เป้าหมาย:** ผ่าน pre-launch checklist ครบ และ demo ระบบสด
 
-**Phase 2: Demo Presentation (15 นาที)**
-- [ ] เตรียม demo script ตามแนวด้านบน
-- [ ] นำเสนอต่อเพื่อน/ครู ตาม script
-- [ ] Demo real-time บน 2 browser พร้อมกัน
+---
 
-**Phase 3: Post-Launch (15 นาที)**
-- [ ] รับ feedback จากผู้ใช้
-- [ ] บันทึก bugs/ข้อเสนอแนะที่พบระหว่าง demo
-- [ ] เขียน "บทเรียน" 3 ข้อที่ได้จากโปรเจกต์นี้
+#### ขั้น 0 — Student Identity
+
+ตรวจสอบว่า `<footer>` ชื่อ-รหัสยังอยู่ใน EquipmentPage หรือ AdminPage ✅
+
+---
+
+#### ขั้น 1 — Build & Verify (30 นาที)
+
+```bash
+cd project/frontend
+
+# ขั้นตอนต้องทำตามลำดับ:
+npx tsc --noEmit   # ✅ 0 errors
+npm run build      # ✅ build สำเร็จ
+npm run preview    # ✅ localhost:4173 ทำงาน
+```
+
+- [ ] `npx tsc --noEmit` — 0 errors (ถ้ามี error: แก้ให้ครบก่อน) ✅
+- [ ] `npm run build` — สำเร็จ บันทึก bundle size: _____ kB ✅
+- [ ] `npm run preview` — เปิดใน browser ทำงานปกติ ✅
+
+---
+
+#### ขั้น 2 — Full System Test (20 นาที)
+
+ทดสอบทุกข้อจากตารางด้านบน:
+- [ ] Login ทุก role (admin/teacher/student) — badge + menu ถูกต้อง ✅
+- [ ] Real-time: เปิด 2 tab → ยืมจาก tab 1 → tab 2 เห็นทันที ✅
+- [ ] 403: student พิมพ์ URL /admin ตรง → เห็น 403 ✅
+- [ ] Error: ปิด Backend → เห็น error message ✅
+- [ ] F5 Refresh ขณะ login → ยังอยู่ใน session ✅
+
+สำหรับข้อที่ ❌: บันทึก bug + reproduce steps
+
+---
+
+#### ขั้น 3 — Demo Presentation (15 นาที)
+
+- [ ] เตรียม browser: Login ด้วย student account + เปิด 2 tab
+- [ ] นำเสนอตาม Demo Script (7 นาที)
+- [ ] Demo real-time บน 2 browser tab พร้อมกัน
+- [ ] รับ feedback จากผู้ชม + บันทึก
+
+---
+
+#### ขั้น Submit — ส่งงาน
+
+- [ ] ถ่าย screenshot: Navbar 3 role, หน้า 403, Real-time 2 tab
+- [ ] ถ่าย screenshot: terminal แสดง bundle size หลัง build
+- [ ] `git commit -m "wk8: go-live simulation - all tests pass, demo complete"`
+- [ ] `git push origin main`
+- [ ] เขียนสรุปใน Google Doc:
+  - ผล Full System Test (ผ่านกี่ข้อ)
+  - Bug ที่พบและวิธีแก้
+  - บทเรียน 3 ข้อที่ได้จากโปรเจกต์ทั้งหมด wk1-8
+  - ลิงก์ GitHub + screenshots ครบ
 
 ---
 
@@ -127,20 +198,28 @@ curl -X POST http://localhost:3000/api/auth/login \
 ### 🗣️ Code Review
 
 ::: details ❓ ทำไม TypeScript 0 errors ถึงสำคัญก่อน deploy?
-**แนวคำตอบ:** TypeScript errors หมายถึง bug ที่ compiler ตรวจเจอแล้ว — ถ้า deploy ทั้งที่มี error อาจเกิด runtime error ในหน้า Production ที่ผู้ใช้จริงใช้งาน การแก้ TypeScript errors ก่อน deploy เป็น "safety net" ชั้นแรก
+**แนวคำตอบ:** TypeScript errors หมายถึง bug ที่ compiler ตรวจเจอแล้ว — ถ้า deploy ทั้งที่มี error อาจเกิด runtime error ในหน้า Production ที่ผู้ใช้จริงใช้งาน เช่น `cannot read properties of null` ที่อาจเกิดกับผู้ใช้บางคนเท่านั้น debug ยากมาก การแก้ TypeScript errors ก่อน deploy เป็น "safety net" ชั้นแรก
 :::
 
 ::: details ❓ ทำไม Demo Script ถึงสำคัญเท่า ๆ กับ Code?
-**แนวคำตอบ:** ระบบที่ดีแต่นำเสนอไม่ดีจะไม่ได้รับการยอมรับ Demo Script ช่วยให้เห็น Value ของระบบอย่างชัดเจนภายในเวลาจำกัด ในโลกจริง Demo ต่อ stakeholder สำคัญมากกว่าที่นักเรียนคิด
+**แนวคำตอบ:** ระบบที่ดีแต่นำเสนอไม่ดีจะไม่ได้รับการยอมรับ Demo Script ช่วยให้เห็น Value ของระบบอย่างชัดเจนภายในเวลาจำกัด — ลำดับสำคัญ: เริ่มด้วย "ปัญหาที่แก้" → แสดง feature ที่ wow → จบด้วย Q&A ในโลกจริง Demo ต่อ stakeholder บางครั้งสำคัญกว่า code quality เสียด้วยซ้ำ
+:::
+
+::: details ❓ Full System Test ควรทำก่อนหรือหลัง `npm run build`?
+**แนวคำตอบ:** ควรทำ **สองครั้ง**: 1) ก่อน build — ใช้ `npm run dev` ทดสอบ feature ทุกอย่างทำงานถูกต้อง 2) หลัง build — ใช้ `npm run preview` ทดสอบอีกครั้งใน production mode เพราะบางครั้ง feature ทำงานได้ใน dev แต่พังใน production (เช่น env var ไม่ถูกตั้ง, proxy ไม่ทำงาน)
+:::
+
+::: details ❓ ถ้า Full System Test พบ bug ก่อน demo — ควรทำอย่างไร?
+**แนวคำตอบ:** ประเมินก่อน: 1) **Critical bug** (login ไม่ได้, crash) → แก้ก่อน demo เสมอ 2) **Minor bug** (UI ผิดเล็กน้อย, บาง edge case) → demo ได้ แต่แจ้ง reviewer ตรง ๆ และบันทึกใน report — การซ่อน bug ไม่ใช่วิธีที่ดี บอกตรง ๆ + มีแผนแก้ไขแสดงให้เห็น maturity ของ developer
 :::
 
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
 | :--- | :--- | :--- | :--- |
-| Build ผ่าน | 0 TypeScript errors, build สำเร็จ | มี warning แต่ build ผ่าน | build ไม่ผ่าน |
-| Full System Test | ผ่านทุก test case | ผ่าน > 70% | < 70% |
-| Demo | นำเสนอได้ครบตาม script | นำเสนอได้บางส่วน | ไม่ได้ demo |
+| Build ผ่าน | 0 TypeScript errors + build สำเร็จ | มี warning แต่ build ผ่าน | build ไม่ผ่าน |
+| Full System Test | ผ่าน ≥ 8/10 + บันทึก bug ครบ | ผ่าน 5-7/10 | < 5/10 |
+| Demo | นำเสนอได้ครบตาม script + demo real-time | นำเสนอได้บางส่วน | ไม่ได้ demo |
 
 ---
 
@@ -149,7 +228,10 @@ curl -X POST http://localhost:3000/api/auth/login \
 | Technical Term | Meaning in Context |
 | :--- | :--- |
 | `Go-Live` | วันที่ระบบ "เปิดตัว" และผู้ใช้จริงเริ่มใช้งาน |
-| `Pre-Launch Checklist` | รายการตรวจสอบก่อน go-live |
+| `Pre-Launch Checklist` | รายการตรวจสอบก่อน go-live — ทำทีละข้อตามลำดับ |
 | `Demo Script` | แผนการนำเสนอระบบ — กำหนดลำดับและจุดสำคัญที่จะแสดง |
 | `Stakeholder` | ผู้มีส่วนเกี่ยวข้อง เช่น ครู, ผู้ใช้งาน, ผู้บริหาร |
 | `Post-Launch` | ช่วงหลัง go-live — monitor, fix bugs, รับ feedback |
+| `npx tsc --noEmit` | รัน TypeScript compiler ตรวจ type โดยไม่สร้างไฟล์ output |
+| `npm run preview` | รัน production build locally — จำลอง production environment |
+| `Bundle Size` | ขนาดไฟล์ JavaScript/CSS หลัง build — ยิ่งเล็กยิ่งโหลดเร็ว |

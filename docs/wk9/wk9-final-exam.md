@@ -3,106 +3,139 @@
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
-หลังจาก 18 สัปดาห์สร้างระบบเบิก-จ่ายอุปกรณ์ไอที — Final Exam นี้ไม่ใช่แค่ทดสอบว่าจำอะไรได้ แต่ทดสอบว่า "เข้าใจ" และ "นำไปประยุกต์ใช้กับโปรเจกต์ใหม่ได้" ไหม
+หลังจาก 9 สัปดาห์สร้างระบบเบิก-จ่ายอุปกรณ์ไอที — Final Exam นี้ไม่ใช่แค่ทดสอบว่าจำอะไรได้ แต่ทดสอบว่า "เข้าใจ" และ "นำไปประยุกต์ใช้กับโปรเจกต์ใหม่ได้" ไหม อ่าน code ที่ไม่เคยเห็นมาก่อนแล้วตอบได้ไหม?
 :::
 
-> 💡 **เป้าหมาย:** ไม่ใช่แค่ผ่าน exam — แต่มี **ทักษะ** ที่ใช้ได้จริงในอุตสาหกรรม
+> 💡 **เป้าหมาย:** ไม่ใช่แค่ผ่าน exam — แต่มี **ทักษะ** ที่ใช้ได้จริงในอุตสาหกรรม Frontend Development
 
 ---
 
 ## 📖 I: Information
 
-### สรุป 9 Module ที่เรียนมา
+### ขั้นตอนที่ 1 — สรุป 9 Module ที่เรียนมา
 
 | Module | หัวข้อหลัก | TypeScript Level | ทักษะที่ได้ |
 | :--- | :--- | :--- | :--- |
-| wk1 | React + Vite + TypeScript | Basic Types | สร้างโปรเจกต์ใหม่ได้ |
-| wk2 | Custom Hooks + Interfaces | Interfaces | แยก logic ออกจาก UI |
-| wk3 | Tailwind CSS + Form Validation | Union Types + FormEvent | สร้าง UI สวยงามได้เร็ว |
-| wk4 | Axios + Async/Await + DB Design | Generics + Promise | เชื่อม API จริงได้ |
-| wk5 | State Management + Context | Props Types | จัดการ state ข้าม component |
-| wk6 | Cookies + Session + Interceptor | Type Assertion | Auth system ครบวงจร |
-| wk7 | JWT + Routes + Real-time | Advanced Types | Secure app + Real-time |
-| wk8 | Test Plan + Deploy | Utility Types | Go-live ได้ |
-| wk9 | Project Defense | - | นำเสนอผลงานได้ |
+| wk1 | React + Vite + TypeScript Setup | Basic Types, JSX | สร้างโปรเจกต์ใหม่ได้ด้วยตัวเอง |
+| wk2 | Custom Hooks + Interfaces + State | Interfaces, Union | แยก logic ออกจาก UI ได้ |
+| wk3 | Tailwind CSS + Controlled Forms | FormEvent, Zod | สร้าง UI + Validation ได้เร็ว |
+| wk4 | Axios + Async/Await + DB Design | Generics, Promise | เชื่อม API จริงพร้อม types ได้ |
+| wk5 | Props Drilling + Context API | Props Types | จัดการ state ข้าม component |
+| wk6 | Auth: localStorage + Axios Interceptor | Type Assertion | Auth system ครบวงจร |
+| wk7 | JWT + React Router + Socket.io Realtime | Advanced Types | Secure app + Real-time |
+| wk8 | Test Plan + Production Build | Utility Types | Go-live production ได้ |
+| wk9 | Project Defense + Final Exam | - | นำเสนอ + สรุปความรู้ทั้งหมด |
 
-### ประเภทคำถาม Final Exam
+---
 
-#### ส่วนที่ 1: Code Reading (30%)
-อ่านโค้ดแล้วตอบคำถาม
+### ขั้นตอนที่ 2 — ประเภทคำถาม Final Exam
+
+#### ส่วนที่ 1: Code Reading (30 คะแนน)
+
+อ่าน code แล้วตอบคำถาม — วิเคราะห์ว่าทำงานอย่างไรและมีปัญหาอะไร:
 
 ```tsx
-// คำถาม: โค้ดนี้ทำงานอย่างไร? มีปัญหาอะไรบ้าง?
+// [1] Custom Hook ที่อ่านในข้อสอบ — ดูทุก [comment]
 export function useEquipments() {
-  const [equipments, setEquipments] = useState<Equipment[]>([])
+  const [equipments, setEquipments] = useState<Equipment[]>([])   // [2] Generic
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)          // [3] nullable
 
+  // [4] useCallback ป้องกัน function reference เปลี่ยนทุก render
   const fetchEquipments = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await getEquipments()
+      const data = await getEquipments()    // [5] await async function
       setEquipments(data)
     } catch {
-      setError('ไม่สามารถโหลดข้อมูลได้')
+      setError('ไม่สามารถโหลดข้อมูลได้')   // [6] error state
     } finally {
-      setIsLoading(false)
+      setIsLoading(false)                   // [7] รันเสมอ — ทั้ง success และ error
     }
-  }, [])
+  }, [])  // [8] dependency ว่าง = สร้างครั้งเดียว
 
   useEffect(() => {
-    fetchEquipments()
-  }, [fetchEquipments])
+    fetchEquipments()   // [9] เรียกตอน mount
+  }, [fetchEquipments]) // [10] dependency คือ fetchEquipments
 
   return { equipments, setEquipments, isLoading, error, refetch: fetchEquipments }
 }
 ```
 
-> **ตัวอย่างคำถาม:**
-> - `useCallback` มีไว้ทำอะไร?
-> - ถ้าลบ `finally` ออก จะเกิดอะไรขึ้น?
-> - `refetch: fetchEquipments` ใช้ที่ไหนและทำไม?
+> **ตัวอย่างคำถาม Code Reading:**
+> - `[4]` `useCallback` มีไว้ทำอะไร? ถ้าลบออกจะเกิดอะไรขึ้น?
+> - `[7]` `finally` ต่างจากการวาง `setIsLoading(false)` หลัง try-catch อย่างไร?
+> - `[3]` ทำไม error เป็น `string | null` ไม่ใช่ `string?` (optional)?
+> - `refetch: fetchEquipments` ใช้ที่ไหนในโปรเจกต์และทำไม?
 
-#### ส่วนที่ 2: Code Writing (40%)
-เขียนโค้ดตาม spec ที่กำหนด
+---
+
+#### ส่วนที่ 2: Code Writing (40 คะแนน)
+
+เขียน code ตาม spec ที่กำหนด — ต้องถูกต้องทั้ง TypeScript และ logic:
 
 ```
-ตัวอย่างโจทย์:
-"สร้าง function `updateEquipmentStatus(id, status, borrowedBy?)`
+ตัวอย่างโจทย์ 1:
+"สร้าง function updateEquipmentStatus(id: number, status: EquipmentStatus, borrowedBy: string | null)
 ที่ใช้ Axios ส่ง PATCH request ไปที่ /api/equipments/:id
-พร้อม TypeScript type ที่ถูกต้อง"
+return Promise<Equipment> — ใส่ TypeScript type ที่ถูกต้องครบถ้วน"
+
+ตัวอย่างโจทย์ 2:
+"สร้าง ProtectedRoute component ที่:
+1) redirect ไป /login ถ้า isAuthenticated = false
+2) redirect ไป /forbidden ถ้า requiredRole ระบุและ user.role ไม่ตรง
+3) ใช้ Navigate จาก react-router-dom พร้อม replace prop"
+
+ตัวอย่างโจทย์ 3:
+"สร้าง interface BorrowRecord ที่มี: id (number), equipmentId (number),
+borrowedBy (string), purpose (string), borrowDate (string), returnDate (string | null)"
 ```
 
-#### ส่วนที่ 3: Conceptual (30%)
-ตอบคำถามเชิงแนวคิด
+---
 
-> **ตัวอย่างคำถาม:**
-> - อธิบาย JWT ในภาษาที่คนที่ไม่รู้ Tech เข้าใจได้
-> - เมื่อไรควรใช้ `useCallback`?
-> - `Props Drilling` คืออะไรและแก้อย่างไร?
+#### ส่วนที่ 3: Conceptual (30 คะแนน)
 
-### Self-Assessment Checklist
+ตอบคำถามเชิงแนวคิด — อธิบายได้ในภาษาธรรมชาติ:
+
+```
+ตัวอย่างคำถาม:
+□ อธิบาย JWT 3 ส่วน (Header.Payload.Signature) ให้คนที่ไม่รู้ Tech เข้าใจ
+□ เมื่อไรควรใช้ useCallback? ถ้าไม่ใช้จะเกิดอะไรขึ้น?
+□ Props Drilling คืออะไร? เมื่อไรควรเปลี่ยนไปใช้ Context API?
+□ Axios interceptor ทำงานอย่างไร? ทำไมถึงสะดวกกว่าการแนบ token ในทุก request?
+□ ทำไม cleanup function ใน useEffect ถึงสำคัญกับ Socket.io?
+```
+
+---
+
+### ขั้นตอนที่ 3 — Self-Assessment Checklist
+
+ตรวจสอบตัวเองว่าทำได้แค่ไหน:
 
 ```markdown
-## ทักษะที่ควรมีหลังจบ wk9
-
-### Frontend (React + TypeScript)
-□ สร้างโปรเจกต์ React + TypeScript + Vite ได้ด้วยตัวเอง
+## ทักษะ Frontend (React + TypeScript)
+□ สร้างโปรเจกต์ React + TypeScript + Vite ได้ด้วยตัวเอง (ไม่ดู tutorial)
 □ เขียน TypeScript Interface และ Generic Types ได้
 □ สร้าง Custom Hook ที่มี loading/error state ได้
-□ เชื่อมต่อ API ด้วย Axios พร้อม interceptors ได้
-□ สร้าง Auth system (login/logout/persist) ได้
-□ ใช้ React Router v6 กับ Protected Routes ได้
-□ ใช้ Socket.io สำหรับ real-time ได้
-□ Build และ deploy frontend ได้
+□ เชื่อมต่อ API ด้วย Axios พร้อม request/response interceptors ได้
+□ สร้าง Auth system (login → localStorage → restore on refresh → logout) ได้
+□ ใช้ React Router v6 กับ Protected Routes + Navigate ได้
+□ ใช้ Socket.io สำหรับ real-time + cleanup on unmount ได้
+□ `npm run build` → 0 errors → `npm run preview` ได้
 
-### Soft Skills
-□ อ่าน error message แล้วแก้ได้เองโดยไม่ต้องถาม
-□ ใช้ DevTools (Network, Console, Application) ได้คล่อง
-□ อธิบายโค้ดของตัวเองให้คนอื่นเข้าใจได้
-□ ถาม AI ได้ถูกวิธีและ critical think ผลลัพธ์ได้
+## ทักษะ Developer (Soft Skills)
+□ อ่าน TypeScript error message แล้วแก้ได้เองโดยไม่ต้องถาม
+□ ใช้ DevTools ได้คล่อง: Network (headers, payload), Application (localStorage), Console
+□ อธิบาย code ของตัวเองให้คนอื่นเข้าใจได้ใน 5 นาที
+□ ถาม AI ได้ถูกวิธี + critical think ผลลัพธ์ก่อนนำไปใช้
+□ git workflow: add → commit → push ทุก feature พร้อม meaningful commit message
 ```
+
+**ระดับความพร้อม:**
+- ✅ ≥ 12/13 ข้อ → พร้อมทำงาน Junior Frontend Developer
+- ✅ 9-11 ข้อ → เข้าใจ concept ทั้งหมด ต้องฝึก implementation เพิ่ม
+- ✅ < 9 ข้อ → ทบทวน wk ที่ยังไม่แน่ใจ
 
 ---
 
@@ -111,32 +144,91 @@ export function useEquipments() {
 ### 🤖 AI Prompt Guide
 
 ::: info 💬 ถาม AI
-"เรียนคอร์สพัฒนาเว็บด้วย React + TypeScript + Node.js จบแล้ว ช่วยสร้าง self-assessment checklist ที่ครอบคลุม: การออกแบบ component, การใช้ TypeScript, การเชื่อมต่อ API, authentication, real-time features และการ deploy พร้อมแนะนำโปรเจกต์ 3 อย่างสำหรับฝึกทักษะเหล่านี้ต่อ"
+"เรียนคอร์สพัฒนาเว็บด้วย React + TypeScript + Node.js จบแล้ว ช่วยสร้าง self-assessment checklist ที่ครอบคลุม: TypeScript types, React hooks (useState/useEffect/useCallback/useContext), Axios interceptors, authentication flow, real-time WebSocket และ production build — พร้อมแนะนำโปรเจกต์ 3 อย่างสำหรับฝึกทักษะเหล่านี้ต่อในระดับ Junior Developer"
 :::
 
 ### 📝 Final Lab — ทบทวนความรู้
 
-**ส่วนที่ 1: Code Quiz (15 นาที)**
-- [ ] อ่าน `src/hooks/useAuth.ts` ทุกบรรทัด — อธิบายให้เพื่อนฟังได้
-- [ ] อ่าน `src/api/config.ts` — อธิบาย interceptors ทั้ง 2 ตัว
-- [ ] อ่าน `src/components/ProtectedRoute.tsx` — trace logic redirect
+**เป้าหมาย:** ทดสอบว่าอ่าน code จริงได้และเขียน component ใหม่ได้
 
-**ส่วนที่ 2: Mini Project (60 นาที)**
-- [ ] สร้าง React component ใหม่ที่ไม่มีใน codebase — เช่น "BorrowHistory" ที่แสดงประวัติการยืม
-- [ ] ใช้ TypeScript type ที่เหมาะสม
-- [ ] เชื่อมกับ API (ถ้ามี endpoint)
+---
+
+#### ขั้น 0 — Student Identity
+
+ตรวจสอบว่า `<footer>` ชื่อ-รหัสยังอยู่ใน Component หลัก ✅
+GitHub repository มี commit ครบทุก wk1-8 ✅
+
+---
+
+#### ขั้น 1 — Code Reading Quiz (15 นาที)
+
+อ่าน source code จริงแล้วตอบคำถามเหล่านี้ด้วยตัวเอง (ไม่ดูเฉลย):
+
+- [ ] เปิด `src/hooks/useAuth.ts` — อธิบาย Lazy Initializer ใน `useState(() => {...})` ได้
+- [ ] เปิด `src/api/config.ts` — อธิบาย request interceptor และ response interceptor แต่ละขั้นตอนได้
+- [ ] เปิด `src/components/ProtectedRoute.tsx` — trace logic: redirect เมื่อไหร่ บน path ไหน
+
+---
+
+#### ขั้น 2 — Mini Project (60 นาที)
+
+สร้าง React component ใหม่ที่ยังไม่มีใน codebase:
+
+```
+โจทย์: สร้าง BorrowHistory component
+- แสดงประวัติการยืมอุปกรณ์ (ถ้ามี API endpoint)
+- ถ้าไม่มี API: ใช้ mock data array ที่มี BorrowRecord interface ถูกต้อง
+- ต้องมี: TypeScript type, loading state, error state, empty state
+- Optional: กรองตามวันที่หรือ equipment category
+```
+
+- [ ] สร้าง `src/types/index.ts` เพิ่ม `interface BorrowRecord` ✅
+- [ ] สร้าง `src/hooks/useBorrowHistory.ts` — Custom Hook ✅
+- [ ] สร้าง `src/pages/BorrowHistoryPage.tsx` ✅
+- [ ] เพิ่ม route ใน App.tsx ✅
+
+---
+
+#### ขั้น Submit — ส่งงาน
+
+- [ ] ตอบ Self-Assessment Checklist ด้านบน — บันทึกใน Google Doc
+- [ ] `git add . && git commit -m "wk9: final exam - borrow history component"`
+- [ ] `git push origin main`
+- [ ] เขียนสรุปใน Google Doc:
+  - Self-Assessment ผ่านกี่ข้อ
+  - ทักษะที่แข็งแกร่งที่สุดใน wk1-8 คืออะไร
+  - อยากพัฒนาเรื่องอะไรต่อไป
+  - ลิงก์ GitHub + screenshots ทุก feature
 
 ---
 
 ## ✅ P: Progress
 
+### 🗣️ Code Review
+
+::: details ❓ `useCallback` กับ `useEffect` dependency — เชื่อมกันอย่างไร?
+**แนวคำตอบ:** `useEffect` รัน effect ใหม่ทุกครั้งที่ dependency เปลี่ยน ถ้าใส่ function ใน dependency array และ function นั้นสร้างใหม่ทุก render → useEffect รัน loop ไม่หยุด `useCallback` จดจำ function reference ไว้ตลอด (จนกว่า dependency ของ useCallback เปลี่ยน) → useEffect เห็น reference เดิม → ไม่รัน loop สรุป: ทุก function ที่ใส่ใน useEffect dependency ควร wrap ด้วย useCallback
+:::
+
+::: details ❓ `finally` ใน try-catch-finally ต่างจากการวาง code หลัง try-catch อย่างไร?
+**แนวคำตอบ:** `finally` รัน **เสมอ** ไม่ว่า try จะ throw error หรือไม่ รวมถึงกรณีที่มี `return` ใน try ด้วย ส่วนการวาง code หลัง try-catch ถ้า catch rethrow error → code ที่วางหลังนั้นจะไม่รัน ในกรณี `setIsLoading(false)` ใน finally → มั่นใจว่า loading state จะ false เสมอ ไม่ว่า fetch สำเร็จหรือไม่ ป้องกัน "ค้างที่ loading" ตลอดกาล
+:::
+
+::: details ❓ `Props Drilling` คืออะไร และเมื่อไรควรเปลี่ยนไปใช้ Context API?
+**แนวคำตอบ:** Props Drilling = ส่ง props ผ่าน component หลายชั้นโดยที่ชั้นกลางไม่ได้ใช้เอง เช่น `App → Layout → Page → Card → Button` ส่ง `auth` ผ่านทุกชั้น — ปัญหา: ถ้าเปลี่ยน interface ต้องแก้ทุกชั้น ควรเปลี่ยนเป็น Context API เมื่อ: 1) tree ลึก ≥ 3 ชั้น 2) ข้อมูลใช้ใน component หลายจุดที่กระจัดกระจาย 3) ข้อมูลเปลี่ยนบ่อยและต้อง re-render เฉพาะที่ใช้
+:::
+
+::: details ❓ หลังเรียน wk1-9 จบ — ขั้นต่อไปในการพัฒนาทักษะ Frontend Developer คืออะไร?
+**แนวคำตอบ:** ขั้นต่อไปที่แนะนำ: 1) **Testing** — เรียน Jest + React Testing Library (unit/integration test) 2) **State Management** — Zustand หรือ Redux Toolkit สำหรับ app ขนาดใหญ่ 3) **Next.js** — React framework พร้อม Server-Side Rendering (SSR) 4) **CI/CD** — GitHub Actions deploy อัตโนมัติ 5) **โปรเจกต์ส่วนตัว** — สร้างสิ่งที่แก้ปัญหาจริงในชีวิต แล้วใส่ GitHub Portfolio ที่สำคัญ: การเรียนรู้ต่อเนื่องสำคัญกว่าการรู้ทุก technology
+:::
+
 ### 📋 Final Exam Rubric (100 คะแนน)
 
 | ส่วน | น้ำหนัก | เกณฑ์ |
 | :--- | :--- | :--- |
-| Code Reading | 30 คะแนน | อ่าน code + ตอบคำถามถูก |
-| Code Writing | 40 คะแนน | เขียน code ถูก TypeScript + logic |
-| Conceptual | 30 คะแนน | อธิบาย concept ได้ |
+| Code Reading | 30 คะแนน | อ่าน code + อธิบาย [comment] + ตอบคำถามถูกต้อง |
+| Code Writing | 40 คะแนน | เขียน TypeScript + logic ถูกต้อง ทำงานได้จริง |
+| Conceptual | 30 คะแนน | อธิบาย concept ด้วยภาษาธรรมชาติ + ยกตัวอย่างได้ |
 
 ### เกณฑ์ผ่าน TPQI 10302
 
@@ -144,20 +236,22 @@ export function useEquipments() {
 | :--- | :--- | :--- |
 | ดีเยี่ยม | 90-100 | พร้อมทำงาน Junior Frontend Developer |
 | ดี | 80-89 | เข้าใจ concept ทั้งหมด ทำงานได้โดยมี mentor |
-| ผ่าน | 60-79 | เข้าใจพื้นฐาน ต้องฝึกเพิ่ม |
+| ผ่าน | 60-79 | เข้าใจพื้นฐาน ต้องฝึก implementation เพิ่ม |
 | ไม่ผ่าน | < 60 | ต้องทบทวนและทดสอบใหม่ |
 
 ---
 
-### 📚 CLIL Vocabulary — รวมคำศัพท์สำคัญทั้งหมด
+### 📚 CLIL Vocabulary — สรุปคำศัพท์สำคัญทั้งหมด
 
 | Technical Term | Meaning in Context |
 | :--- | :--- |
-| `Component` | ส่วนประกอบย่อยของ UI ที่ใช้ซ้ำได้ |
-| `Hook` | React function พิเศษที่เริ่มด้วย `use` ใช้จัดการ state/lifecycle |
+| `Component` | ส่วนประกอบย่อยของ UI ที่ใช้ซ้ำได้ รับ props และ render JSX |
+| `Hook` | React function พิเศษที่เริ่มด้วย `use` — จัดการ state/lifecycle |
 | `TypeScript` | JavaScript ที่มี Type system ช่วยป้องกัน bug ก่อน runtime |
-| `REST API` | มาตรฐานการออกแบบ API โดยใช้ HTTP methods (GET/POST/PATCH/DELETE) |
-| `JWT` | JSON Web Token — มาตรฐาน token สำหรับ authentication |
-| `WebSocket` | Protocol สำหรับการสื่อสารแบบสองทิศทาง real-time |
+| `REST API` | มาตรฐาน API โดยใช้ HTTP methods (GET/POST/PATCH/DELETE) |
+| `JWT` | JSON Web Token — token 3 ส่วน Header.Payload.Signature |
+| `WebSocket` | Protocol สำหรับสื่อสารสองทิศทาง real-time แบบ persistent |
+| `Interceptor` | Middleware ของ Axios — รันก่อน/หลังทุก request/response |
+| `Context API` | React built-in สำหรับแชร์ state โดยไม่ต้อง Props Drilling |
 | `Deploy` | นำระบบขึ้น server ให้ผู้ใช้จริงเข้าถึงได้ |
-| `TPQI 10302` | มาตรฐานอาชีพไอที ระดับ 3 — พัฒนา Web Application |
+| `TPQI 10302` | มาตรฐานอาชีพไอที ระดับ 3 — Developer พัฒนา Web Application |

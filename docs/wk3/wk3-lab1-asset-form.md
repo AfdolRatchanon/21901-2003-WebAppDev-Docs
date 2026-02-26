@@ -1,54 +1,150 @@
-# Lab: สร้างฟอร์มเบิกอุปกรณ์พร้อมแจ้ง Error <Badge type="info" text="TPQI 10302" />
+# Lab: EquipmentPage ด้วย Tailwind + BorrowForm + Validation <Badge type="info" text="TPQI 10302" />
 
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
-ระบบเบิก-จ่ายอุปกรณ์ต้องการฟอร์มให้นักเรียนกรอกก่อนยืม — ถ้าไม่มีการ validate ข้อมูล อาจมีคนกรอกวัตถุประสงค์ว่างๆ หรือเลือกวันคืนเป็นวันในอดีต ทำให้ข้อมูลในระบบผิดพลาด ต้องมีการตรวจสอบก่อนส่ง!
+ใน wk2 หน้า EquipmentPage ใช้ inline style ทั้งหมดและยังไม่มีฟอร์มยืมอุปกรณ์ — ใน wk3 นี้จะยกระดับให้ครบทั้ง 3 ด้าน: เปลี่ยน inline style เป็น Tailwind classes ให้ UI สวยขึ้น, เพิ่มฟอร์มยืมที่แสดง inline ในการ์ด, และตรวจสอบข้อมูลก่อน submit เพื่อป้องกัน request ที่ไม่สมบูรณ์
 :::
 
-> 💡 **เปรียบเทียบ:** Form Validation เหมือน "เจ้าหน้าที่ที่เคาน์เตอร์" — ก่อนรับเรื่อง ต้องตรวจว่ากรอกครบไหม ลายเซ็นครบไหม ถ้าไม่ครบส่งกลับให้แก้ก่อน
+> 💡 **เปรียบเทียบ:** Lab นี้เหมือน "งานปรับปรุงร้านค้า" — เปลี่ยนป้ายเก่าเป็นป้ายสวย (Tailwind), เพิ่มเคาน์เตอร์บริการ (BorrowForm), และวางระบบตรวจสอบก่อนรับเรื่อง (Validation) — ทั้งหมดนี้คือ wk3 ในไฟล์เดียว
 
 ---
 
 ## 📖 I: Information
 
-ฟอร์มเบิกอุปกรณ์แสดงแบบ **inline** ในการ์ดอุปกรณ์ — เมื่อกดปุ่ม "ยืมอุปกรณ์" ฟอร์มจะปรากฏใต้การ์ดนั้นทันที
+### ขั้นตอนที่ 1 — EquipmentPage พร้อม Tailwind + statusConfig
 
-::: code-group
-```tsx [BorrowForm ใน EquipmentPage.tsx]
-import { useState, type FormEvent } from 'react'
+นำ `EquipmentPage.tsx` จาก wk2 มาแปลง inline style → Tailwind โดยเพิ่ม `statusConfig`:
 
-interface BorrowFormProps {
-  equipmentId: number
-  onConfirm: (purpose: string, returnDate: string) => void
-  onCancel: () => void
+```tsx [src/pages/EquipmentPage.tsx — v3 ก่อนเพิ่ม BorrowForm]
+import { useState } from 'react'
+import type { Equipment } from '../types'
+
+const mockEquipments: Equipment[] = [
+  { id: 1, name: 'MacBook Pro 14"', category: 'Notebook', serialNo: 'MB-001', status: 'available',   borrowedBy: null         },
+  { id: 2, name: 'iPad Air',        category: 'Tablet',   serialNo: 'IP-001', status: 'borrowed',    borrowedBy: 'สมชาย ใจดี' },
+  { id: 3, name: 'Projector Epson', category: 'AV',       serialNo: 'PJ-001', status: 'maintenance', borrowedBy: null         },
+]
+
+const statusLabel: Record<string, string> = {
+  available: 'ว่าง', borrowed: 'ถูกยืม', maintenance: 'ซ่อมบำรุง',
 }
 
-export function BorrowForm({ equipmentId, onConfirm, onCancel }: BorrowFormProps) {
-  const [purpose, setPurpose] = useState('')
+// [1] statusConfig — รวม Tailwind classes ตาม status ไว้ที่เดียว
+const statusConfig: Record<string, { border: string; badge: string }> = {
+  available:   { border: 'border-l-green-500', badge: 'bg-green-100 text-green-700'  },
+  borrowed:    { border: 'border-l-red-500',   badge: 'bg-red-100 text-red-700'      },
+  maintenance: { border: 'border-l-amber-500', badge: 'bg-amber-100 text-amber-700' },
+}
+
+export function EquipmentPage() {
+  const [equipments]    = useState<Equipment[]>(mockEquipments)
+  const [filterStatus, setFilterStatus] = useState<string>('all')
+
+  const displayed = filterStatus === 'all'
+    ? equipments
+    : equipments.filter(eq => eq.status === filterStatus)
+
+  return (
+    // [2] max-w-6xl mx-auto — จำกัดความกว้าง, px-6 py-8 — padding
+    <main className="max-w-6xl mx-auto px-6 py-8">
+      <h1 className="text-2xl font-bold text-slate-800 mb-6">รายการอุปกรณ์</h1>
+
+      {/* [3] Filter Buttons */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {(['all', 'available', 'borrowed', 'maintenance'] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => setFilterStatus(s)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              filterStatus === s
+                ? 'bg-blue-500 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            {s === 'all' ? 'ทั้งหมด' : statusLabel[s]}
+          </button>
+        ))}
+      </div>
+
+      {/* [4] Responsive Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {displayed.map(eq => {
+          const config = statusConfig[eq.status]
+          return (
+            // [5] card ด้วย Tailwind — border-l-4 สีตาม config.border
+            <div
+              key={eq.id}
+              className={`bg-white rounded-xl border border-slate-200 border-l-4 ${config.border} p-4 shadow-sm hover:shadow-md transition-all`}
+            >
+              <div className="flex justify-between items-start gap-2 mb-1">
+                <span className="font-bold text-slate-800 text-sm">{eq.name}</span>
+                {/* [6] badge ด้วย config.badge */}
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${config.badge}`}>
+                  {statusLabel[eq.status]}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">{eq.category} · {eq.serialNo}</p>
+              {eq.borrowedBy && (
+                <p className="text-xs text-red-500 font-semibold mt-1">ยืมโดย: {eq.borrowedBy}</p>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </main>
+  )
+}
+```
+
+---
+
+### ขั้นตอนที่ 2 — BorrowForm Component
+
+ฟอร์มยืมอุปกรณ์แสดงแบบ **inline** ใต้การ์ด — กดปุ่ม "ยืมอุปกรณ์" แล้วฟอร์มปรากฏ:
+
+```tsx [src/components/BorrowForm.tsx — v1 (Controlled Form + Validation)]
+import { useState, type FormEvent } from 'react'
+
+// [1] Props ที่ BorrowForm ต้องรับจาก Parent
+interface BorrowFormProps {
+  onConfirm: (purpose: string, returnDate: string) => void
+  onCancel:  () => void
+}
+
+export function BorrowForm({ onConfirm, onCancel }: BorrowFormProps) {
+  // [2] state ของ form — 2 fields + error
+  const [purpose,    setPurpose]    = useState('')
   const [returnDate, setReturnDate] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error,      setError]      = useState<string | null>(null)
 
-  function handleSubmit(e: FormEvent) {  // React.FormEvent TS Focus wk3
-    e.preventDefault()   // ป้องกัน page reload
-    setError(null)
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault()  // [3] ป้องกัน page reload
+    setError(null)       // ล้าง error เก่าก่อนตรวจใหม่
 
-    // Client-side Validation
+    // [4] Validation — ตรวจ purpose
     if (!purpose.trim()) {
       setError('กรุณาระบุวัตถุประสงค์การใช้งาน')
       return
     }
 
-    const today = new Date().toISOString().split('T')[0]
-    if (!returnDate || returnDate <= today) {
-      setError('กรุณาเลือกวันคืนในอนาคต')
+    // [5] Validation — ตรวจ returnDate ต้องเป็นอนาคต
+    const today = new Date().toISOString().split('T')[0]  // เช่น '2026-02-26'
+    if (!returnDate) {
+      setError('กรุณาเลือกวันที่คาดว่าจะคืน')
+      return
+    }
+    if (returnDate <= today) {
+      setError('กรุณาเลือกวันคืนในอนาคต (พรุ่งนี้เป็นต้นไป)')
       return
     }
 
-    onConfirm(purpose, returnDate)  // ส่งข้อมูลกลับไปที่ Parent
+    // [6] ผ่าน validation แล้ว — ส่งข้อมูลให้ Parent
+    onConfirm(purpose, returnDate)
   }
 
   return (
+    // [7] inline form ด้วย Tailwind — bg-slate-50 + border-dashed
     <form
       onSubmit={handleSubmit}
       className="mt-3 p-3 bg-slate-50 rounded-lg border border-dashed border-slate-300 flex flex-col gap-2"
@@ -65,6 +161,7 @@ export function BorrowForm({ equipmentId, onConfirm, onCancel }: BorrowFormProps
         onChange={e => setPurpose(e.target.value)}
         className="border border-slate-300 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
       />
+      {/* [8] input type="date" — browser แสดง date picker อัตโนมัติ */}
       <input
         type="date"
         value={returnDate}
@@ -73,12 +170,14 @@ export function BorrowForm({ equipmentId, onConfirm, onCancel }: BorrowFormProps
       />
 
       <div className="flex gap-2">
+        {/* [9] type="submit" — trigger onSubmit ของ <form> */}
         <button
           type="submit"
           className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md"
         >
           ยืนยันการยืม
         </button>
+        {/* [10] type="button" — ไม่ trigger form submit */}
         <button
           type="button"
           onClick={onCancel}
@@ -91,11 +190,96 @@ export function BorrowForm({ equipmentId, onConfirm, onCancel }: BorrowFormProps
   )
 }
 ```
-:::
 
-::: tip 💡 TypeScript Tip — FormEvent
-`type FormEvent = React.FormEvent` กำหนด type ให้ parameter `e` ใน `handleSubmit` ทำให้ TypeScript รู้ว่า `e.preventDefault()` มีอยู่จริง ไม่ต้อง guess
-:::
+---
+
+### ขั้นตอนที่ 3 — ใส่ BorrowForm ใน EquipmentPage (inline borrow flow)
+
+เพิ่ม state `borrowingId` เพื่อรู้ว่ากำลังยืมการ์ดไหนอยู่:
+
+```tsx [src/pages/EquipmentPage.tsx — v4 (เพิ่ม BorrowForm inline)]
+import { BorrowForm } from '../components/BorrowForm'
+
+export function EquipmentPage() {
+  const [equipments, setEquipments] = useState<Equipment[]>(mockEquipments)
+  const [filterStatus, setFilterStatus]   = useState<string>('all')
+  // [1] borrowingId — null=ไม่มีฟอร์มเปิด, number=ID ของการ์ดที่กำลังยืม
+  const [borrowingId, setBorrowingId]     = useState<number | null>(null)
+
+  const displayed = filterStatus === 'all'
+    ? equipments
+    : equipments.filter(eq => eq.status === filterStatus)
+
+  // [2] เมื่อยืนยัน — เปลี่ยน status เป็น 'borrowed' ใน state
+  function handleConfirmBorrow(equipmentId: number, purpose: string, returnDate: string) {
+    setEquipments(prev =>
+      prev.map(eq =>
+        eq.id === equipmentId
+          ? { ...eq, status: 'borrowed', borrowedBy: `Mock User (${purpose})` }
+          : eq
+      )
+    )
+    setBorrowingId(null)  // ปิดฟอร์ม
+    console.log('Borrow confirmed:', { equipmentId, purpose, returnDate })
+    // wk4: เปลี่ยนเป็น API call จริง
+  }
+
+  return (
+    <main className="max-w-6xl mx-auto px-6 py-8">
+      {/* ... header + filters เหมือนเดิม ... */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {displayed.map(eq => {
+          const config = statusConfig[eq.status]
+          return (
+            <div
+              key={eq.id}
+              className={`bg-white rounded-xl border border-slate-200 border-l-4 ${config.border} p-4 shadow-sm hover:shadow-md transition-all`}
+            >
+              <div className="flex justify-between items-start gap-2 mb-1">
+                <span className="font-bold text-slate-800 text-sm">{eq.name}</span>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${config.badge}`}>
+                  {statusLabel[eq.status]}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">{eq.category} · {eq.serialNo}</p>
+              {eq.borrowedBy && (
+                <p className="text-xs text-red-500 font-semibold mt-1">ยืมโดย: {eq.borrowedBy}</p>
+              )}
+
+              {/* [3] แสดงปุ่ม "ยืมอุปกรณ์" เฉพาะเมื่อ available */}
+              {eq.status === 'available' && borrowingId !== eq.id && (
+                <button
+                  onClick={() => setBorrowingId(eq.id)}
+                  className="mt-3 w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold py-1.5 rounded-lg transition-colors"
+                >
+                  ยืมอุปกรณ์
+                </button>
+              )}
+
+              {/* [4] แสดง BorrowForm เมื่อ borrowingId ตรงกับการ์ดนี้ */}
+              {borrowingId === eq.id && (
+                <BorrowForm
+                  onConfirm={(purpose, returnDate) =>
+                    handleConfirmBorrow(eq.id, purpose, returnDate)
+                  }
+                  onCancel={() => setBorrowingId(null)}
+                />
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </main>
+  )
+}
+```
+
+**สรุปการทำงาน:**
+- `borrowingId === null` → ทุกการ์ดแสดงปุ่ม "ยืมอุปกรณ์" (ถ้า available) ✅
+- กดปุ่ม → `setBorrowingId(eq.id)` → การ์ดนั้นแสดง BorrowForm แทนปุ่ม ✅
+- กรอกครบ + กด "ยืนยัน" → `handleConfirmBorrow` → status เปลี่ยน → form ปิด ✅
+- กด "ยกเลิก" → `setBorrowingId(null)` → form ปิด กลับแสดงปุ่ม ✅
 
 ---
 
@@ -104,19 +288,58 @@ export function BorrowForm({ equipmentId, onConfirm, onCancel }: BorrowFormProps
 ### 🤖 AI Prompt Guide
 
 ::: info 💬 ถาม AI
-"สร้าง React form component ด้วย TypeScript สำหรับยืมอุปกรณ์ มี 2 field: purpose (text input) และ returnDate (date input) ตรวจสอบว่า purpose ต้องไม่ว่าง และ returnDate ต้องเป็นวันในอนาคต แสดง error messages ด้วย useState และใช้ Tailwind CSS"
+"กำลังเรียน React 18 + TypeScript + Tailwind CSS v3 อยู่ มี EquipmentPage ที่แสดงรายการอุปกรณ์ด้วย mock data ต้องการเพิ่ม: 1) `statusConfig` object รวม Tailwind class ของ border และ badge ตาม status 2) `BorrowForm` component ที่แสดง inline ในการ์ด มี input text (วัตถุประสงค์) + input date (วันคืน) + validation ก่อน submit 3) state `borrowingId: number | null` ที่ควบคุมว่าการ์ดไหนกำลังแสดง form อยู่ — ใช้ Tailwind CSS + FormEvent TypeScript"
 :::
 
 ### 📝 PjBL Lab
 
-- [ ] สร้าง interface `BorrowFormProps` มี `equipmentId`, `onConfirm`, `onCancel`
-- [ ] สร้าง state: `purpose`, `returnDate`, `error`
-- [ ] เขียน `handleSubmit` ด้วย `e: FormEvent` — ต้องมี `e.preventDefault()`
-- [ ] Validate: purpose ต้องไม่ว่าง, returnDate ต้องเป็นอนาคต
-- [ ] แสดง error message ด้วย Tailwind (`text-red-600`)
-- [ ] ปุ่ม "ยืนยัน" type="submit", ปุ่ม "ยกเลิก" type="button"
-- [ ] ใช้ `BorrowForm` ใน `EquipmentCard` — แสดงเมื่อกดปุ่ม "ยืมอุปกรณ์"
-- [ ] ทดสอบ: กด submit โดยไม่กรอกข้อมูล — ต้องมี error แสดง
+**ขั้น 0: ระบุตัวตน (2 นาที)**
+
+- [ ] เปิด `EquipmentPage.tsx` → ตรวจสอบว่า `<footer>` ชื่อ-รหัสของตนเองอยู่ท้าย Component ✅
+
+**ขั้น 1: ติดตั้ง Tailwind + แปลง inline style (15 นาที)**
+
+- [ ] ติดตั้ง Tailwind CSS v3 ด้วย `npm install -D tailwindcss@3 postcss autoprefixer`
+- [ ] รัน `npx tailwindcss init -p` และตั้งค่า `content` ใน config
+- [ ] เพิ่ม `@tailwind` directives ใน `src/index.css`
+- [ ] แปลง `<main style=&#123;&#123; padding: 24 &#125;&#125;>` → `<main className="max-w-6xl mx-auto px-6 py-8">`
+- [ ] แปลง filter buttons, card wrapper, badge ทั้งหมดเป็น Tailwind class
+- [ ] ไม่มี `style=&#123;&#123; &#125;&#125;` เหลืออยู่ในไฟล์ ✅
+
+**ขั้น 2: เพิ่ม statusConfig + Responsive Grid (10 นาที)**
+
+- [ ] สร้าง `statusConfig` object ชนิด `Record<string, { border: string; badge: string }>`
+- [ ] ใส่ Tailwind class สำหรับ available (green), borrowed (red), maintenance (amber)
+- [ ] เปลี่ยน card wrapper เป็น template literal `` `bg-white ... ${config.border}` ``
+- [ ] เปลี่ยน badge เป็น `` className={`text-xs ... ${config.badge}`} ``
+- [ ] เปลี่ยน grid wrapper เป็น `className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"`
+- [ ] ทดสอบ Responsive: ลากขนาด browser → เห็น layout เปลี่ยน ✅
+
+**ขั้น 3: BorrowForm + Inline Validation (20 นาที)**
+
+- [ ] สร้างไฟล์ `src/components/BorrowForm.tsx`
+- [ ] กำหนด `interface BorrowFormProps` มี `onConfirm: (purpose, returnDate) => void`, `onCancel: () => void`
+- [ ] สร้าง state: `purpose: string`, `returnDate: string`, `error: string | null`
+- [ ] เขียน `handleSubmit(e: FormEvent)` ด้วย `e.preventDefault()` + validation 2 เงื่อนไข
+  - purpose ต้องไม่ว่าง
+  - returnDate ต้องมากกว่า today (ใช้ `new Date().toISOString().split('T')[0]`)
+- [ ] แสดง `error` ด้วย `<p className="text-red-600 text-xs">` เมื่อมีค่า
+- [ ] ปุ่ม "ยืนยัน" ใช้ `type="submit"`, ปุ่ม "ยกเลิก" ใช้ `type="button" onClick={onCancel}`
+- [ ] ทดสอบ: submit โดยไม่กรอก purpose → ต้องเห็น error ✅
+
+**ขั้น 4: รวม BorrowForm ใน EquipmentPage (10 นาที)**
+
+- [ ] เพิ่ม state `borrowingId: number | null` เริ่มต้น `null` ใน EquipmentPage
+- [ ] เพิ่มปุ่ม "ยืมอุปกรณ์" ในการ์ดที่ `status === 'available'` เท่านั้น
+- [ ] ใช้เงื่อนไข `{borrowingId === eq.id && <BorrowForm ... />}` แสดงฟอร์ม
+- [ ] เขียน `handleConfirmBorrow` ที่อัปเดต status เป็น `'borrowed'` ใน state
+- [ ] ทดสอบ flow ครบ: กดยืม → กรอกข้อมูล → ยืนยัน → การ์ดเปลี่ยนสี ✅
+- [ ] ทดสอบ: กดยืมแล้วกด ยกเลิก → ฟอร์มหายไป ✅
+
+**ขั้นสุดท้าย: Submit**
+
+- [ ] `git add . && git commit -m "wk3: Tailwind CSS, statusConfig, BorrowForm with validation"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: Tailwind ดีกว่า inline style อย่างไร, `borrowingId` state ทำงานยังไง, `returnDate <= today` ตรวจสอบอะไร พร้อม screenshot form validation + form หลังยืมสำเร็จ
 
 ---
 
@@ -124,21 +347,29 @@ export function BorrowForm({ equipmentId, onConfirm, onCancel }: BorrowFormProps
 
 ### 🗣️ Code Review
 
-::: details ❓ ทำไมต้องใช้ `e.preventDefault()` ในฟอร์ม?
-**แนวคำตอบ:** โดย default เมื่อกด submit ฟอร์ม HTML จะ reload หน้าทันที ทำให้ state หาย `e.preventDefault()` ป้องกันพฤติกรรมนี้ ให้เราจัดการ submit logic เองด้วย JavaScript แทน
+::: details ❓ ทำไม `borrowingId` เป็น `number | null` แทนที่จะเป็น `boolean`?
+**แนวคำตอบ:** `boolean` รู้แค่ว่า "เปิดหรือปิด" แต่ไม่รู้ว่า "การ์ดไหน" เมื่อใช้ `number | null` เราเก็บ ID ของการ์ดที่กำลังยืมได้เลย — ตรวจด้วย `borrowingId === eq.id` เพื่อแสดง form เฉพาะการ์ดนั้น ถ้าใช้ boolean ต้องสร้าง state แยก 2 ตัว (isOpen + openCardId) ซึ่งยุ่งกว่า
 :::
 
-::: details ❓ ต่างกันอย่างไรระหว่าง `type="submit"` กับ `type="button"`?
-**แนวคำตอบ:** `type="submit"` จะ trigger event `onSubmit` ของ `<form>` เมื่อถูกคลิก ส่วน `type="button"` ไม่ trigger form submit — ปุ่ม "ยกเลิก" ต้องเป็น `type="button"` ไม่งั้นจะ submit ฟอร์มแทน
+::: details ❓ ทำไม `returnDate <= today` ถึงเปรียบ string ได้?
+**แนวคำตอบ:** วันที่ format ISO `'YYYY-MM-DD'` เรียงลำดับตัวอักษรได้ตรงกับลำดับเวลาพอดี เช่น `'2026-02-26' <= '2026-02-25'` ผล false (วันนี้ไม่น้อยกว่าเมื่อวาน) JavaScript เปรียบ string ทีละ character ซึ่งใช้ได้กับ ISO date format โดยไม่ต้องแปลงเป็น Date object
+:::
+
+::: details ❓ `type="button"` กับ `type="submit"` ต่างกันอย่างไร?
+**แนวคำตอบ:** ปุ่มภายใน `<form>` มีค่า default เป็น `type="submit"` — ถ้าไม่ระบุ type กดแล้วจะ trigger `onSubmit` ของ form เสมอ ปุ่ม "ยกเลิก" ต้องระบุ `type="button"` ชัดเจน ไม่งั้นกดยกเลิกแล้วจะ submit form แทน ทำให้ validation ทำงานและ BorrowForm พยายามยืนยัน
+:::
+
+::: details ❓ ทำไม BorrowForm ไม่มี state ของ `equipmentId` ภายใน?
+**แนวคำตอบ:** `BorrowForm` รับแค่ `onConfirm` และ `onCancel` — เป็น Component ที่ "ไม่รู้" ว่าตัวเองอยู่ในการ์ดไหน ความรับผิดชอบของมันคือ "รวบรวมข้อมูลจากผู้ใช้และ validate" แล้วส่งกลับ Parent ผ่าน `onConfirm` ส่วน Parent (EquipmentPage) รู้ว่ากำลัง borrow card id อะไรอยู่ นี่คือ **Separation of Concerns** — แยกความรับผิดชอบ
 :::
 
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
 | :--- | :--- | :--- | :--- |
-| Validation ครบ | ตรวจ purpose + returnDate ถูกต้อง | ตรวจแค่บางส่วน | ไม่มี validation |
-| Error แสดงถูก | error ชัดเจน หายเมื่อแก้แล้ว | error แสดงแต่ไม่หาย | ไม่มี error แสดง |
-| FormEvent ถูก type | ใช้ `FormEvent` ถูกต้อง | ใช้ `any` | ไม่มี type |
+| Tailwind + statusConfig | ไม่มี inline style เหลือ, grid responsive ทำงาน | แปลงบางส่วน | ยังใช้ inline style |
+| BorrowForm Validation | ตรวจ purpose + date ถูกต้อง, error แสดงชัดเจน | ตรวจแค่บางส่วน | ไม่มี validation |
+| Inline BorrowForm flow | กด-กรอก-ยืนยัน-การ์ดเปลี่ยน flow ครบ | flow ทำงานบางส่วน | BorrowForm ไม่ integrate |
 
 ---
 
@@ -146,8 +377,9 @@ export function BorrowForm({ equipmentId, onConfirm, onCancel }: BorrowFormProps
 
 | Technical Term | Meaning in Context |
 | :--- | :--- |
-| `FormEvent` | TypeScript type สำหรับ event ที่เกิดจากการ submit ฟอร์ม |
-| `e.preventDefault()` | ป้องกันพฤติกรรม default ของ browser (เช่น reload หน้า) |
-| `Validation` | การตรวจสอบความถูกต้องของข้อมูลก่อนส่ง |
-| `inline form` | ฟอร์มที่แสดงอยู่ภายในองค์ประกอบอื่น ไม่ใช่หน้าแยก |
-| `Client-side` | การประมวลผลที่ฝั่ง Browser ก่อนส่งข้อมูลไป Server |
+| `borrowingId: number \| null` | state ที่เก็บ ID ของการ์ดที่กำลัง borrow — null เมื่อไม่มีฟอร์มเปิด |
+| `Inline Form` | ฟอร์มที่แสดงอยู่ภายในองค์ประกอบอื่น ไม่ใช่หน้าแยก (Modal, Page) |
+| `Separation of Concerns` | แยกความรับผิดชอบ — BorrowForm รับผิดชอบ UI, EquipmentPage รับผิดชอบ logic |
+| `onConfirm` / `onCancel` | Callback Props — ฟังก์ชันที่ Parent ส่งให้ Child เรียกเมื่อมี event |
+| `ISO 8601` | รูปแบบวันที่ `YYYY-MM-DD` ที่เปรียบเทียบด้วย string ได้ถูกต้อง |
+| `type="button"` | กำหนดให้ปุ่มไม่ trigger form submit เมื่ออยู่ภายใน `<form>` |
