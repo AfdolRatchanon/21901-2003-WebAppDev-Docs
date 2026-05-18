@@ -1,5 +1,7 @@
 # ติดต่อ API ด้วย Axios <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** บทนี้สอนสร้าง Axios instance กลาง พร้อม interceptor แนบ JWT token อัตโนมัติและจัดการ 401 error โดย apiClient ที่สร้างในบทนี้ใช้ในทุก API call ตั้งแต่ wk4 ถึง wk7
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Axios เหมือน "บริการส่งสาร" — เราส่งจดหมาย (Request) พร้อมบัตรประชาชน (Token) ให้บริการส่ง (Axios) นำไปมอบให้ Server แล้วนำคำตอบ (Response) กลับมา โดยไม่ต้องกังวลเรื่องทาง
-
----
 
 ## 📖 I: Information
 
@@ -83,8 +83,6 @@ export default defineConfig({
 
 **สรุป:** `apiClient` ตั้งค่าครั้งเดียว — ทุก request หลังจากนี้มี token และ error handling อัตโนมัติ ✅
 
----
-
 ### ขั้นตอนที่ 2 — สร้าง equipmentApi.ts
 
 แยกฟังก์ชัน API ออกมาเป็นไฟล์เดียว ไม่เขียน axios ปนใน Component:
@@ -148,9 +146,36 @@ const res = await axios.get('http://localhost:3000/api/equipments', {
 ```
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+```ts [TypeScript ที่ใช้ในบทนี้]
+// [1] Generic Type ใน Axios call — บอก TypeScript ว่า response body มีรูปแบบอะไร
+const res = await apiClient.get<ApiResponse<Equipment[]>>(ENDPOINT)
+// res.data เป็น ApiResponse<Equipment[]>
+// res.data.data เป็น Equipment[] (TypeScript รู้อัตโนมัติ ไม่ใช่ any)
+
+// [2] Promise<T> — return type ของ async function
+//     บอกว่าฟังก์ชันนี้ return ค่าชนิด T เมื่อสำเร็จ
+export async function getEquipments(): Promise<Equipment[]> { ... }
+
+// [3] Indexed Access Type — ดึง type ของ field ออกมาใช้
+//     Equipment['status'] = 'available' | 'borrowed' | 'maintenance'
+//     ไม่ต้อง import EquipmentStatus แยก
+function updateEquipmentStatus(id: number, status: Equipment['status']) { ... }
+
+// [4] Optional parameter ด้วย ?
+//     borrowedBy? หมายถึง parameter นี้ส่งหรือไม่ก็ได้
+function updateEquipmentStatus(id: number, status: ..., borrowedBy?: string) { ... }
+```
+
+**สรุป:** Generic types ใน Axios + Indexed Access Type ทำให้ TypeScript ตรวจสอบ API response ได้ครบทุกจุด ✅
 
 ## 🛠️ A: Application
+
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า Request interceptor และ Response interceptor ต่างกันอย่างไร และแต่ละอันทำงานเมื่อไหร่
+- [ ] บอกได้ว่า `res.data.data` ต้อง `.data` สองครั้งเพราะอะไร และ Generic type ช่วยอะไรใน Axios call
+:::
 
 ### 🤖 AI Prompt Guide
 
@@ -158,7 +183,7 @@ const res = await axios.get('http://localhost:3000/api/equipments', {
 "กำลังเรียน React 18 + TypeScript อยู่ ช่วยสร้าง Axios API client configuration ที่: 1) สร้าง instance ด้วย `axios.create()` 2) มี request interceptor แนบ JWT token จาก localStorage ทุก request 3) มี response interceptor จัดการ 401 → ลบ token + redirect `/login` 4) แยก API functions ออกเป็นไฟล์ `equipmentApi.ts` ที่มี `getEquipments()` คืน `Promise<Equipment[]>` และใช้ Generic type `ApiResponse<T>`"
 :::
 
-### 📝 PjBL Lab
+### 📝 PjBL Lab — ชิ้นงาน: `src/api/config.ts`, `src/api/equipmentApi.ts`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -188,10 +213,8 @@ const res = await axios.get('http://localhost:3000/api/equipments', {
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk4: add Axios API client and equipmentApi functions"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: Interceptor ทำงานยังไง, `res.data.data` คืออะไร, Vite proxy ทำงานยังไง พร้อม screenshot Network tab
-
----
+- [ ] `git add src/api/ && git commit -m "wk4: add Axios API client and equipmentApi functions"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: Interceptor ทำงานยังไง, `res.data.data` คืออะไร, Vite proxy ทำงานยังไง พร้อม screenshot Network tab + ลิงก์ repo
 
 ## ✅ P: Progress
 
@@ -213,6 +236,14 @@ const res = await axios.get('http://localhost:3000/api/equipments', {
 **แนวคำตอบ:** Generic Type บอก TypeScript ว่า `res.data` มีรูปแบบ `ApiResponse<Equipment[]>` ทำให้ `res.data.data` เป็น `Equipment[]` โดยอัตโนมัติ ถ้าไม่ใส่ Generic Axios คืน `any` ซึ่ง auto-complete ไม่ทำงานและพิมพ์ field ผิดก็ไม่ Error ตอน compile
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| CORS error ใน Network tab | ไม่ได้ตั้ง proxy ใน `vite.config.ts` หรือ Backend ไม่ได้รัน | ตรวจสอบ `vite.config.ts` มี proxy `/api` → `http://localhost:3000` และ Backend รันอยู่ |
+| `res.data` เป็น `any` TypeScript ไม่รู้ type | ไม่ได้ใส่ Generic type ใน `apiClient.get<...>()` | เพิ่ม `<ApiResponse<Equipment[]>>` ใน Axios call ทุกครั้ง |
+| Token ไม่ถูกส่งใน request header | Interceptor ไม่ได้รัน หรือ token ไม่มีใน localStorage | ตรวจสอบ interceptor ถูก register กับ `apiClient` instance ที่ใช้จริง |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -221,15 +252,18 @@ const res = await axios.get('http://localhost:3000/api/equipments', {
 | equipmentApi.ts | ฟังก์ชันครบ, unwrap res.data.data ถูก | มีบางฟังก์ชัน | ใช้ mock data ต่อ |
 | ดึง API จริงได้ | เห็นข้อมูลจาก backend ใน Network tab | ดึงได้แต่ TypeScript error | ยังใช้ mock data |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Axios` | HTTP Client Library สำหรับ JavaScript/TypeScript — ดีกว่า fetch ในเรื่อง error handling |
-| `Interceptor` | ฟังก์ชันที่รัน "ระหว่างทาง" ก่อน request ออกหรือหลัง response เข้า |
-| `Bearer Token` | รูปแบบ Authorization header: `Authorization: Bearer <jwt_token>` |
-| `Proxy` | ตัวกลาง forward request จาก Vite dev server ไป Backend อัตโนมัติ |
-| `Unwrap` | การดึงข้อมูลจริงออกจาก wrapper (`res.data.data` ออกจาก `ApiResponse`) |
-| `Indexed Access Type` | `Equipment['status']` — ดึง type ของ field `status` ออกมาใช้ |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `axios` | แอก-ซิ-ออส | HTTP Client Library สำหรับ JavaScript/TypeScript — ดีกว่า fetch ในเรื่อง error handling |
+| `fetch` | เฟทช์ | ฟังก์ชันดึงข้อมูลจาก API ในตัว Browser — Axios ใช้แทนเพราะ API ดีกว่า |
+| `API` | เอ-พี-ไอ | Application Programming Interface — คนกลางรับส่งข้อมูลระหว่าง Frontend กับ Backend |
+| `HTTP` | เฮทช์-ที-ที-พี | Hypertext Transfer Protocol — โปรโตคอลส่งข้อมูลบนเว็บ |
+| `Interceptor` | อิน-เทอร์-เซ็บ-เตอร์ | ฟังก์ชันที่รัน "ระหว่างทาง" ก่อน request ออกหรือหลัง response เข้า |
+| `Bearer Token` | แบร์-เรอร์ โทเคิน | รูปแบบ Authorization header: `Authorization: Bearer <jwt_token>` |
+| `Proxy` | พร็อก-ซี | ตัวกลาง forward request จาก Vite dev server ไป Backend อัตโนมัติ |
+| `Response` | รี-สพอนส์ | ข้อมูลที่ Server ส่งกลับมาหลังประมวลผล request |
+| `Unwrap` | อัน-แรป | การดึงข้อมูลจริงออกจาก wrapper (`res.data.data` ออกจาก `ApiResponse`) |
+| `Indexed Access Type` | อิน-เด็กซ์ด แอก-เซส ไทพ์ | `Equipment['status']` — ดึง type ของ field `status` ออกมาใช้ |
+| `Endpoint` | เอน-พอยท์ | URL path ที่ API รับ request เช่น `/api/equipments` |

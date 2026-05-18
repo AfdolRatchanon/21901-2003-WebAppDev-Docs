@@ -1,5 +1,7 @@
 # Async/Await กับ Loading State <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** บทนี้สอน pattern try-catch-finally สำหรับ async API call พร้อม 3 states (loading/error/data) ที่บรรจุใน Custom Hook useEquipments ซึ่งเป็น hook หลักที่ใช้ตลอดโปรเจกต์จนถึง wk7
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** async/await เหมือนสั่งอาหาร Delivery — เราส่งคำสั่ง (Request) แล้วรอ (await) จนอาหารมาถึง ระหว่างรอเราทำอย่างอื่นได้ (non-blocking) ส่วน Loading Spinner คือ "กำลังจัดส่ง" ที่แสดงให้ผู้ใช้รู้ว่าระบบกำลังทำงาน
-
----
 
 ## 📖 I: Information
 
@@ -107,8 +107,6 @@ export function EquipmentPage() {
 
 **สรุป:** `try` ดึงข้อมูล → `catch` จัดการ error → `finally` ปิด loading เสมอ ✅
 
----
-
 ### ขั้นตอนที่ 2 — async function สำหรับ action (Borrow/Return)
 
 Pattern ที่ต้องจัดการ loading + error ใน action แตกต่างจากการ fetch:
@@ -131,9 +129,36 @@ async function handleBorrow(equipmentId: number, purpose: string) {
 }
 ```
 
----
+#### 🔷 TypeScript ในบทนี้
+
+```ts [TypeScript ที่ใช้ในบทนี้]
+// [1] useState<boolean> และ useState<string | null>
+//     ใช้กำหนด type ของ state ให้ชัดเจน
+const [isLoading, setIsLoading] = useState<boolean>(true)
+const [error,     setError]     = useState<string | null>(null)
+
+// [2] useCallback<T> — Generic type อนุมานอัตโนมัติจาก async function
+const fetchEquipments = useCallback(async () => {
+  // ... TypeScript อนุมาน return type เป็น Promise<void>
+}, [])
+
+// [3] async/await — syntax สำหรับ Promise
+//     await หยุดรอ Promise ก่อน ค่อยทำบรรทัดต่อไป
+const data = await getEquipments()  // data เป็น Equipment[] (TypeScript รู้จาก return type)
+
+// [4] try-catch โดยไม่ระบุ error variable
+//     TypeScript 4.x+ รองรับ catch {} โดยไม่ต้องระบุ (e: unknown)
+try { ... } catch { ... }
+```
+
+**สรุป:** `useState<boolean>` + `async/await` + `try-catch-finally` คือ pattern มาตรฐาน async ใน React ✅
 
 ## 🛠️ A: Application
+
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่าทำไม `finally` ดีกว่าใส่ `setIsLoading(false)` ใน try และ catch แยกกัน
+- [ ] บอกได้ว่า `useCallback` ป้องกัน infinite loop ได้อย่างไรเมื่อใช้ร่วมกับ `useEffect`
+:::
 
 ### 🤖 AI Prompt Guide
 
@@ -141,7 +166,7 @@ async function handleBorrow(equipmentId: number, purpose: string) {
 "กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้าง custom hook `useEquipments` ที่: 1) มี states `equipments: Equipment[]`, `isLoading: boolean`, `error: string | null` 2) ใช้ `useCallback` ครอบ async fetch function พร้อม `try-catch-finally` 3) ใช้ `useEffect` เรียก fetch ตอน mount 4) return `refetch` ให้ Component เรียกหลัง action สำเร็จ 5) แสดง Loading/Error/Empty state ใน Component — ใช้ TypeScript types ถูกต้อง"
 :::
 
-### 📝 PjBL Lab
+### 📝 PjBL Lab — ชิ้นงาน: `src/hooks/useEquipments.ts`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -173,10 +198,8 @@ async function handleBorrow(equipmentId: number, purpose: string) {
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk4: useEquipments with loading/error state and real API"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: `try-catch-finally` ต่างกันอย่างไร, `useCallback` ป้องกัน infinite loop ยังไง พร้อม screenshot Loading state
-
----
+- [ ] `git add src/hooks/useEquipments.ts src/pages/EquipmentPage.tsx && git commit -m "wk4: useEquipments with loading/error state and real API"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: `try-catch-finally` ต่างกันอย่างไร, `useCallback` ป้องกัน infinite loop ยังไง พร้อม screenshot Loading state + ลิงก์ repo
 
 ## ✅ P: Progress
 
@@ -198,6 +221,14 @@ async function handleBorrow(equipmentId: number, purpose: string) {
 **แนวคำตอบ:** ตอนเริ่มต้น `equipments = []` และ `isLoading = true` — ถ้าไม่ตรวจ `!isLoading` จะแสดง "ยังไม่มีอุปกรณ์" ทันทีก่อน API ตอบ ซึ่งผิด ผู้ใช้จะเห็น Loading กับ "ยังไม่มี" พร้อมกัน การเพิ่ม `!isLoading &&` ทำให้ Empty State แสดงเฉพาะเมื่อโหลดเสร็จแล้วจริงๆ ว่างเปล่า
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| API ถูกเรียกซ้ำไม่หยุด (infinite loop) | `fetchEquipments` ไม่ได้ wrap ด้วย `useCallback` ทำให้สร้างใหม่ทุก render | เพิ่ม `useCallback(async () => {...}, [])` ครอบฟังก์ชัน fetch |
+| Loading ค้างตลอดเมื่อเกิด error | ไม่ได้ใส่ `setIsLoading(false)` ใน `finally` | ย้าย `setIsLoading(false)` เข้า `finally` block แทน try/catch |
+| Empty state แสดงก่อนข้อมูลโหลด | `{equipments.length === 0 && <p>ว่าง</p>}` ไม่มี `!isLoading` | เพิ่ม `!isLoading &&` เพื่อตรวจว่าโหลดเสร็จจริงก่อน |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -206,15 +237,15 @@ async function handleBorrow(equipmentId: number, purpose: string) {
 | 3 States ครบ | loading/error/empty state แสดงถูกต้อง | มีบางส่วน | ไม่มี state แสดง |
 | refetch ทำงาน | กด borrow/return → ข้อมูล refresh | refetch มีแต่ไม่เรียก | ใช้ mock data ต่อ |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `async/await` | Syntax สำหรับเขียน asynchronous code แบบอ่านง่าย เหมือน synchronous |
-| `try-catch-finally` | โครงสร้างจัดการ error: try=ลอง, catch=ถ้าพัง, finally=เสมอ |
-| `Loading State` | สถานะ "กำลังโหลด" ที่บอกผู้ใช้ว่าระบบกำลังรอผลจาก API |
-| `useCallback` | React Hook ที่ memo function ไม่ให้สร้างใหม่ทุก render |
-| `refetch` | เรียก fetch ใหม่จาก API เพื่อ sync ข้อมูลหลัง action สำเร็จ |
-| `Empty State` | UI ที่แสดงเมื่อไม่มีข้อมูล — ดีกว่าแสดงหน้าว่างเปล่า |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `async/await` | เอ-ซิงค์ อะ-เวท | Syntax สำหรับเขียน asynchronous code แบบอ่านง่าย เหมือน synchronous |
+| `try-catch-finally` | ทราย-แคทช์-ไฟ-นัล-ลี | โครงสร้างจัดการ error: try=ลอง, catch=ถ้าพัง, finally=เสมอ |
+| `Loading State` | โหลด-ดิ่ง สเตท | สถานะ "กำลังโหลด" ที่บอกผู้ใช้ว่าระบบกำลังรอผลจาก API |
+| `Error Handling` | เออ-เรอ แฮน-ดลิ่ง | การจัดการข้อผิดพลาดที่อาจเกิดจาก API หรือ network |
+| `useCallback` | อิว-คอล-แบค | React Hook ที่ memo function ไม่ให้สร้างใหม่ทุก render |
+| `refetch` | รี-เฟทช์ | เรียก fetch ใหม่จาก API เพื่อ sync ข้อมูลหลัง action สำเร็จ |
+| `Empty State` | เอม-ตี้ สเตท | UI ที่แสดงเมื่อไม่มีข้อมูล — ดีกว่าแสดงหน้าว่างเปล่า |
+| `Promise` | พรอม-มิส | Object ที่แทน async operation ที่ยังไม่เสร็จ — resolve หรือ reject |

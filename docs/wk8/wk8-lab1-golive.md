@@ -1,5 +1,7 @@
 # Lab: Go-Live Simulation <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** จำลอง go-live process จริง — build production, ทดสอบ Full System checklist ครบทุก feature, และ demo ระบบต่อผู้ใช้จริง ถือเป็นบทสรุปของ wk1-8 ทั้งหมด
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เป้าหมาย Lab นี้:** ผ่าน pre-launch checklist ครบทุกข้อ และ demo ระบบสด ๆ ต่อหน้าผู้ใช้จริง
-
----
 
 ## 📖 I: Information
 
@@ -68,8 +68,6 @@ npx tsc --noEmit
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 2 — Full System Test Checklist
 
 ทดสอบทุกข้อก่อน demo — ทำเครื่องหมาย ✅ เมื่อผ่าน:
@@ -88,8 +86,6 @@ npx tsc --noEmit
 | Persist login | F5 Refresh → ยังอยู่ใน session | ⬜ |
 
 **เกณฑ์ผ่าน:** ✅ ≥ 8/10 ข้อ ก่อนเริ่ม demo
-
----
 
 ### ขั้นตอนที่ 3 — Demo Script
 
@@ -122,8 +118,6 @@ npx tsc --noEmit
 - บันทึก feedback ในโน้ต
 ```
 
----
-
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide
@@ -132,17 +126,18 @@ npx tsc --noEmit
 "สร้าง pre-launch checklist สำหรับเว็บแอปพลิเคชัน React + Node.js ก่อน go-live รวมถึง: TypeScript type checking, production build verification, API endpoint testing, security checklist (JWT secret, CORS, env vars) และ demo script สำหรับนำเสนอ 7 นาทีต่อผู้ใช้จริง — อธิบายทำไม 0 TypeScript errors ถึงสำคัญก่อน deploy"
 :::
 
-### 📝 PjBL Lab — Go-Live Simulation
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] `npx tsc --noEmit` ผ่าน 0 errors และ `npm run build` สำเร็จ
+- [ ] Full System Test ผ่านอย่างน้อย 8/10 ข้อก่อนเริ่ม demo
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `dist/` + Full System Test Report
 
 **เป้าหมาย:** ผ่าน pre-launch checklist ครบ และ demo ระบบสด
-
----
 
 #### ขั้น 0 — Student Identity
 
 ตรวจสอบว่า `<footer>` ชื่อ-รหัสยังอยู่ใน EquipmentPage หรือ AdminPage ✅
-
----
 
 #### ขั้น 1 — Build & Verify (30 นาที)
 
@@ -159,8 +154,6 @@ npm run preview    # ✅ localhost:4173 ทำงาน
 - [ ] `npm run build` — สำเร็จ บันทึก bundle size: _____ kB ✅
 - [ ] `npm run preview` — เปิดใน browser ทำงานปกติ ✅
 
----
-
 #### ขั้น 2 — Full System Test (20 นาที)
 
 ทดสอบทุกข้อจากตารางด้านบน:
@@ -172,16 +165,12 @@ npm run preview    # ✅ localhost:4173 ทำงาน
 
 สำหรับข้อที่ ❌: บันทึก bug + reproduce steps
 
----
-
 #### ขั้น 3 — Demo Presentation (15 นาที)
 
 - [ ] เตรียม browser: Login ด้วย student account + เปิด 2 tab
 - [ ] นำเสนอตาม Demo Script (7 นาที)
 - [ ] Demo real-time บน 2 browser tab พร้อมกัน
 - [ ] รับ feedback จากผู้ชม + บันทึก
-
----
 
 #### ขั้น Submit — ส่งงาน
 
@@ -194,8 +183,6 @@ npm run preview    # ✅ localhost:4173 ทำงาน
   - Bug ที่พบและวิธีแก้
   - บทเรียน 3 ข้อที่ได้จากโปรเจกต์ทั้งหมด wk1-8
   - ลิงก์ GitHub + screenshots ครบ
-
----
 
 ## ✅ P: Progress
 
@@ -217,6 +204,14 @@ npm run preview    # ✅ localhost:4173 ทำงาน
 **แนวคำตอบ:** ประเมินก่อน: 1) **Critical bug** (login ไม่ได้, crash) → แก้ก่อน demo เสมอ 2) **Minor bug** (UI ผิดเล็กน้อย, บาง edge case) → demo ได้ แต่แจ้ง reviewer ตรง ๆ และบันทึกใน report — การซ่อน bug ไม่ใช่วิธีที่ดี บอกตรง ๆ + มีแผนแก้ไขแสดงให้เห็น maturity ของ developer
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `npm run preview` แล้ว API ไม่ทำงาน | proxy ไม่ทำงานใน production mode | ตั้ง `VITE_API_URL=http://localhost:3000` ก่อน preview |
+| Real-time ไม่ sync ใน 2 tab | Backend Socket.io ไม่ emit หรือ Frontend ไม่ join room | ตรวจ Network tab → WS → ดู messages ที่รับ |
+| TypeScript errors ตอน build | มี type mismatch ที่ dev mode ไม่แจ้ง | รัน `npx tsc --noEmit` ก่อน build เสมอ |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -225,17 +220,16 @@ npm run preview    # ✅ localhost:4173 ทำงาน
 | Full System Test | ผ่าน ≥ 8/10 + บันทึก bug ครบ | ผ่าน 5-7/10 | < 5/10 |
 | Demo | นำเสนอได้ครบตาม script + demo real-time | นำเสนอได้บางส่วน | ไม่ได้ demo |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Go-Live` | วันที่ระบบ "เปิดตัว" และผู้ใช้จริงเริ่มใช้งาน |
-| `Pre-Launch Checklist` | รายการตรวจสอบก่อน go-live — ทำทีละข้อตามลำดับ |
-| `Demo Script` | แผนการนำเสนอระบบ — กำหนดลำดับและจุดสำคัญที่จะแสดง |
-| `Stakeholder` | ผู้มีส่วนเกี่ยวข้อง เช่น ครู, ผู้ใช้งาน, ผู้บริหาร |
-| `Post-Launch` | ช่วงหลัง go-live — monitor, fix bugs, รับ feedback |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Go-Live` | โก-ไลฟ์ | วันที่ระบบ "เปิดตัว" และผู้ใช้จริงเริ่มใช้งาน |
+| `GitHub Actions` | กิ๊ต-ฮับ แอค-ชันส์ | เครื่องมือ CI/CD ของ GitHub สำหรับ deploy อัตโนมัติ |
+| `Pre-Launch Checklist` | พรี-ลอนช์ เชค-ลิสท์ | รายการตรวจสอบก่อน go-live — ทำทีละข้อตามลำดับ |
+| `Demo Script` | ดี-โม สคริปท์ | แผนการนำเสนอระบบ — กำหนดลำดับและจุดสำคัญที่จะแสดง |
+| `Stakeholder` | สเตค-โฮล-เดอร์ | ผู้มีส่วนเกี่ยวข้อง เช่น ครู, ผู้ใช้งาน, ผู้บริหาร |
+| `Post-Launch` | โพสท์-ลอนช์ | ช่วงหลัง go-live — monitor, fix bugs, รับ feedback |
 | `npx tsc --noEmit` | รัน TypeScript compiler ตรวจ type โดยไม่สร้างไฟล์ output |
 | `npm run preview` | รัน production build locally — จำลอง production environment |
-| `Bundle Size` | ขนาดไฟล์ JavaScript/CSS หลัง build — ยิ่งเล็กยิ่งโหลดเร็ว |
+| `Bundle Size` | บัน-เดิล ไซส์ | ขนาดไฟล์ JavaScript/CSS หลัง build — ยิ่งเล็กยิ่งโหลดเร็ว |

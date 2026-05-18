@@ -1,5 +1,7 @@
 # React Router v6 + Protected Routes <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เข้าใจการกำหนด Routes ด้วย React Router v6, สร้าง ProtectedRoute ที่ตรวจสอบทั้ง authentication และ role, และใช้ Navigate component สำหรับ redirect แบบ SPA
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** React Router เหมือน "ป้ายบอกทางในอาคาร" — บอกว่า URL ไหนนำไปยัง Component ไหน ส่วน ProtectedRoute เหมือน "รปภ." ที่เฝ้าประตูห้องสำคัญ — ตรวจบัตรก่อนให้เข้า
-
----
 
 ## 📖 I: Information
 
@@ -46,8 +46,6 @@ function App() {
 | `/admin` | `AdminPage` | ต้อง login + role = admin |
 | `/forbidden` | 403 page | ไม่มี |
 | `/*` | redirect `/` | catch-all |
-
----
 
 ### ขั้นตอนที่ 2 — App.tsx: กำหนด Routes พร้อม Auth Guards
 
@@ -109,8 +107,6 @@ function App() {
 ```
 
 **สรุปการทำงาน:** `useAuth()` `[1]` เป็น Single Source of Truth → กำหนด Routes + Guards `[3]-[9]` → `path="*"` `[10]` จัดการ URL ที่ไม่รู้จัก
-
----
 
 ### ขั้นตอนที่ 3 — ProtectedRoute: ยามสองชั้น + Navigate replace
 
@@ -175,7 +171,11 @@ function SomeComponent() {
 ```
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `interface ProtectedRouteProps` — กำหนด props ครบทุก parameter พร้อม optional `?`
+- `React.ReactNode` — type ของ children ที่รับ JSX, string, null ได้ทั้งหมด
+- `UserRole | null` — Union type รองรับทั้ง undefined (optional) และ null (จาก optional chaining)
 
 ## 🛠️ A: Application
 
@@ -185,17 +185,18 @@ function SomeComponent() {
 "สร้าง ProtectedRoute component ด้วย TypeScript และ React Router v6 ที่: 1) redirect ไป /login ถ้า `isAuthenticated` เป็น false 2) redirect ไป /forbidden ถ้า `requiredRole` กำหนดมาแต่ `userRole` ไม่ตรง 3) render children ถ้าผ่านทั้งสองเงื่อนไข — อธิบายว่า `replace` ใน Navigate ต่างจากไม่ใช้ replace อย่างไร"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] เข้าใจ flow ของ ProtectedRoute ทั้งสองชั้น (auth check + role check)
+- [ ] รู้ว่า `replace` ใน Navigate ป้องกัน Back-button loop ยังไง
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `src/components/ProtectedRoute.tsx`
 
 **เป้าหมาย:** ทดสอบทุก Route + Guard behavior
-
----
 
 #### ขั้น 0 — Student Identity
 
 เพิ่ม `<footer>` ชื่อ-รหัสของตนเองใน Component หลักที่แก้ไข
-
----
 
 #### ขั้น 1 — ทดสอบทุก Path
 
@@ -207,8 +208,6 @@ function SomeComponent() {
 | `/admin` | login เป็น student → พิมพ์ URL ตรง | หน้า 403 ✅ |
 | `/admin` | login เป็น admin | เข้าได้ ✅ |
 | `/something-random` | พิมพ์ URL ที่ไม่มี | redirect ไป `/` ✅ |
-
----
 
 #### ขั้น 2 — เพิ่ม Route ใหม่
 
@@ -223,16 +222,12 @@ function SomeComponent() {
 } />
 ```
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ถ่าย screenshot ทดสอบทุก case ในตาราง
 - [ ] `git commit -m "wk7: react router v6 routes and protected route testing"`
 - [ ] `git push origin main`
-- [ ] เขียนสรุป Google Doc: ProtectedRoute ทำงานยังไง, replace ใน Navigate คืออะไร
-
----
+- [ ] เขียนสรุป Google Doc: ProtectedRoute ทำงานยังไง, replace ใน Navigate คืออะไร + ลิงก์ GitHub + screenshots
 
 ## ✅ P: Progress
 
@@ -257,6 +252,14 @@ function SomeComponent() {
 `auth.user?.role` return `UserRole | undefined` แต่ถ้า prop ไม่รับ null TypeScript จะ error ดังนั้นต้องระบุ `| null` เพื่อรับทั้งสองกรณี
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `useNavigate() may be used only in the context of a Router component` | ใช้ Hook นอก `<BrowserRouter>` | ตรวจว่า component อยู่ใต้ BrowserRouter ใน tree |
+| Back button วนซ้ำไม่หยุดหลัง redirect | ไม่ใช้ `replace` ใน Navigate | เพิ่ม `replace` prop ทุก Navigate ที่เป็น guard redirect |
+| `/admin` เข้าได้ทั้งที่เป็น student | ลืมส่ง `requiredRole` ใน ProtectedRoute | ตรวจ `<ProtectedRoute requiredRole="admin">` ให้ครบ |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -265,16 +268,14 @@ function SomeComponent() {
 | ProtectedRoute | auth + role guard ถูกทั้งสองชั้น | guard อย่างเดียว | ไม่มี guard |
 | Navigate replace | ใช้ replace ถูกที่ ทุก redirect | ใช้ Navigate แต่ไม่มี replace | ไม่มี redirect |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `React Router` | Library สำหรับจัดการ URL routing ใน React SPA |
-| `Route Guard` | ตัวตรวจสอบก่อนให้ผู้ใช้เข้าถึง route |
-| `Navigate` | React Router component ที่ทำ redirect โดยไม่ reload หน้า |
-| `replace` | ใน Navigate: แทนที่ history entry (กด Back ไม่วนกลับ) |
-| `Wildcard` | `*` ใน path — match ทุก URL ที่ไม่ตรงกับ route อื่น |
-| `SPA` | Single Page Application — เว็บที่ไม่ reload หน้าเมื่อ navigate |
-| `useNavigate` | React Router Hook สำหรับ navigate ใน event handler |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `React Router` | รี-แอ็คท์ เราท์-เตอร์ | Library สำหรับจัดการ URL routing ใน React SPA |
+| `Protected Route` | โพร-เทค-ทิด เราท์ | Route ที่ต้องผ่านการตรวจสอบ auth/role ก่อนเข้าถึง |
+| `Navigate` | แน็ฟ-วิ-เกท | React Router component ที่ทำ redirect โดยไม่ reload หน้า |
+| `replace` | รี-เพลส | ใน Navigate: แทนที่ history entry (กด Back ไม่วนกลับ) |
+| `Wildcard` | ไวลด์-คาร์ด | `*` ใน path — match ทุก URL ที่ไม่ตรงกับ route อื่น |
+| `SPA` | เอส-พี-เอ | Single Page Application — เว็บที่ไม่ reload หน้าเมื่อ navigate |
+| `useNavigate` | ยูส แน็ฟ-วิ-เกท | React Router Hook สำหรับ navigate ใน event handler |

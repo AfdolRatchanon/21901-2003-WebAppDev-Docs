@@ -1,5 +1,7 @@
 # Props Drilling & useAuth — จัดการ Auth State ข้าม Component <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เรียนรู้การส่งข้อมูล Auth ข้าม Component ผ่าน Props + สร้าง `useAuth()` Hook ที่ restore state จาก localStorage — เป็นรากฐานของระบบ Login ที่ wk6 จะนำไปใช้งานจริงครบวงจร
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -15,8 +17,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** useAuth Hook เหมือน "บัตรประจำตัว" ที่พกติดตัว — refresh แล้วก็ยังรู้ว่าตัวเองเป็นใคร, ProtectedRoute เหมือนยาม รปภ. ที่ตรวจบัตรก่อนเข้าห้อง
-
----
 
 ## 📖 I: Information
 
@@ -113,8 +113,6 @@ const [user, setUser] = useState<User | null>(
 // try-catch ทำให้ login state reset เป็น null แทน crash
 ```
 :::
-
----
 
 ### ขั้นตอนที่ 2 — Props Drilling: App.tsx ส่ง auth ลงไป
 
@@ -218,8 +216,6 @@ const auth = useAuth()
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 3 — `ProtectedRoute`: ยามสองชั้น
 
 ```tsx [src/components/ProtectedRoute.tsx]
@@ -285,7 +281,12 @@ export function ProtectedRoute({
 ```
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `useState<User | null>(() => {...})` — Lazy Initializer พร้อม Generic type
+- `Promise<boolean>` — return type ของ `login()` ที่บอกผลแบบ explicit
+- `UserRole | null` ใน ProtectedRoute — ครอบคลุม optional prop ที่อาจเป็น null
+- `?.` (optional chaining) — `auth.user?.role` ป้องกัน null reference
 
 ## 🛠️ A: Application
 
@@ -295,11 +296,15 @@ export function ProtectedRoute({
 "สร้าง React custom hook ชื่อ `useAuth` ที่ใช้ TypeScript — ต้อง restore user จาก localStorage ด้วย Lazy Initializer ใน useState, มี login function ที่ return `Promise<boolean>`, มี logout function ที่ล้าง localStorage และ axios header จากนั้นแสดงวิธีส่ง auth เป็น props จาก App.tsx ไปยัง ProtectedRoute"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] เข้าใจว่า Lazy Initializer `() => {...}` ต่างจากการใส่ค่าตรง ๆ ใน useState อย่างไร
+- [ ] อธิบายได้ว่า `isAuthenticated: token !== null` ทำงานอย่างไร
+- [ ] รู้ว่า ProtectedRoute ตรวจสอบ 2 ชั้น (login + role) ก่อน render children
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `useAuth.ts`
 
 **เป้าหมาย:** เพิ่มระบบ Login + Route Protection ให้แอปเบิก-จ่ายอุปกรณ์
-
----
 
 #### ขั้น 0 — Student Identity
 
@@ -310,8 +315,6 @@ export function ProtectedRoute({
   จัดทำโดย: ชื่อ-นามสกุล · รหัสนักเรียน
 </footer>
 ```
-
----
 
 #### ขั้น 1 — สร้าง `useAuth()` Hook
 
@@ -340,8 +343,6 @@ localStorage.setItem('token', 'test-token')
 // refresh หน้า → useAuth ควร restore token ได้
 ```
 
----
-
 #### ขั้น 2 — อัปเดต `App.tsx` ให้มี Routes + auth props
 
 1. แก้ `src/App.tsx` ตาม **ขั้นตอนที่ 2**
@@ -350,8 +351,6 @@ localStorage.setItem('token', 'test-token')
 npm install react-router-dom
 ```
 3. ตรวจสอบ: `npm run dev` แล้ว navigate ไป `/login` ได้
-
----
 
 #### ขั้น 3 — สร้าง `ProtectedRoute.tsx`
 
@@ -365,8 +364,6 @@ npm install react-router-dom
 | login เป็น student แล้วไปที่ `/admin` | redirect ไป `/forbidden` (403) |
 | login เป็น admin แล้วไปที่ `/admin` | เข้าได้ |
 | login แล้วไปที่ `/login` | redirect ไป `/` |
-
----
 
 #### ขั้น 4 — เชื่อม `LoginPage` กับ `auth.login()`
 
@@ -396,8 +393,6 @@ export function LoginPage({ auth }: LoginPageProps) {
 }
 ```
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ทดสอบ login ด้วย account ทุก role (admin / teacher / student)
@@ -407,8 +402,6 @@ export function LoginPage({ auth }: LoginPageProps) {
 - [ ] `git commit -m "feat: add useAuth hook + ProtectedRoute + routing"`
 - [ ] `git push origin main`
 - [ ] เขียนสรุป 3-5 บรรทัดใน Google Doc + ลิงก์ GitHub + screenshot หน้า 403
-
----
 
 ## ✅ P: Progress
 
@@ -441,6 +434,14 @@ Pattern `Promise<boolean>` = "บอกผลลัพธ์แบบ explicit �
 ในทางปฏิบัติ: `auth.user` เป็น `User | null` ดังนั้น `auth.user?.role` มีค่าเป็น `UserRole | undefined` — TypeScript ต้องการให้ type ของ prop ครอบคลุม ทั้ง undefined (optional) และ null (เมื่อ user เป็น null)
 :::
 
+### 🐛 Common Errors
+
+| Error | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `JSON.parse` throw `SyntaxError` ตอน restore | localStorage มีค่าที่ไม่ใช่ JSON ที่ถูกต้อง (เช่น แก้ด้วยมือ) | ใช้ `try-catch` ใน Lazy Initializer และ `removeItem` เมื่อ catch |
+| `auth.user.role` → `Cannot read properties of null` | `auth.user` เป็น null แต่ไม่ได้ใช้ optional chaining | เปลี่ยนเป็น `auth.user?.role` ทุกที่ที่ใช้ |
+| redirect วนซ้ำ (infinite loop) ระหว่าง `/` และ `/login` | `ProtectedRoute` redirect ไป `/login` แต่ `/login` redirect กลับไป `/` | ตรวจว่า `/login` route มีเงื่อนไข `isAuthenticated ? <Navigate to="/" /> : <LoginPage />` |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -449,16 +450,16 @@ Pattern `Promise<boolean>` = "บอกผลลัพธ์แบบ explicit �
 | Login Flow | login สำเร็จ → navigate, ล้มเหลว → error message | ทำงานได้แต่ไม่มี error feedback | login ไม่ทำงาน |
 | ProtectedRoute | redirect ถูกทั้ง 2 กรณี (unauth + wrong role) | redirect ได้กรณีเดียว | ไม่มี guard |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Lazy Initializer` | ฟังก์ชันที่ส่งเข้า useState — รันครั้งเดียวตอน mount เพื่อประหยัดการคำนวณ |
-| `Props Drilling` | การส่ง props ผ่าน Component กลางที่ไม่ได้ใช้ข้อมูลนั้น |
-| `Single Source of Truth` | มีที่เดียวที่เป็น "เจ้าของ" state — ที่อื่นอ่านจากที่นี่ |
-| `Optional Chaining` | `?.` syntax — ป้องกัน error จาก null/undefined โดยคืน undefined แทน throw |
-| `RBAC` | Role-Based Access Control — ควบคุมสิทธิ์ตาม role ของผู้ใช้ |
-| `Protected Route` | Route ที่ต้องผ่านการตรวจสอบ (login + role) ก่อนเข้าถึง |
-| `replace` | Navigate option — แทนที่ history entry แทนการ push (กด Back ไม่วนกลับ) |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Lazy Initializer` | เล-ซี อิ-นิ-เชีย-ไล-เซอร์ | ฟังก์ชันที่ส่งเข้า useState — รันครั้งเดียวตอน mount เพื่อประหยัดการคำนวณ |
+| `Props Drilling` | พรอปส์ ดริล-ลิ่ง | การส่ง props ผ่าน Component กลางที่ไม่ได้ใช้ข้อมูลนั้น |
+| `Single Source of Truth` | ซิง-เกิล ซอร์ส ออฟ ทรูธ | มีที่เดียวที่เป็น "เจ้าของ" state — ที่อื่นอ่านจากที่นี่ |
+| `Optional Chaining` | ออพ-ชัน-นัล เชน-นิ่ง | `?.` syntax — ป้องกัน error จาก null/undefined โดยคืน undefined แทน throw |
+| `Authentication` | ออ-เทน-ติ-เค-ชัน | กระบวนการพิสูจน์ตัวตนว่าผู้ใช้คือใคร |
+| `Authorization` | ออ-เทอ-ไร-เซ-ชัน | กระบวนการตรวจสอบว่าผู้ใช้มีสิทธิ์ทำอะไรได้บ้าง |
+| `RBAC` | อาร์-บี-เอ-ซี | Role-Based Access Control — ควบคุมสิทธิ์ตาม role ของผู้ใช้ |
+| `Protected Route` | โพร-เทค-เทด เราท์ | Route ที่ต้องผ่านการตรวจสอบ (login + role) ก่อนเข้าถึง |
+| `Token` | โท-เคน | ข้อมูลที่ใช้พิสูจน์ตัวตน — ส่งไปกับทุก API request |

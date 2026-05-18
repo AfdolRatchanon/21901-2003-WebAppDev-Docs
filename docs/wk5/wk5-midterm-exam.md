@@ -1,5 +1,7 @@
 # สอบกลางภาค + นำเสนอโครงร่างโปรเจกต์ <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** ทบทวนและประเมินทักษะ wk1-wk4 — เป็นจุดตรวจสอบก่อนเข้าสู่ภาคหลัง นักเรียนจะได้ review โค้ดทั้งหมดที่สร้างมา ฝึกอธิบายแต่ละบรรทัด และนำเสนอโครงร่างโปรเจกต์ต่อกรรมการ
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** การสอบกลางภาคเหมือน "Sprint Review" ใน Agile — ทีมต้อง demo ว่าสร้างอะไรได้จริง ไม่ใช่แค่บอกว่าทำอยู่
-
----
 
 ## 📖 I: Information — ทบทวน wk1–4
 
@@ -24,8 +24,6 @@
 | wk2 | Custom Hooks + Interfaces + State | `useState<T>`, `useEffect`, Custom Hook |
 | wk3 | Tailwind CSS + Controlled Forms | utility classes, `FormEvent`, `onChange`, Zod |
 | wk4 | Axios + Async/Await + DB Design | `axios.get<ApiResponse<T>>()`, `async/await`, `try/catch/finally` |
-
----
 
 ### ขั้นตอนที่ 2 — Types ที่ต้องจำและใช้ได้
 
@@ -61,8 +59,6 @@ export interface ApiResponse<T> {
   message?: string
 }
 ```
-
----
 
 ### ขั้นตอนที่ 3 — Components ที่ต้องแสดงใน Midterm
 
@@ -163,8 +159,6 @@ export function useEquipments() {
 ```
 :::
 
----
-
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide
@@ -173,17 +167,13 @@ export function useEquipments() {
 "ช่วยตรวจสอบ TypeScript React component สำหรับโปรเจกต์กลางภาค ตรวจว่า: ไม่มี type 'any', ใช้ interface ถูกต้อง ครบทุก field, Tailwind classes ใช้งานได้, Custom Hook แยก logic ออกจาก UI, และ API call ด้วย useCallback + useEffect ทำงานได้ถูกต้อง สรุปเป็น checklist ว่าขาดอะไรบ้าง"
 :::
 
-### 📝 PjBL Lab — Midterm Checklist
+### 📝 PjBL Lab — ชิ้นงาน: `Midterm Checklist`
 
 **เป้าหมาย:** ตรวจสอบโปรเจกต์ครบก่อนวันสอบ + เตรียมนำเสนอ
-
----
 
 #### ขั้น 0 — Student Identity
 
 ตรวจสอบว่า `<footer>` ชื่อ-รหัสยังอยู่ใน EquipmentPage ✅
-
----
 
 #### ขั้น 1 — ตรวจสอบ TypeScript (10 นาที)
 
@@ -197,16 +187,12 @@ npx tsc --noEmit   # ต้องได้ 0 errors — แก้ให้คร
 - [ ] `interface Equipment` มีครบทุก field: id, name, category, serialNo, status, borrowedBy ✅
 - [ ] `ApiResponse<T>` ใช้ Generic ไม่ใช่ `any` ✅
 
----
-
 #### ขั้น 2 — ตรวจสอบ Components (15 นาที)
 
 - [ ] `EquipmentCard.tsx` แสดง: ชื่อ, status badge (สีถูกต้อง), serialNo, ปุ่มยืม (เฉพาะ available) ✅
 - [ ] `EquipmentPage.tsx` แสดง: loading → error → empty → รายการ ครบทั้ง 4 state ✅
 - [ ] `useEquipments.ts` แยก logic ออกจาก component ได้ ✅
 - [ ] Responsive grid: 1 col mobile → 2 col tablet → 3 col desktop ✅
-
----
 
 #### ขั้น 3 — ตรวจสอบ API Connection (10 นาที)
 
@@ -218,8 +204,6 @@ cd project/backend && npm run dev   # Backend รันที่ port 3000
 - [ ] DevTools → Network: ดู request ไปที่ `/api/equipments` + Authorization header ✅
 - [ ] ปิด Backend → เห็น error message (ไม่ crash) ✅
 
----
-
 #### ขั้น 4 — เตรียมคำถามสอบ (15 นาที)
 
 ฝึกตอบคำถามเหล่านี้ด้วยตัวเอง (ซ้อมพูด 2 รอบ):
@@ -228,16 +212,12 @@ cd project/backend && npm run dev   # Backend รันที่ port 3000
 - [ ] "`useCallback` ใน `useEquipments` มีไว้ทำอะไร? ถ้าลบออกจะเกิดอะไร?"
 - [ ] "`Record<EquipmentStatus, string>` ต่างจาก `{ [key: string]: string }` อย่างไร?"
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ถ่าย screenshot: EquipmentPage แสดงรายการจาก Backend จริง
 - [ ] `git add . && git commit -m "wk5: midterm checkpoint - equipment system complete"`
 - [ ] `git push origin main`
-- [ ] เขียนสรุปใน Google Doc: สิ่งที่ทำได้แล้ว, สิ่งที่ต้องพัฒนาต่อ, ลิงก์ GitHub
-
----
+- [ ] เขียนสรุปใน Google Doc: สิ่งที่ทำได้แล้ว, สิ่งที่ต้องพัฒนาต่อ, ลิงก์ GitHub + screenshot
 
 ## ✅ P: Progress
 
@@ -259,6 +239,14 @@ cd project/backend && npm run dev   # Backend รันที่ port 3000
 **แนวคำตอบ:** `.data` แรกคือ Axios property — `axios.get()` wrap response ไว้ใน object ที่มี `.data`, `.status`, `.headers` → `res.data` = response body = `ApiResponse<Equipment[]>` object → `.data` ที่สองคือ field ใน `ApiResponse` interface → ได้ `Equipment[]` จริง สรุป: `res.data` = Axios layer, `.data` = ApiResponse layer
 :::
 
+### 🐛 Common Errors
+
+| Error | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `npx tsc --noEmit` มี error เรื่อง `any` | ใช้ `any` แทน type จริงในหลายจุด | เปลี่ยนเป็น `Equipment`, `User`, `ApiResponse<T>` ที่ตรงกับข้อมูลจริง |
+| `statusColor[equipment.status]` — TypeScript error | `Record<EquipmentStatus, string>` ไม่มี key ครบ 3 ค่า | เพิ่ม `maintenance` key ที่ขาดหายไปใน object |
+| หน้าเว็บ blank ไม่แสดงรายการ | `useEffect` dependency array ผิด หรือ Backend ไม่รัน | ตรวจ Backend port 3000 + Network tab ใน DevTools |
+
 ### 📋 Rubric — Midterm (50 คะแนน)
 
 | เกณฑ์ | ดีมาก (8-10) | พอใช้ (4-7) | ปรับปรุง (0-3) |
@@ -269,17 +257,15 @@ cd project/backend && npm run dev   # Backend รันที่ port 3000
 | API Connect (10) | ดึงข้อมูลจริงได้ + loading + error state | ดึงได้บางส่วน / ไม่มี loading | ไม่เชื่อมต่อ API |
 | Presentation (10) | อธิบาย code ได้ชัดเจน ตอบคำถามได้ | อธิบายได้บางส่วน | อ่าน code ไม่ออก |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Sprint Review` | การนำเสนอผลงานรายสัปดาห์ใน Agile — demo ว่าทำอะไรได้จริง |
-| `Type Safety` | การป้องกัน error โดยกำหนด type ให้ข้อมูลทุกตัว |
-| `Interface` | โครงสร้างที่บอกว่า object ต้องมี field อะไรบ้าง |
-| `Custom Hook` | function ที่ขึ้นต้นด้วย `use` — แยก logic ออกจาก UI component |
-| `Early Return` | return ก่อนถึง main render — จัดการ loading/error state ก่อน |
-| `Responsive` | UI ที่ปรับขนาดได้ตามหน้าจอ (mobile/tablet/desktop) |
-| `Loading State` | สถานะขณะรอข้อมูล — บอกผู้ใช้ว่ายังโหลดอยู่ |
-| `Dependency Array` | `[]` ใน useEffect — กำหนดว่า effect รันเมื่อไหร่ |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Sprint Review` | สปรินท์ รี-วิว | การนำเสนอผลงานรายสัปดาห์ใน Agile — demo ว่าทำอะไรได้จริง |
+| `Type Safety` | ไทพ์ เซฟ-ตี้ | การป้องกัน error โดยกำหนด type ให้ข้อมูลทุกตัว |
+| `Interface` | อิน-เทอร์-เฟซ | โครงสร้างที่บอกว่า object ต้องมี field อะไรบ้าง |
+| `Custom Hook` | คัส-ทอม ฮุก | function ที่ขึ้นต้นด้วย `use` — แยก logic ออกจาก UI component |
+| `Early Return` | เอิร์ล-ลี รี-เทิร์น | return ก่อนถึง main render — จัดการ loading/error state ก่อน |
+| `Responsive` | รี-สพอน-ซีฟ | UI ที่ปรับขนาดได้ตามหน้าจอ (mobile/tablet/desktop) |
+| `Loading State` | โหลด-ดิ้ง สเตท | สถานะขณะรอข้อมูล — บอกผู้ใช้ว่ายังโหลดอยู่ |
+| `Dependency Array` | ดี-เพน-เดน-ซี อะ-เรย์ | `[]` ใน useEffect — กำหนดว่า effect รันเมื่อไหร่ |

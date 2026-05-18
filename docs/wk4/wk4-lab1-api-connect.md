@@ -1,5 +1,7 @@
 # Lab: เชื่อมต่อ API จริง <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** Lab นี้รวมความรู้ wk4 ทั้งหมด (Axios, async/await, TypeScript types) มาสร้าง data flow ที่สมบูรณ์จาก MySQL ถึง UI สถาปัตยกรรมที่สร้างในบทนี้เป็นรากฐานของ wk5 (Auth Context) และ wk7 (Realtime Socket.io)
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เป้าหมาย Lab นี้:** รวม wk4 ทั้งหมด — เปลี่ยนจาก `mockEquipments` → Backend API จริง พร้อม TypeScript types ครบ, Loading/Error state, และ Borrow/Return ผ่าน API
-
----
 
 ## 📖 I: Information
 
@@ -39,9 +39,12 @@ useEquipments()
 | `src/hooks/useEquipments.ts` | Hook ที่ใช้ API จริงแทน mock data |
 | `src/pages/EquipmentPage.tsx` | แสดง Loading/Error/Empty state |
 
----
-
 ## 🛠️ A: Application
+
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบาย data flow ได้ครบ: `useEquipments → getEquipments → apiClient → Vite proxy → Backend → MySQL → response กลับ`
+- [ ] บอกได้ว่า Vite proxy ป้องกัน CORS อย่างไร และทำไม `res.data.data` ถึงต้อง `.data` สองครั้ง
+:::
 
 ### 🤖 AI Prompt Guide
 
@@ -49,7 +52,7 @@ useEquipments()
 "กำลังเรียน React 18 + TypeScript + Axios อยู่ ต้องการเชื่อมต่อ Frontend กับ Backend API ที่ port 3000 ให้ช่วยสร้าง: 1) `src/types/index.ts` — interfaces: Equipment, User, ApiResponse&lt;T&gt;, EquipmentFormData 2) `src/api/config.ts` — Axios instance พร้อม request interceptor (JWT token) + response interceptor (401 handler) 3) `src/api/equipmentApi.ts` — functions: getEquipments(), updateEquipmentStatus() 4) อัปเดต `useEquipments` hook ให้เรียก API จริง ด้วย try-catch-finally — Backend ส่ง `{ success: boolean, data: T }` เสมอ"
 :::
 
-### 📝 PjBL Lab
+### 📝 PjBL Lab — ชิ้นงาน: `src/types/index.ts`, `src/api/config.ts`, `src/api/equipmentApi.ts`, `src/hooks/useEquipments.ts`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -96,10 +99,8 @@ npm run dev
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk4: connect real API, add TypeScript types, loading and error states"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: อธิบาย data flow จาก `useEquipments` ถึง MySQL, `res.data.data` ทำงานยังไง, ทำไม interceptor ต้องแนบ token ทุก request พร้อม screenshot Network tab + Loading state
-
----
+- [ ] `git add src/types/ src/api/ src/hooks/useEquipments.ts src/pages/EquipmentPage.tsx && git commit -m "wk4: connect real API, add TypeScript types, loading and error states"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: อธิบาย data flow จาก `useEquipments` ถึง MySQL, `res.data.data` ทำงานยังไง, ทำไม interceptor ต้องแนบ token ทุก request พร้อม screenshot Network tab + Loading state + ลิงก์ repo
 
 ## ✅ P: Progress
 
@@ -121,6 +122,14 @@ npm run dev
 **แนวคำตอบ:** Network error (backend ไม่รัน) — Axios throw `AxiosError` ที่ไม่มี `error.response` (undefined) ส่วน HTTP 4xx/5xx error — Axios throw `AxiosError` ที่มี `error.response.status` เป็นตัวเลข การ `catch` ทั่วไปจะดักจับทั้งสองกรณี แต่ถ้าต้องการแยกให้ตรวจ `error.response?.status`
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `GET /api/equipments` แสดง CORS error ใน Network tab | ไม่ได้ตั้ง proxy ใน `vite.config.ts` หรือ config ผิด | ตรวจสอบ vite.config.ts: `proxy: { '/api': { target: 'http://localhost:3000' } }` |
+| หน้าแสดง loading ตลอดไม่หยุด หลัง Backend ตอบแล้ว | ลืม `setIsLoading(false)` ใน `finally` | ตรวจสอบ useEquipments.ts ว่ามี `finally { setIsLoading(false) }` |
+| TypeScript error: `res.data` is `unknown` หรือ `any` | ไม่ได้ใส่ Generic type ใน `apiClient.get<ApiResponse<Equipment[]>>()` | เพิ่ม Generic type ในทุก Axios call |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -129,15 +138,15 @@ npm run dev
 | Loading/Error UI | 3 states แสดงถูกต้องทุกกรณี | แสดงบางส่วน | ไม่มี state UI |
 | TypeScript types | types/index.ts ครบ ไม่มี `any` | มีบางส่วน | ไม่มี types file |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `CRUD` | Create, Read, Update, Delete — 4 operations พื้นฐานของ API |
-| `CORS` | Cross-Origin Resource Sharing — นโยบาย Browser จำกัด request ข้าม origin |
-| `Network tab` | เครื่องมือใน DevTools แสดง HTTP requests และ response ทั้งหมด |
-| `Status 200` | HTTP response code: สำเร็จ |
-| `Status 401` | HTTP response code: Unauthorized — token ไม่ถูกต้อง/หมดอายุ |
-| `Optimistic Update` | อัปเดต UI ก่อน รอ server confirm ทีหลัง — เร็วแต่เสี่ยง sync ผิด |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `CRUD` | ซี-อาร์-ยู-ดี | Create, Read, Update, Delete — 4 operations พื้นฐานของ API |
+| `CORS` | ซีออาร์เอส | Cross-Origin Resource Sharing — นโยบาย Browser จำกัด request ข้าม origin |
+| `Database` | เดต-ตา-เบส | ระบบจัดเก็บข้อมูลถาวร — MySQL ในโปรเจกต์นี้ |
+| `Network tab` | เน็ต-เวิร์ค แท็บ | เครื่องมือใน DevTools แสดง HTTP requests และ response ทั้งหมด |
+| `Status 200` | สเตท-ตัส ทู-ฮัน-เดรด | HTTP response code: สำเร็จ |
+| `Status 401` | สเตท-ตัส โฟร์-โอ-วัน | HTTP response code: Unauthorized — token ไม่ถูกต้อง/หมดอายุ |
+| `Optimistic Update` | อ็อบ-ทิ-มิส-ติค อัพ-เดท | อัปเดต UI ก่อน รอ server confirm ทีหลัง — เร็วแต่เสี่ยง sync ผิด |
+| `Error Handling` | เออ-เรอ แฮน-ดลิ่ง | การจัดการข้อผิดพลาดที่อาจเกิดจาก API หรือ network |

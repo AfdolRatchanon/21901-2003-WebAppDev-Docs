@@ -1,5 +1,7 @@
 # Lab: Navbar + Auth Flow ครบวงจร <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** สร้าง Navbar ที่แสดงชื่อผู้ใช้, role badge สีต่างกัน, active link highlight และ ทดสอบ complete auth flow ตั้งแต่ login → role-based routing → real-time → logout
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เป้าหมาย Lab นี้:** Navbar ที่ดูเป็นมืออาชีพ + ทดสอบ auth flow ครบวงจรตั้งแต่ login → role check → real-time → logout
-
----
 
 ## 📖 I: Information
 
@@ -105,8 +105,6 @@ export function Navbar({ auth }: { auth: AuthContextType }) {
 
 **สรุปการทำงาน:** `useLocation()` `[6]` อ่าน URL → `isActive()` `[8]` เปรียบเทียบ → highlight ลิงก์ที่ active `[12]` → `roleBadgeClass[role]` `[2]` กำหนดสี badge → ซ่อนเมนูจัดการสำหรับ student `[14]`
 
----
-
 ### ขั้นตอนที่ 2 — Auth Flow ทั้งหมด (สรุป)
 
 ```
@@ -124,8 +122,6 @@ App.tsx renders:
     └── /admin  → ProtectedRoute(role=admin) → AdminPage
 ```
 
----
-
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide
@@ -134,11 +130,14 @@ App.tsx renders:
 "สร้าง Navbar component ด้วย TypeScript + Tailwind CSS + React Router v6 โดย: 1) ใช้ `useLocation` highlight nav link ที่ active 2) แสดง role badge สีต่างกันด้วย `Record<string, string>` mapping 3) ซ่อนเมนู 'จัดการ' เฉพาะ role admin/teacher 4) sticky top-0 — อธิบายว่า `useLocation` ต่างจาก `window.location` อย่างไร"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] Backend รันอยู่ที่ port 3000 พร้อม seed data (admin/teacher/student accounts)
+- [ ] Navbar แสดง role badge สีต่างกันและ active link highlight ทำงานถูกต้อง
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `src/components/Navbar.tsx`
 
 **เป้าหมาย:** ทดสอบ Complete Auth System ครบวงจร
-
----
 
 #### ขั้น 0 — Student Identity
 
@@ -150,8 +149,6 @@ App.tsx renders:
 </footer>
 ```
 
----
-
 #### ขั้น 1 — Setup Backend
 
 ```bash
@@ -160,8 +157,6 @@ npm run dev       # Backend รันที่ port 3000
 # ถ้าฐานข้อมูลว่าง:
 # npx prisma db push && npm run db:seed
 ```
-
----
 
 #### ขั้น 2 — ทดสอบทุก Role
 
@@ -174,8 +169,6 @@ npm run dev       # Backend รันที่ port 3000
 | Refresh ขณะ login | F5 | ยังอยู่ในระบบ ✅ |
 | Logout | กดปุ่ม | localStorage ว่าง + redirect /login ✅ |
 
----
-
 #### ขั้น 3 — ทดสอบ Real-time (ต้องมี Backend + Socket.io)
 
 1. เปิด 2 tab ใน Browser URL เดียวกัน
@@ -184,15 +177,11 @@ npm run dev       # Backend รันที่ port 3000
 4. Tab 2: ต้องเห็นสีการ์ดเปลี่ยนทันทีโดยไม่ refresh ✅
 5. ตรวจ Connection indicator: "● เชื่อมต่อแล้ว (Real-time)"
 
----
-
 #### ขั้น 4 — ตรวจสอบ Network + Storage
 
 1. DevTools → Application → Local Storage: ตรวจ `token` + `user`
 2. DevTools → Network: ตรวจ `Authorization: Bearer ...` header ในทุก request
 3. DevTools → Network → WS tab: ดู Socket.io WebSocket connection
-
----
 
 #### ขั้น Submit — ส่งงาน
 
@@ -201,8 +190,6 @@ npm run dev       # Backend รันที่ port 3000
 - [ ] `git commit -m "wk7: complete navbar with role badge and auth flow testing"`
 - [ ] `git push origin main`
 - [ ] เขียนสรุป Google Doc: ทำไม `useLocation` ต้องอยู่ใน BrowserRouter, roleBadgeClass ทำงานยังไง, ทดสอบอะไรบ้าง + ลิงก์ GitHub + screenshots ครบ
-
----
 
 ## ✅ P: Progress
 
@@ -226,6 +213,14 @@ npm run dev       # Backend รันที่ port 3000
 **แนวคำตอบ:** เป็นเรื่องความตั้งใจ (Intent) ชัดเจน — `role !== 'student'` หมายถึง "ทุก role ที่ไม่ใช่ student ซึ่งรวม role อื่น ๆ ที่อาจเพิ่มในอนาคต เช่น 'superadmin', 'guest' ด้วย ส่วน `role === 'admin' || role === 'teacher'` หมายถึง "เฉพาะ admin และ teacher เท่านั้น" — explicit กว่า ปลอดภัยกว่าเมื่อระบบขยาย role ในอนาคต
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Active link ไม่เปลี่ยนเมื่อ navigate | ใช้ `window.location` แทน `useLocation` | เปลี่ยนมาใช้ `useLocation()` Hook |
+| เมนู "จัดการ" แสดงให้ student | เงื่อนไข role check ผิด | ตรวจสอบ `(role === 'admin' \|\| role === 'teacher')` |
+| role badge แสดง undefined/ว่าง | `auth.user` เป็น null แต่ไม่มี fallback | ใช้ `auth.user?.role ?? 'student'` เสมอ |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -234,16 +229,14 @@ npm run dev       # Backend รันที่ port 3000
 | Role-based menu | admin/teacher เห็นจัดการ, student ไม่เห็น | ทำงานบางกรณี | ไม่มี |
 | Complete auth flow | login → persist → role → real-time → logout | บางขั้นตอนขาด | ไม่ทำงาน |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `useLocation` | React Router Hook ที่ return ข้อมูล URL ปัจจุบัน + trigger re-render เมื่อเปลี่ยน |
-| `Active Link` | Nav link ที่ highlight เมื่อ pathname ตรงกับหน้าปัจจุบัน |
-| `Role Badge` | UI element แสดง role ผู้ใช้ด้วยสีต่างกัน |
-| `Sticky Nav` | Navbar ที่ติดบนสุดของหน้าจอแม้ scroll ลง (`sticky top-0`) |
-| `Record<K,V>` | TypeScript utility type สำหรับ mapping object — `Record<'admin', string>` |
-| `Nullish Coalescing` | `??` — คืนค่า default ถ้าค่าซ้ายเป็น null/undefined |
-| `Optional Chaining` | `?.` — เข้าถึง property โดยไม่ crash ถ้า null/undefined |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `useLocation` | ยูส โล-เค-ชัน | React Router Hook ที่ return ข้อมูล URL ปัจจุบัน + trigger re-render เมื่อเปลี่ยน |
+| `Active Link` | แอค-ทิฟ ลิงก์ | Nav link ที่ highlight เมื่อ pathname ตรงกับหน้าปัจจุบัน |
+| `Role Badge` | โรล แบ็ดจ์ | UI element แสดง role ผู้ใช้ด้วยสีต่างกัน |
+| `Sticky Nav` | สติ๊กกี้ แน็ฟ | Navbar ที่ติดบนสุดของหน้าจอแม้ scroll ลง (`sticky top-0`) |
+| `Record<K,V>` | เรค-เคิร์ด | TypeScript utility type สำหรับ mapping object — `Record<'admin', string>` |
+| `Nullish Coalescing` | นัล-ลิช โค-อา-เลส-ซิง | `??` — คืนค่า default ถ้าค่าซ้ายเป็น null/undefined |
+| `Optional Chaining` | ออพ-ชัน-นัล เชน-นิง | `?.` — เข้าถึง property โดยไม่ crash ถ้า null/undefined |

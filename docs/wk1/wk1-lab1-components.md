@@ -1,5 +1,7 @@
 # Lab: สร้าง Component และ Props <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** สร้าง `EquipmentCard` Component แรก — ใช้เป็นฐานสำหรับ wk2 (State) และ wk4 (API Data)
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -8,42 +10,31 @@
 
 > 💡 **เปรียบเทียบ:** Component เหมือน "แม่แบบการ์ดสินค้า" — ออกแบบรูปแบบครั้งเดียว กรอกชื่อสินค้าต่างกันในแต่ละใบ ไม่ต้องวาดใหม่ทุกครั้ง
 
----
-
 ## 📖 I: Information
 
 ### Component และ Props คืออะไร?
 
-**Component:** เปรียบเสมือนชิ้นส่วนก่อสร้างหน้าตาเว็บ (UI Building Block) ซึ่งเบื้องหลังคือฟังก์ชันในภาษา TypeScript ที่จบการทำงานด้วยการ `return` หรือส่งค่ากลับออกมาเป็นโค้ดหน้าตาแอปพลิเคชันรูปแบบ JSX การเขียนโค้ดในรูปแบบของ Component เสมือนเป็นการสร้างชิ้นส่วนสำหรับหน้าตาแอปขึ้นมาเก็บไว้ใช้ ทำให้เราสามารถ "ออกแบบครั้งเดียว แล้วนำไปใช้ซ้ำกี่ครั้งก็ได้" (Reusability) ยกตัวอย่างเช่น ปุ่มกด, แถบเมนูด้านข้าง, หรือการ์ดแสดงข้อมูลอุปกรณ์แบบในระบบนี้ เมื่อเราแก้ไขโค้ดที่ไฟล์ของ Component นั้น ทุกหน้าที่นำ Component นั้นไปวางก็จะสามารถเปลี่ยนหน้าตาตามได้พร้อมกันทั่วแอปพลิเคชัน
+**Component** คือฟังก์ชัน TypeScript ที่ `return` JSX — ออกแบบครั้งเดียว ใช้ซ้ำได้หลายครั้งโดยส่งข้อมูลต่างกันผ่าน Props ทุกหน้าที่ใช้ Component นั้น จะอัปเดตพร้อมกันเมื่อแก้ไขที่ไฟล์เดียว
 
-**Props:** (ย่อมาจาก Properties) คือข้อมูลที่ทำหน้าที่ส่งผ่านระหว่าง Component ต่าง ๆ เพื่อให้การ์ดหรือชิ้นส่วนที่เราเขียนสามารถ "แสดงหน้าตาและแสดงผลต่างกันได้ แม้จะเป็น Component เดียวกัน" Props จะถูกส่งจาก Component ที่ใหญ่กว่า (Component แม่) ลงไปใช้งานใน Component ที่เล็กกว่า (Component ลูก) ลักษณะการทำงานของ Props จะเปรียบเหมือนกับ "พารามิเตอร์ (Arguments)" ของฟังก์ชัน ที่ช่วยกำหนดว่า Components นั้น ๆ ควรจะแสดงข้อมูลเฉพาะเจาะจงอะไรต่อไป
+**Props** คือข้อมูลที่ส่งจาก Component แม่เข้าสู่ Component ลูก — เหมือน function arguments ที่กำหนดว่า Component จะแสดงข้อมูลอะไร ใน TypeScript ต้องกำหนด Interface บอกชนิดของแต่ละ prop
 
-### สร้าง EquipmentCard — ทีละขั้นตอน
-
-**ขั้น 1:** สร้างโฟลเดอร์ `src/components/` และไฟล์ `EquipmentCard.tsx`
+### ขั้นตอนที่ 1 — สร้าง EquipmentCard เวอร์ชัน 1
 
 ::: code-group
 ```tsx [src/components/EquipmentCard.tsx]
-// ขั้น 1: กำหนด Interface สำหรับ Props
-// Interface บอก TypeScript ว่า Component นี้รับข้อมูลอะไรบ้าง
-interface EquipmentCardProps {
-  name:     string  // ชื่ออุปกรณ์ เช่น 'MacBook Pro'
-  category: string  // หมวดหมู่ เช่น 'Notebook'
-  status:   string  // สถานะ เช่น 'available'
+interface EquipmentCardProps {      // [1] กำหนดชนิดของ props
+  name:     string
+  category: string
+  status:   string
 }
 
-// ขั้น 2: สร้าง Component ฟังก์ชัน
-// { name, category, status } คือ Destructuring — แกะค่าออกจาก Props object
 export function EquipmentCard({ name, category, status }: EquipmentCardProps) {
-
-  // ขั้น 3: แปลงสถานะ เป็นข้อความภาษาไทย
-  const statusLabel: Record<string, string> = {
+  const statusLabel: Record<string, string> = {  // [2] แปลงสถานะเป็นภาษาไทย
     available:   'ว่าง',
     borrowed:    'ถูกยืม',
     maintenance: 'ซ่อมบำรุง',
   }
 
-  // ขั้น 4: return JSX — HTML ของ Card นี้
   return (
     <div style={{ border: '1px solid #ccc', borderRadius: 8, padding: 16, marginBottom: 8 }}>
       <h3 style={{ margin: '0 0 4px 0' }}>{name}</h3>
@@ -55,57 +46,38 @@ export function EquipmentCard({ name, category, status }: EquipmentCardProps) {
 ```
 
 ```tsx [src/App.tsx — ใช้งาน EquipmentCard]
-// import Component ที่สร้างไว้
-import { EquipmentCard } from './components/EquipmentCard'
+import { EquipmentCard } from './components/EquipmentCard'  // [1] import Component
 
 export default function App() {
   return (
     <div style={{ maxWidth: 600, margin: '0 auto', padding: 24 }}>
       <h1>รายการอุปกรณ์ไอที</h1>
-
-      {/* ใช้ EquipmentCard ซ้ำ 3 ครั้ง ส่ง Props ต่างกัน */}
-      <EquipmentCard
-        name="MacBook Pro"
-        category="Notebook"
-        status="available"
-      />
-      <EquipmentCard
-        name="iPad Air"
-        category="Tablet"
-        status="borrowed"
-      />
-      <EquipmentCard
-        name="Projector Epson"
-        category="Projector"
-        status="maintenance"
-      />
+      <EquipmentCard name="MacBook Pro"    category="Notebook"  status="available"   />
+      <EquipmentCard name="iPad Air"       category="Tablet"    status="borrowed"    />
+      <EquipmentCard name="Projector Epson" category="Projector" status="maintenance" />
     </div>
   )
 }
 ```
 :::
 
-บันทึกไฟล์ → Browser จะแสดงการ์ด 3 อัน ✅
+**สรุปการทำงาน:** `App.tsx` ส่ง Props → `EquipmentCard` รับ → แสดงผลตามค่าที่ได้รับ
 
 ::: tip 💡 TypeScript ตรวจสอบ Props ให้อัตโนมัติ
 ลองลบ prop `category` ออกจาก `<EquipmentCard>` → TypeScript ขีดเส้นแดงทันที:
-
 ```
 Property 'category' is missing in type '{ name: string; status: string; }'
 but required in type 'EquipmentCardProps'
 ```
-
-นี่คือพลังของ TypeScript: รู้ก่อน runtime ว่าส่งข้อมูลไม่ครบ!
+นี่คือพลังของ TypeScript: รู้ก่อน runtime ว่าส่งข้อมูลไม่ครบ
 :::
 
----
+### ขั้นตอนที่ 2 — เพิ่ม Status Badge (เวอร์ชัน 2)
 
-### เพิ่ม Status Badge ด้วยสีต่างกัน
-
-ใช้ **Conditional Rendering** แสดงสีตามสถานะ:
+บรรทัดสีเขียวคือส่วนที่เพิ่มเข้ามาจากเวอร์ชัน 1:
 
 ::: code-group
-```tsx [src/components/EquipmentCard.tsx — เวอร์ชัน 2]
+```tsx {15-20,39-49} [src/components/EquipmentCard.tsx — เวอร์ชัน 2]
 interface EquipmentCardProps {
   name:     string
   category: string
@@ -113,7 +85,6 @@ interface EquipmentCardProps {
 }
 
 export function EquipmentCard({ name, category, status }: EquipmentCardProps) {
-  // แปลงสถานะเป็นภาษาไทย
   const statusLabel: Record<string, string> = {
     available:   'ว่าง',
     borrowed:    'ถูกยืม',
@@ -122,9 +93,9 @@ export function EquipmentCard({ name, category, status }: EquipmentCardProps) {
 
   // สีพื้นหลัง badge ตามสถานะ
   const badgeColor: Record<string, string> = {
-    available:   '#16a34a',  // เขียว
-    borrowed:    '#dc2626',  // แดง
-    maintenance: '#d97706',  // เหลืองอำพัน
+    available:   '#16a34a',
+    borrowed:    '#dc2626',
+    maintenance: '#d97706',
   }
 
   return (
@@ -138,13 +109,11 @@ export function EquipmentCard({ name, category, status }: EquipmentCardProps) {
       alignItems: 'flex-start',
     }}>
 
-      {/* ซ้าย: ชื่อ + หมวดหมู่ */}
       <div>
         <h3 style={{ margin: '0 0 4px 0', fontSize: 16 }}>{name}</h3>
         <p style={{ color: '#64748b', margin: 0, fontSize: 13 }}>{category}</p>
       </div>
 
-      {/* ขวา: Status Badge */}
       <span style={{
         backgroundColor: badgeColor[status] ?? '#94a3b8',
         color: 'white',
@@ -162,57 +131,65 @@ export function EquipmentCard({ name, category, status }: EquipmentCardProps) {
 ```
 :::
 
-ผลลัพธ์ที่ได้: การ์ดแต่ละอันมี badge สีต่างกันตามสถานะ ✅
-
-::: info 📌 หมายเหตุ Tailwind CSS
-Lab นี้ใช้ **Inline Styles** เพื่อให้เห็น concept ก่อน — ใน **Week 3** จะติดตั้ง Tailwind CSS และเขียน Style ด้วย class names เช่น `className="rounded-xl border p-4"` ซึ่งสั้นกว่าและดูแลรักษาง่ายกว่ามาก
+::: info 📌 หมายเหตุ
+Lab นี้ใช้ **Inline Styles** เพื่อให้เห็น concept ก่อน — wk3 จะติดตั้ง Tailwind CSS และเขียน style ด้วย class names เช่น `className="rounded-xl border p-4"` ซึ่งสั้นกว่ามาก
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+| ชนิด | ใช้เก็บ | ตัวอย่างในบทนี้ |
+| :--- | :--- | :--- |
+| `interface` | กำหนดโครงสร้าง Props | `EquipmentCardProps` |
+| Destructuring `{ }` | แกะค่าออกจาก object ตรง ๆ | `{ name, category, status }` |
+
+::: code-group
+```ts [✅ ถูกต้อง]
+interface EquipmentCardProps {
+  name: string
+}
+// ส่ง props ครบ
+<EquipmentCard name="MacBook Pro" category="Notebook" status="available" />
+```
+
+```ts [❌ ผิด — TypeScript แจ้งทันที]
+// ❌ ขาด category และ status
+<EquipmentCard name="MacBook Pro" />
+
+// ❌ ส่งชนิดผิด
+<EquipmentCard name={42} category="Notebook" status="available" />
+```
+
+```ts [💡 Destructuring vs props.name]
+// ทั้งสองให้ผลเหมือนกัน แต่ Destructuring อ่านง่ายกว่า
+function Card({ name }: Props) { return <h3>{name}</h3> }    // ✅ นิยมใช้
+function Card(props: Props) { return <h3>{props.name}</h3> } // ใช้ได้แต่ยาวกว่า
+```
+:::
 
 ## 🛠️ A: Application
 
-### 🤖 AI Prompt Guide
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] เข้าใจว่า `interface` ทำงานอย่างไรใน TypeScript แล้ว
+- [ ] สร้างโฟลเดอร์ `src/components/` ได้แล้ว
+:::
 
+### 🤖 AI Prompt
 ::: info 💬 ถาม AI
 "กำลังเรียน React 18 กับ TypeScript อยู่ มี Component ชื่อ EquipmentCard รับ props: name (string), category (string), status (string) ช่วยเพิ่ม Badge แสดงสถานะโดยใช้ inline style สีเขียวสำหรับ 'available' สีแดงสำหรับ 'borrowed' สีเหลืองสำหรับ 'maintenance' ขอโค้ดแบบง่าย ไม่ใช้ library ภายนอก"
 :::
 
-### 📝 PjBL Lab
+### 📝 PjBL Lab — ชิ้นงาน: `src/components/EquipmentCard.tsx`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
-- [ ] เพิ่ม footer แสดงชื่อของตนเองใน `App.tsx`:
-
-```tsx
-// src/App.tsx
-import { EquipmentCard } from './components/EquipmentCard'
-
-export default function App() {
-  return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: 24 }}>
-      <h1>รายการอุปกรณ์ไอที</h1>
-      {/* การ์ดอุปกรณ์จะอยู่ตรงนี้ */}
-
-      {/* footer ระบุตัวตน — เปลี่ยนเป็นชื่อ-รหัสของตนเอง */}
-      <footer style={{ marginTop: 40, borderTop: '1px solid #eee', paddingTop: 12, color: '#aaa', fontSize: 12 }}>
-        จัดทำโดย: ชื่อ-นามสกุล · รหัสนักเรียน
-      </footer>
-    </div>
-  )
-}
-```
-
-- [ ] บันทึกไฟล์ → ต้องเห็นชื่อของตนเองที่ด้านล่างหน้าเว็บ ✅
-
----
+- [ ] เปิด `src/App.tsx` → footer ชื่อของตนเองต้องยังอยู่ ✅
 
 **ขั้น 1: สร้าง Component พื้นฐาน (15 นาที)**
 
 - [ ] สร้างโฟลเดอร์ `src/components/` ใน VS Code
-- [ ] สร้างไฟล์ `src/components/EquipmentCard.tsx` — ใส่โค้ดเวอร์ชัน 1 ด้านบน
+- [ ] สร้างไฟล์ `src/components/EquipmentCard.tsx` — ใส่โค้ดเวอร์ชัน 1
 - [ ] แก้ไข `src/App.tsx` ให้ import และใช้ `<EquipmentCard>` 3 รายการ
-- [ ] รัน `npm run dev` → ดู Browser ต้องเห็นการ์ด 3 อัน ✅
+- [ ] รัน `npm run dev` → ต้องเห็นการ์ด 3 อัน ✅
 
 **ขั้น 2: ทดสอบ TypeScript Error (5 นาที)**
 
@@ -222,7 +199,7 @@ export default function App() {
 
 **ขั้น 3: เพิ่ม Status Badge (15 นาที)**
 
-- [ ] อัปเดต `EquipmentCard.tsx` เป็นเวอร์ชัน 2 (เพิ่ม Badge ด้วยสี)
+- [ ] อัปเดต `EquipmentCard.tsx` เป็นเวอร์ชัน 2 (เพิ่ม `badgeColor` + badge span)
 - [ ] ดู Browser — Badge แต่ละสถานะต้องแสดงสีถูกต้อง:
   - `available` → สีเขียว ✅
   - `borrowed` → สีแดง ✅
@@ -231,44 +208,31 @@ export default function App() {
 **ขั้น 4: เพิ่มข้อมูลจริง (10 นาที)**
 
 - [ ] เพิ่ม `<EquipmentCard>` อีก 2 อัน ใส่ข้อมูลอุปกรณ์จริงในโรงเรียน
-- [ ] ลองส่ง `status="missing"` (ค่าที่ไม่ได้กำหนดไว้) → สังเกตว่า badge แสดงอะไร
-- [ ] (ถ้าเวลาเหลือ) เพิ่ม prop `serialNo: string` สำหรับแสดง Serial Number
+- [ ] ลองส่ง `status="missing"` → สังเกตว่า badge แสดงอะไร (ต้องใช้ fallback `?? '#94a3b8'`)
 
 **ขั้น 5: ส่งงาน**
 
-- [ ] Push code ขึ้น GitHub repo ส่วนตัว:
-
-```bash
-git add .
-git commit -m "wk1-lab: EquipmentCard by ชื่อ-นามสกุล"
-git push
-```
-
-- [ ] เปิด Google Doc ประจำรายวิชา → เขียนสรุป 3-5 บรรทัด:
-  - เรียนรู้อะไรจาก Lab นี้?
-  - ปัญหาที่เจอและวิธีแก้?
-- [ ] แปะลิงก์ GitHub repo + screenshot หน้าเว็บที่มีชื่อของตนเอง ✅
-
----
+- [ ] `git add . && git commit -m "wk1-lab: EquipmentCard by ชื่อ-นามสกุล" && git push`
+- [ ] Google Doc: สรุป 3-5 บรรทัด + ลิงก์ GitHub + screenshot ✅
 
 ## ✅ P: Progress
 
 ### 🗣️ Code Review
 
 ::: details ❓ ทำไม Interface Props ถึงสำคัญ? จะใช้ `any` แทนได้ไหม?
-**แนวคำตอบ:** ใช้ `any` ได้แต่ไม่ควร — TypeScript จะหยุดตรวจสอบทุกอย่างสำหรับ props ตัวนั้น เช่น ส่ง `name={42}` (ตัวเลขแทน string) ก็ไม่แจ้ง Error Interface ทำให้ Editor รู้ว่า props มีอะไรบ้าง — พิมพ์ `<EquipmentCard ` แล้ว IntelliSense จะ suggest props ให้อัตโนมัติ ประหยัดเวลาและลด typo
+**แนวคำตอบ:** ใช้ `any` ได้แต่ไม่ควร — TypeScript จะหยุดตรวจสอบทุกอย่างสำหรับ props ตัวนั้น เช่น ส่ง `name={42}` (ตัวเลขแทน string) ก็ไม่แจ้ง Error Interface ทำให้ Editor รู้ว่า props มีอะไรบ้าง — พิมพ์ `<EquipmentCard ` แล้ว IntelliSense จะ suggest props ให้อัตโนมัติ
 :::
 
 ::: details ❓ Destructuring `{ name, category, status }` ต่างจาก `props.name` อย่างไร?
-**แนวคำตอบ:** ทั้งสองแบบให้ผลเหมือนกัน แต่ Destructuring อ่านง่ายกว่า — เขียน `&#123;name&#125;` ในโค้ดแทน `props.name` ทุกครั้ง ทำให้ Component code สั้นและสะอาดตากว่า ในโปรเจกต์จริงนิยม Destructuring แทบทุกที่
+**แนวคำตอบ:** ทั้งสองแบบให้ผลเหมือนกัน แต่ Destructuring อ่านง่ายกว่า — เขียน `{name}` ในโค้ดแทน `props.name` ทุกครั้ง ทำให้ Component code สั้นและสะอาดกว่า ในโปรเจกต์จริงนิยม Destructuring แทบทุกที่
 :::
 
 ::: details ❓ `export function` กับ `export default function` ต่างกันอย่างไร?
-**แนวคำตอบ:** `export function` (Named Export) ต้อง import ด้วยชื่อเดิม: `import { EquipmentCard } from '...'` ส่วน `export default function` import ได้โดยตั้งชื่อเองได้: `import App from '...'` หรือ `import MyApp from '...'` ก็ได้ Convention ใน React: Pages ใช้ default export, Components ย่อย ใช้ named export
+**แนวคำตอบ:** `export function` (Named Export) ต้อง import ด้วยชื่อเดิม: `import { EquipmentCard } from '...'` ส่วน `export default function` import ได้โดยตั้งชื่อเองได้ Convention ใน React: Pages ใช้ default export, Component ย่อยๆ ใช้ named export
 :::
 
 ::: details ❓ ถ้าต้องแสดง 50 อุปกรณ์ ต้องเขียน `<EquipmentCard>` 50 ครั้งไหม?
-**แนวคำตอบ:** ไม่ต้อง — ใน Week 4 จะดึงข้อมูลจาก API แล้วใช้ `.map()` วน render Component ให้อัตโนมัติ:
+**แนวคำตอบ:** ไม่ต้อง — wk4 จะดึงข้อมูลจาก API แล้วใช้ `.map()` วน render อัตโนมัติ:
 ```tsx
 {equipments.map(eq => (
   <EquipmentCard key={eq.id} name={eq.name} category={eq.category} status={eq.status} />
@@ -276,6 +240,14 @@ git push
 ```
 ตอนนี้ hardcode ข้อมูลไปก่อนเพื่อเรียนรู้ Props
 :::
+
+### 🐛 Common Errors
+
+| Error / อาการ | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `Cannot find module './components/EquipmentCard'` | ชื่อไฟล์หรือโฟลเดอร์ผิด | ตรวจ path และ case ให้ตรงกับ import |
+| Props ไม่แสดงผลในการ์ด | ลืม Destructuring หรือชื่อ prop สะกดผิด | เช็ค interface ว่าชื่อ field ตรงกับที่ส่งมา |
+| badge สีไม่แสดง (พื้นหลังว่าง) | `status` ไม่มีใน `badgeColor` | เพิ่ม fallback `?? '#94a3b8'` หรือเพิ่ม key ใน badgeColor |
 
 ### 📋 Rubric (10 คะแนน)
 
@@ -285,15 +257,13 @@ git push
 | ทดสอบ TypeScript Error | ลอง error → TS แจ้งถูกต้อง | ลองแต่ไม่เข้าใจผล | ไม่ได้ทดสอบ |
 | Status Badge | 3 สีตรงกับสถานะถูกต้อง | มีบางส่วน | ไม่มี Badge |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Props` | Properties — ข้อมูลที่ส่งเข้า Component เหมือน function arguments |
-| `Interface` | กำหนดโครงสร้าง Object ใน TypeScript — บอกว่าต้องมี field อะไรบ้าง |
-| `Destructuring` | แกะข้อมูลออกจาก Object โดยตรง เช่น `{ name, category }` |
-| `Named Export` | `export function Foo()` — import ด้วยชื่อเดิมคือ `{ Foo }` |
-| `Conditional Rendering` | แสดง UI ตามเงื่อนไข — ใช้ `? :` หรือ `&&` ใน JSX |
-| `Inline Style` | กำหนด CSS ตรงใน JSX ด้วย `style=&#123;&#123; ... &#125;&#125;` |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Props` | พรอปส์ | Properties — ข้อมูลที่ส่งเข้า Component เหมือน function arguments |
+| `Interface` | อิน-เตอร์-เฟซ | กำหนดโครงสร้าง Object ใน TypeScript — บอกว่าต้องมี field อะไรบ้าง |
+| `Destructuring` | ดี-สตรัค-เชอ-ริ่ง | แกะข้อมูลออกจาก Object โดยตรง เช่น `{ name, category }` |
+| `Named Export` | เนมด์ เอ็กซ์-พอร์ท | `export function Foo()` — import ด้วยชื่อเดิมคือ `{ Foo }` |
+| `Conditional Rendering` | คอน-ดิ-ชัน-นัล เรน-เดอ-ริ่ง | แสดง UI ตามเงื่อนไข — ใช้ `? :` หรือ `&&` ใน JSX |
+| `Inline Style` | อิน-ไลน์ สไตล์ | กำหนด CSS ตรงใน JSX ด้วย `style={{ ... }}` |

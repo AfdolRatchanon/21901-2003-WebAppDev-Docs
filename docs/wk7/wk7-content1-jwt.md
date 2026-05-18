@@ -1,5 +1,7 @@
 # JWT: JSON Web Token — Token ที่เชื่อได้ <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เข้าใจโครงสร้าง JWT 3 ส่วน (Header.Payload.Signature), วิธี Backend sign และ verify token, และวิธี Frontend ส่ง JWT ทุก request ด้วย Axios interceptors
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@ Backend ต้องรู้ว่า "Request ที่เข้ามาเ�
 :::
 
 > 💡 **เปรียบเทียบ:** JWT เหมือน "บัตรประชาชน Smart Card" — ใครออกให้ (Backend sign), ใครมีบัตรพิสูจน์ตัวได้ (Frontend ส่ง token), ร้านค้าตรวจ chip ได้ทันที (Backend verify) โดยไม่ต้องโทรถาม กรมการปกครอง (Database) ทุกครั้ง
-
----
 
 ## 📖 I: Information
 
@@ -61,8 +61,6 @@ const payload = JSON.parse(atob(parts[1]))  // [2] decode ส่วนที่ 
 **`iat` และ `exp` คืออะไร:**
 - `iat` (issued at) — Unix timestamp ตอนที่ Backend สร้าง token
 - `exp` (expiration) — Unix timestamp ที่ token จะหมดอายุ (`expiresIn: '24h'` = 86400 วินาที)
-
----
 
 ### ขั้นตอนที่ 2 — Backend: Sign และ Verify JWT
 
@@ -120,8 +118,6 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
 **สรุปการทำงาน:** Backend sign token ด้วย secret `[5]` → Frontend เก็บและส่งกลับทุก request → Backend ตรวจ signature `[5]` → ถ้าผ่าน อ่าน payload ได้เลย `[6]` (ไม่ต้อง query DB)
 
----
-
 ### ขั้นตอนที่ 3 — Frontend: ส่ง JWT ทุก Request
 
 ```ts [src/api/config.ts — Interceptors จัดการ JWT]
@@ -153,7 +149,11 @@ apiClient.interceptors.response.use(
 | ทุก API call | แนบ `Authorization: Bearer <token>` `[3]` | verify signature `[5]` → อ่าน payload `[6]` |
 | Token หมดอายุ | รับ 401 `[6]` → ล้าง token `[7]` → /login `[8]` | ตรวจ exp → throw → 401 `[8]` |
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `interface TokenPayload` — กำหนด type ของ decoded JWT payload
+- `as TokenPayload` — Type Assertion บอก TypeScript ว่า `jwt.verify()` return ตาม interface นี้
+- `process.env.JWT_SECRET ?? 'dev-secret'` — Nullish Coalescing กับ environment variable
 
 ## 🛠️ A: Application
 
@@ -163,17 +163,18 @@ apiClient.interceptors.response.use(
 "อธิบาย JWT ให้นักเรียนมัธยมเข้าใจ: มีกี่ส่วน, แต่ละส่วนคืออะไร, ทำไม Payload ถึงไม่ปลอดภัยเหมือน encrypted, และแสดง TypeScript interface สำหรับ JWT payload ที่มี userId, email, role, iat, exp — อธิบายว่า jwt.verify() ตรวจ signature ยังไงโดยไม่ต้อง query Database"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] decode JWT ด้วย atob() หรือ jwt.io ได้ และเห็น userId, email, role, exp
+- [ ] อธิบายได้ว่าทำไม Signature ปลอดภัยแม้ Payload ใครก็อ่านได้
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `src/api/config.ts`
 
 **เป้าหมาย:** ทำความเข้าใจ JWT structure และ flow จริงของโปรเจกต์
-
----
 
 #### ขั้น 0 — Student Identity
 
 เพิ่ม `<footer>` ชื่อ-รหัสของตนเองใน Component หลักที่แก้ไขในสัปดาห์นี้
-
----
 
 #### ขั้น 1 — Decode JWT ด้วย jwt.io
 
@@ -183,8 +184,6 @@ apiClient.interceptors.response.use(
 4. ดู Decoded Payload ด้านขวา — ต้องเห็น `userId`, `email`, `role`, `iat`, `exp`
 5. ทดสอบ decode ด้วย Console: `JSON.parse(atob(token.split('.')[1]))`
 
----
-
 #### ขั้น 2 — ตรวจสอบ Backend Middleware
 
 1. เปิด `project/backend/src/middleware/auth.ts`
@@ -192,17 +191,13 @@ apiClient.interceptors.response.use(
 3. เปิด `project/backend/src/routes/equipments.ts` — ดูว่า `requireAuth` ถูกใช้ตรงไหน
 4. ทดสอบ: แก้ token ใน localStorage ให้ผิด 1 ตัวอักษร → refresh → ควร redirect ไป /login ✅
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ถ่าย screenshot jwt.io ที่เห็น Payload ชัดเจน
 - [ ] ตอบในรายงาน: "JWT ต่างจาก Session ยังไง, ทำไม Backend ไม่ต้อง query DB"
 - [ ] `git commit -m "wk7: understand JWT structure and auth middleware"`
 - [ ] `git push origin main`
-- [ ] เขียนสรุป Google Doc + ลิงก์ + screenshot jwt.io
-
----
+- [ ] เขียนสรุป Google Doc + ลิงก์ GitHub + screenshot jwt.io
 
 ## ✅ P: Progress
 
@@ -228,6 +223,14 @@ JWT: ตรวจ signature ด้วย math (HMAC-SHA256) → ไม่ต้�
 `as TokenPayload` คือ **Type Assertion** — บอก TypeScript ว่า "เชื่อฉัน — runtime payload มี structure นี้" ใช้ได้เมื่อเรามั่นใจว่า Backend sign payload แบบนั้นจริง ๆ — ถ้าเดา type ผิดจะเจอ runtime error แทน compile error
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `JsonWebTokenError: invalid signature` | แก้ token ใน localStorage หรือ secret ไม่ตรง | ตรวจ JWT_SECRET ใน .env ต้องตรงกันทั้ง sign และ verify |
+| `TokenExpiredError: jwt expired` | token เกิน 24h | login ใหม่เพื่อรับ token ใหม่ |
+| `401 Unauthorized` แม้มี token | ส่ง Header ผิด format | ต้องเป็น `Authorization: Bearer <token>` — มีช่องว่างหลัง Bearer |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -236,17 +239,16 @@ JWT: ตรวจ signature ด้วย math (HMAC-SHA256) → ไม่ต้�
 | requireAuth middleware | trace flow ได้ + อธิบาย jwt.verify | รู้คร่าว ๆ | ไม่รู้ |
 | เข้าใจ Token Expiry | อธิบาย exp + 401 interceptor flow | รู้ว่ามี exp แต่ไม่เข้าใจ flow | ไม่รู้ |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `JWT` | JSON Web Token — มาตรฐาน token สำหรับ authentication แบบ stateless |
-| `Payload` | ส่วนกลางของ JWT เก็บข้อมูล user (Base64 encoded — ไม่ใช่ encrypted) |
-| `Signature` | ลายเซ็นดิจิทัลสร้างด้วย HMAC-SHA256 — พิสูจน์ว่า Backend ออกให้จริง |
-| `iat` | Issued At — Unix timestamp ตอนสร้าง token |
-| `exp` | Expiration — Unix timestamp ที่ token หมดอายุ |
-| `Stateless` | ไม่เก็บ state บน Server — ข้อมูลทั้งหมดอยู่ใน token |
-| `Type Assertion` | `as Type` — บอก TypeScript ว่า type คือนี้ (override type inference) |
-| `Middleware` | ฟังก์ชันที่รันระหว่าง HTTP request ถึง route handler บน Server |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `JWT` | เจ-ดับ-บลิว-ที | JSON Web Token — มาตรฐาน token สำหรับ authentication แบบ stateless |
+| `Token` | โท-เคน | ข้อมูลรหัสที่ใช้พิสูจน์ตัวตนแทนการส่ง username/password ทุกครั้ง |
+| `Payload` | เพย์-โหลด | ส่วนกลางของ JWT เก็บข้อมูล user (Base64 encoded — ไม่ใช่ encrypted) |
+| `Signature` | ซิก-เนอ-เชอร์ | ลายเซ็นดิจิทัลสร้างด้วย HMAC-SHA256 — พิสูจน์ว่า Backend ออกให้จริง |
+| `iat` | ไอ-เอ-ที | Issued At — Unix timestamp ตอนสร้าง token |
+| `exp` | อี-เอ็กซ์-พี | Expiration — Unix timestamp ที่ token หมดอายุ |
+| `Stateless` | สเตท-เลส | ไม่เก็บ state บน Server — ข้อมูลทั้งหมดอยู่ใน token |
+| `Type Assertion` | ไทพ์ แอส-เซิร์ท-ชัน | `as Type` — บอก TypeScript ว่า type คือนี้ (override type inference) |
+| `Middleware` | มิด-เดิล-แวร์ | ฟังก์ชันที่รันระหว่าง HTTP request ถึง route handler บน Server |

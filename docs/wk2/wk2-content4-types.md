@@ -1,5 +1,7 @@
 # Data Model — Types & Interfaces <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** สร้าง types/index.ts เป็นไฟล์กลางที่ทุก Component ใช้ร่วมกันตั้งแต่ wk2 ถึง wk8
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Interface คือ "แบบฟอร์มราชการ" — กำหนดว่าต้องกรอกช่องอะไรบ้าง ถ้ากรอกไม่ครบหรือชื่อช่องผิด ระบบปฏิเสธทันที ป้องกัน Bug ก่อน run โปรแกรม
-
----
 
 ## 📖 I: Information
 
@@ -49,8 +49,6 @@ const status: EquipmentStatus = 'ready'
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 2 — `interface` สำหรับ Object Shape
 
 ใช้ `interface` เมื่อต้องกำหนดว่า Object ต้องมี field อะไรบ้าง:
@@ -80,8 +78,6 @@ export interface User {
 **สรุป:**
 1. `type` → ใช้กับค่าที่มีตัวเลือกจำกัด (Union Types)
 2. `interface` → ใช้กับ Object ที่มีหลาย field
-
----
 
 ### ขั้นตอนที่ 3 — Nullable Fields + Optional Fields
 
@@ -123,8 +119,6 @@ const d: Equipment = { ..., borrowedBy: null  }  // note ไม่ต้อง�
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 4 — Generic Type `ApiResponse<T>` (Preview สำหรับ wk4)
 
 ::: code-group
@@ -162,7 +156,35 @@ interface UserResponse {
 เมื่อเรียก Axios ใน wk4: `apiClient.get<ApiResponse<Equipment[]>>('/equipments')` — TypeScript รู้ว่า response มี field `data` ที่เป็น `Equipment[]` ทำให้ auto-complete และตรวจสอบ type ได้ถูกต้อง
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+บทนี้แนะนำ Union Type, interface สำหรับ Object shape และ Generic `<T>` สำหรับ reusable types
+
+| ชนิด | ใช้เก็บ | ตัวอย่างในบทนี้ |
+| :--- | :--- | :--- |
+| `type` (Union) | ค่าที่มีตัวเลือกจำกัด | `type EquipmentStatus = 'available' \| 'borrowed' \| 'maintenance'` |
+| `interface` | โครงสร้าง Object | `interface Equipment { id: number; name: string; ... }` |
+| `Generic <T>` | Type Parameter ที่ใส่ทีหลัง | `interface ApiResponse<T> { data: T }` |
+
+::: code-group
+```ts [✅ ถูกต้อง]
+type EquipmentStatus = 'available' | 'borrowed' | 'maintenance'
+
+interface Equipment {
+  status: EquipmentStatus  // ✅ ใช้ Union Type แทน string
+}
+
+const eq: Equipment = { ..., status: 'available' }  // ✅
+```
+
+```ts [❌ ผิด]
+interface Equipment {
+  status: string  // ❌ TypeScript ไม่ตรวจค่า
+}
+
+const eq: Equipment = { ..., status: 'avalable' }  // ❌ พิมพ์ผิดแต่ไม่ error
+```
+:::
 
 ## 🛠️ A: Application
 
@@ -172,7 +194,12 @@ interface UserResponse {
 "กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้างไฟล์ `src/types/index.ts` สำหรับระบบเบิก-จ่ายอุปกรณ์ไอที ต้องการ: 1) `type EquipmentStatus` เป็น Union 3 ค่า 2) `type UserRole` เป็น Union 3 ค่า 3) `interface Equipment` มี id, name, category, serialNo, status (ใช้ EquipmentStatus), borrowedBy (string | null) 4) `interface User` 5) `interface ApiResponse<T>` แบบ Generic ช่วยอธิบายว่าทำไมต้องแยก `type` กับ `interface` ด้วย"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า `type` กับ `interface` ต่างกันอย่างไร และใช้แต่ละอันเมื่อไหร่
+- [ ] บอกได้ว่า `borrowedBy: string | null` กับ `borrowedBy?: string` ต่างกันอย่างไรในทางปฏิบัติ
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `src/types/index.ts`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -201,10 +228,8 @@ interface UserResponse {
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk2: add types/index.ts with Equipment, User, ApiResponse"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: ต่างกันอย่างไร type กับ interface, ทำไม borrowedBy เป็น `| null` ไม่ใช่ `?`
-
----
+- [ ] `git add . && git commit -m "wk2-types: add types/index.ts with Equipment, User, ApiResponse by ชื่อ-นามสกุล" && git push`
+- [ ] Google Doc: สรุป 3-5 บรรทัด + ลิงก์ GitHub + screenshot ✅
 
 ## ✅ P: Progress
 
@@ -226,6 +251,14 @@ interface UserResponse {
 **แนวคำตอบ:** `<T>` คือ Type Parameter — placeholder ที่ระบุ type จริงตอนใช้งาน เช่น `ApiResponse<Equipment>` จะทำให้ `data` มี type เป็น `Equipment` ต่างจาก `any` ตรงที่ `any` ปิด type checking ทั้งหมด แต่ Generic ยังคง type safety ไว้ — ถ้า `data` เป็น `Equipment` TypeScript รู้ว่า `data.name` มีอยู่ แต่ถ้าเป็น `any` ไม่รู้อะไรเลย
 :::
 
+### 🐛 Common Errors
+
+| Error / อาการ | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `Type '"ready"' is not assignable to type 'EquipmentStatus'` | ใส่ค่าที่ไม่อยู่ใน Union Type | ตรวจสอบ spelling และใช้เฉพาะค่าที่กำหนดใน Union |
+| Object ขาด field แล้ว TypeScript Error | `interface` ต้องการ field ครบทุกตัวที่ไม่ใช่ optional | เพิ่ม field ที่ขาด หรือทำเป็น optional ด้วย `?` ถ้าไม่บังคับ |
+| `import { Equipment }` แต่ type ไม่มีใน output JS | ลืมใช้ `import type` สำหรับ type-only imports | เปลี่ยนเป็น `import type { Equipment } from '../types'` |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -234,16 +267,15 @@ interface UserResponse {
 | Interfaces ครบ | Equipment + User + `ApiResponse<T>` | บางอันขาด field | ไม่มี interface |
 | นำไปใช้ได้จริง | import ใช้ใน useEquipments ได้ | สร้างแต่ไม่ได้ import | ไม่ได้นำไปใช้ |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `interface` | TypeScript keyword กำหนด shape ของ Object |
-| `type alias` | ชื่อแทนสำหรับ Type ที่ซับซ้อน เช่น Union Types |
-| `Union Type` | Type ที่รับได้หลายค่า เช่น `'available' \| 'borrowed'` |
-| `null` | ค่าว่างอย่างตั้งใจ — บอกว่า "ไม่มีข้อมูล" |
-| `Generic <T>` | Type Parameter — placeholder ใส่ Type จริงตอนใช้งาน |
-| `Single Source of Truth` | เก็บข้อมูล/Type ไว้ที่เดียว แก้ที่เดียวได้ผลทุกที่ |
-| `optional (?:)` | field ที่ไม่บังคับ — อาจไม่มีก็ได้ (undefined) |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `interface` | อิน-เตอร์-เฟซ | TypeScript keyword กำหนด shape ของ Object |
+| `type alias` | ไทพ เอ-ลิ-แอส | ชื่อแทนสำหรับ Type ที่ซับซ้อน เช่น Union Types |
+| `Union Type` | ยู-เนียน ไทพ | Type ที่รับได้หลายค่า เช่น `'available' \| 'borrowed'` |
+| `null` | นัล | ค่าว่างอย่างตั้งใจ — บอกว่า "ไม่มีข้อมูล" |
+| `Generic <T>` | เจ-เนอ-ริค | Type Parameter — placeholder ใส่ Type จริงตอนใช้งาน |
+| `Single Source of Truth` | ซิง-เกิล ซอร์ส ออฟ ทรูธ | เก็บข้อมูล/Type ไว้ที่เดียว แก้ที่เดียวได้ผลทุกที่ |
+| `optional (?:)` | อ๊อพ-ชัน-นัล | field ที่ไม่บังคับ — อาจไม่มีก็ได้ (undefined) |
+| `Object` | อ๊อบ-เจ็กท์ | โครงสร้างข้อมูลที่เก็บ key-value pairs |

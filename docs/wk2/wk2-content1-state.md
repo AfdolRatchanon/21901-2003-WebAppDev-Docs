@@ -1,5 +1,7 @@
 # useState — จัดการ State ใน Component <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** ฝึก useState + Setter ก่อนใช้งานจริงใน wk3 (Forms) และ wk4 (API)
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** State เหมือน "กระดานไวท์บอร์ด" ที่ React จับตามอง — ทุกครั้งที่กระดานเปลี่ยน React จะวาด UI ใหม่ให้อัตโนมัติ แต่ถ้าเขียนบนกระดาษ (ตัวแปรธรรมดา) React ไม่เห็น
-
----
 
 ## 📖 I: Information
 
@@ -41,8 +41,6 @@ function handleBorrow() {
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 1 — รูปแบบของ useState
 
 ```tsx [src/App.tsx]
@@ -72,8 +70,6 @@ export default function App() {
 ```
 
 **สรุป:** กดปุ่ม → `setStatus('borrowed')` → React re-render → `{status}` แสดง `'borrowed'` ✅
-
----
 
 ### ขั้นตอนที่ 2 — useState กับ TypeScript
 
@@ -109,8 +105,6 @@ const [status, setStatus] = useState<string>('available')
 setStatus(42)  // ❌ Type 'number' is not assignable to type 'string'
 ```
 :::
-
----
 
 ### ขั้นตอนที่ 3 — หลาย State ใน Component เดียว
 
@@ -158,7 +152,33 @@ export function EquipmentCard({ name, category, status: initialStatus }: Equipme
 }
 ```
 
----
+#### 🔷 TypeScript ในบทนี้
+
+บทนี้แนะนำการกำหนด Type Parameter ให้ `useState` และการใช้ Union Type กับ state
+
+| ชนิด | ใช้เก็บ | ตัวอย่างในบทนี้ |
+| :--- | :--- | :--- |
+| `useState<string>` | ข้อความ เช่น สถานะอุปกรณ์ | `useState<string>('available')` |
+| `useState<boolean>` | ค่า true/false เช่น toggle | `useState<boolean>(false)` |
+| `useState<number \| null>` | ตัวเลขที่อาจยังไม่มีค่า | `useState<number \| null>(null)` |
+
+::: code-group
+```ts [✅ ถูกต้อง]
+const [status, setStatus] = useState<string>('available')
+const [id, setId]         = useState<number | null>(null)
+
+setStatus('borrowed')  // ✅ string ถูกต้อง
+setId(5)               // ✅ number ถูกต้อง
+setId(null)            // ✅ null ถูกต้อง
+```
+
+```ts [❌ ผิด]
+const [status, setStatus] = useState<string>('available')
+
+setStatus(42)     // ❌ number ไม่ใช่ string
+setStatus(true)   // ❌ boolean ไม่ใช่ string
+```
+:::
 
 ## 🛠️ A: Application
 
@@ -168,7 +188,12 @@ export function EquipmentCard({ name, category, status: initialStatus }: Equipme
 "กำลังเรียน React 18 + TypeScript อยู่ อยากเข้าใจว่า `useState` ทำงานอย่างไร ทำไมต้องใช้ `setStatus` แทนการ assign ตรง ๆ เช่น `status = 'borrowed'` และเมื่อเรียก `setStatus` React รู้ได้อย่างไรว่าต้อง re-render — ช่วยอธิบายแบบเข้าใจง่ายพร้อมตัวอย่างเล็ก ๆ"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่าทำไม `const` ธรรมดาไม่ทำให้ React re-render แต่ `useState` ทำได้
+- [ ] บอกได้ว่าเมื่อไหร่ต้องระบุ Generic `<T>` ใน `useState<T>` เองแทนที่จะปล่อยให้ TypeScript เดา
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `App.tsx`, `EquipmentCard.tsx`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -194,7 +219,10 @@ export function EquipmentCard({ name, category, status: initialStatus }: Equipme
 - [ ] แสดงค่า count และเพิ่มปุ่ม `+1` เรียก `setCount(count + 1)`
 - [ ] ดูว่า state ทั้งหมดทำงานอิสระจากกัน ✅
 
----
+**ขั้นสุดท้าย: Submit**
+
+- [ ] `git add . && git commit -m "wk2-state: useState พื้นฐาน + TypeScript types by ชื่อ-นามสกุล" && git push`
+- [ ] Google Doc: สรุป 3-5 บรรทัด + ลิงก์ GitHub + screenshot ✅
 
 ## ✅ P: Progress
 
@@ -216,6 +244,14 @@ export function EquipmentCard({ name, category, status: initialStatus }: Equipme
 **แนวคำตอบ:** React batches การ re-render ไว้ด้วยกัน — ถ้าเรียก setter หลายครั้งใน event handler เดียว React จะ re-render แค่ครั้งเดียวหลังจากทุก setter ทำงานเสร็จ ไม่ใช่ re-render ทีละครั้ง ทำให้แอปทำงานได้เร็ว
 :::
 
+### 🐛 Common Errors
+
+| Error / อาการ | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| UI ไม่เปลี่ยนเมื่อกดปุ่ม | assign ตรงเช่น `status = 'borrowed'` แทนที่จะเรียก setter | เปลี่ยนเป็น `setStatus('borrowed')` เสมอ |
+| `Type 'number' is not assignable to type 'string'` | เรียก setter ด้วยค่า type ผิด เช่น `setStatus(42)` | ตรวจ type ที่กำหนดใน `useState<T>` ให้ตรงกับค่าที่ส่ง |
+| State เปลี่ยนแล้วแต่ค่าเก่ายังอยู่ใน event handler | JavaScript closures — ค่าใน handler ยังเป็น snapshot เก่า | ใช้ functional update เช่น `setCount(prev => prev + 1)` |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -224,15 +260,13 @@ export function EquipmentCard({ name, category, status: initialStatus }: Equipme
 | TypeScript + useState | กำหนด Type ถูก TS Error ถูกต้อง | มี Type แต่ไม่ครบ | ไม่ได้ระบุ Type |
 | หลาย State | State หลายตัวทำงานอิสระ | มีบางตัว | ตัวเดียว |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `State` | ข้อมูลใน Component ที่ React จับตามอง — เปลี่ยนแล้ว UI อัปเดต |
-| `useState` | Hook สำหรับสร้าง state ใน Function Component |
-| `Setter` | ฟังก์ชันที่ได้จาก useState สำหรับเปลี่ยนค่า state |
-| `Re-render` | React วาด UI ใหม่เมื่อ state หรือ props เปลี่ยน |
-| `Destructuring` | `const [a, b] = useState(...)` — แกะค่าออกจาก array |
-| `Batch Update` | React รวมการ re-render หลาย ๆ ครั้งไว้เป็นครั้งเดียว |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `State` | สเตต | ข้อมูลใน Component ที่ React จับตามอง — เปลี่ยนแล้ว UI อัปเดต |
+| `useState` | อิว-สเตต | Hook สำหรับสร้าง state ใน Function Component |
+| `Setter` | เซ็ท-เตอร์ | ฟังก์ชันที่ได้จาก useState สำหรับเปลี่ยนค่า state |
+| `Re-render` | รี-เรน-เดอร์ | React วาด UI ใหม่เมื่อ state หรือ props เปลี่ยน |
+| `Destructuring` | ดี-สตรัก-เจอ-ริง | `const [a, b] = useState(...)` — แกะค่าออกจาก array |
+| `Batch Update` | แบ็ทช์ อัพ-เดท | React รวมการ re-render หลาย ๆ ครั้งไว้เป็นครั้งเดียว |

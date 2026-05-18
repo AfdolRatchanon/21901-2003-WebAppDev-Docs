@@ -1,5 +1,7 @@
 # Auth Session & Axios Interceptor — แนบ Token อัตโนมัติ <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เรียนรู้การสร้าง Axios instance และ Interceptor เพื่อแนบ JWT token ทุก request และจัดการ 401 อัตโนมัติ — เป็นหัวใจของ Auth Session ที่ wk6-lab (Login UI) ต้องใช้เพื่อให้ระบบทำงานครบวงจร
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -14,8 +16,6 @@ const res = await axios.get('/api/equipments', {
 :::
 
 > 💡 **เปรียบเทียบ:** Interceptor เหมือน "ด่านตรวจหนังสือเดินทาง" ที่ประตูสนามบิน — ทุกผู้โดยสาร (request) ที่ออกต้องผ่านด่านเพื่อตรวจหนังสือเดินทาง (แนบ token) และทุกคนที่กลับเข้ามา (response) ก็ต้องผ่านด่านเพื่อเช็คสถานะ (จับ 401)
-
----
 
 ## 📖 I: Information
 
@@ -64,8 +64,6 @@ const res2 = await axios.post('http://localhost:3000/api/auth/login', body)
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 2 — Request Interceptor: แนบ Token อัตโนมัติ
 
 ```ts [src/api/config.ts — Request Interceptor]
@@ -87,8 +85,6 @@ apiClient.interceptors.request.use((config) => {
 ```
 
 **สรุปการทำงาน:** ทุกครั้งที่ call `apiClient.get/post/patch/delete` → interceptor รัน `[1]` → อ่าน token `[2]` → เพิ่ม header `[3]` → ส่ง request ออกไปพร้อม token `[5]`
-
----
 
 ### ขั้นตอนที่ 3 — Response Interceptor: จัดการ 401 Unauthorized
 
@@ -153,8 +149,6 @@ if (res2.status === 401) { window.location.href = '/login' }
 ```
 :::
 
----
-
 ### Auth API: loginApi และ logoutApi
 
 ```ts [src/api/authApi.ts]
@@ -196,7 +190,11 @@ export async function logoutApi(): Promise<void> {
 }
 ```
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `apiClient.post<ApiResponse<LoginResponse>>(...)` — double Generic type บอก TypeScript ว่า response มี shape แบบไหน
+- `error.response?.status` — optional chaining ป้องกัน Network Error ที่ไม่มี `.response`
+- `Promise<LoginResponse>` — return type ของ `loginApi` บอก caller ว่าจะได้ token + user กลับมา
 
 ## 🛠️ A: Application
 
@@ -206,17 +204,19 @@ export async function logoutApi(): Promise<void> {
 "สร้าง TypeScript ไฟล์ `src/api/config.ts` ด้วย Axios ที่มี: 1) `axios.create()` instance ชื่อ apiClient พร้อม baseURL 2) Request interceptor ที่อ่าน JWT จาก localStorage แล้วเพิ่ม `Authorization: Bearer <token>` header 3) Response interceptor ที่ดัก error 401 แล้ว redirect ไป /login ด้วย window.location.href — อธิบายว่าทำไมต้อง return `Promise.reject(error)` ท้าย response interceptor"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า Axios instance (`axios.create()`) ต่างจากการใช้ `axios` ตรง ๆ อย่างไร
+- [ ] เข้าใจว่า Request Interceptor รันก่อนส่ง request และ Response Interceptor รันหลังได้รับ response
+- [ ] รู้ว่าต้อง `return Promise.reject(error)` เสมอใน error handler เพื่อให้ `catch` ของ caller ทำงาน
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `config.ts` + `authApi.ts`
 
 **เป้าหมาย:** ตรวจสอบว่า Interceptors ทำงานถูกต้อง + สร้าง authApi ให้สมบูรณ์
-
----
 
 #### ขั้น 0 — Student Identity
 
 เพิ่ม `<footer>` ชื่อ-รหัสของตนเองใน Component หลักที่แก้ไข
-
----
 
 #### ขั้น 1 — ตรวจสอบ Axios config.ts
 
@@ -224,15 +224,11 @@ export async function logoutApi(): Promise<void> {
 2. อ่านและทำความเข้าใจ code ทุกบรรทัดพร้อม comment `[1]-[7]`
 3. ทดสอบ Request Interceptor: Login → เปิด DevTools → Network → เลือก request ไป `/api/equipments` → ดู Request Headers → ต้องเห็น `Authorization: Bearer eyJ...`
 
----
-
 #### ขั้น 2 — สร้าง authApi.ts
 
 1. ตรวจสอบหรือสร้าง `src/api/authApi.ts` ตาม code ด้านบน
 2. ทดสอบ: Login ด้วย account ที่มีอยู่ → ต้องเข้าหน้าหลักได้
 3. ทดสอบ error case: ใส่ password ผิด → ต้องเห็น error message (ไม่ crash)
-
----
 
 #### ขั้น 3 — ทดสอบ 401 Interceptor
 
@@ -240,17 +236,13 @@ export async function logoutApi(): Promise<void> {
 2. ใน DevTools → Application → Local Storage → แก้ค่า `token` เป็น `"fake-token"`
 3. กด Refresh → Interceptor ควรจับ 401 → redirect ไป `/login` อัตโนมัติ ✅
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ตอบในรายงาน: "Interceptor ทำให้โค้ดดีขึ้นอย่างไร ถ้าไม่มีจะเกิดอะไรขึ้น"
 - [ ] `git add src/api/config.ts src/api/authApi.ts`
 - [ ] `git commit -m "wk6: axios interceptors for auth token + 401 handling"`
 - [ ] `git push origin main`
-- [ ] เขียนสรุป 3-5 บรรทัดใน Google Doc พร้อม screenshot Network tab ที่เห็น Authorization header
-
----
+- [ ] เขียนสรุป 3-5 บรรทัดใน Google Doc พร้อม screenshot Network tab ที่เห็น Authorization header + ลิงก์ GitHub
 
 ## ✅ P: Progress
 
@@ -283,6 +275,14 @@ export async function logoutApi(): Promise<void> {
 เหมือน "เปิดกล่องใหญ่ (`res.data`) แล้วเอากล่องเล็กข้างใน (`res.data.data`) ออกมา"
 :::
 
+### 🐛 Common Errors
+
+| Error | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Request ไม่มี Authorization header ใน Network tab | Interceptor ไม่ return `config` หรือ token เป็น null | ตรวจว่า `return config` อยู่ท้าย interceptor และ localStorage มี `token` |
+| 401 error ไม่ redirect ไป `/login` | ลืม `return Promise.reject(error)` ก่อนออกจาก error handler | เพิ่ม `return Promise.reject(error)` หลัง `window.location.href = '/login'` |
+| `TypeError: Cannot read properties of undefined (reading 'status')` | ใช้ `error.response.status` โดยตรง ไม่มี optional chaining | เปลี่ยนเป็น `error.response?.status` |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -291,16 +291,16 @@ export async function logoutApi(): Promise<void> {
 | Response Interceptor | จับ 401 + redirect + reject | จับได้แต่ไม่ reject | ไม่มี |
 | authApi.ts | loginApi + logoutApi ถูกต้อง | loginApi อย่างเดียว | ไม่มี authApi |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Interceptor` | ฟังก์ชันที่รันระหว่าง request/response — ดักจับก่อนถึงปลายทาง |
-| `Bearer Token` | Format ของ Authorization header: `Bearer <jwt>` (มีช่องว่างระหว่าง) |
-| `401 Unauthorized` | HTTP status: "ไม่ได้รับอนุญาต" — token ผิดหรือหมดอายุ |
-| `Hard redirect` | เปลี่ยน URL ด้วย `window.location.href` — reload ทั้งหมด ออกจาก React |
-| `Axios instance` | สำเนา Axios พร้อม default config — สร้างด้วย `axios.create()` |
-| `Promise.reject` | บอก async chain ว่า operation ล้มเหลว → catch block รับไปจัดการ |
-| `Optional chaining ?.` | เข้าถึง property โดยไม่ crash ถ้าค่าเป็น null/undefined |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Interceptor` | อิน-เทอร์-เซ็ป-เตอร์ | ฟังก์ชันที่รันระหว่าง request/response — ดักจับก่อนถึงปลายทาง |
+| `Middleware` | มิด-เดิล-แวร์ | โปรแกรมที่อยู่ระหว่างการรับส่งข้อมูล — ประมวลผลก่อนถึงปลายทาง |
+| `Bearer Token` | แบร์-เรอร์ โท-เคน | Format ของ Authorization header: `Bearer <jwt>` (มีช่องว่างระหว่าง) |
+| `Token` | โท-เคน | ข้อมูลที่ใช้พิสูจน์ตัวตน — ส่งไปกับทุก API request |
+| `JWT` | เจ-ดับ-บลิว-ที | JSON Web Token — token มาตรฐานสำหรับ authentication |
+| `401 Unauthorized` | โฟร์-โอ-วัน อัน-ออ-เทอ-ไรซ์ด | HTTP status: "ไม่ได้รับอนุญาต" — token ผิดหรือหมดอายุ |
+| `Hard redirect` | ฮาร์ด รี-ไดเร็กท์ | เปลี่ยน URL ด้วย `window.location.href` — reload ทั้งหมด ออกจาก React |
+| `Axios instance` | แอก-ซิ-โอส อิน-สแตนซ์ | สำเนา Axios พร้อม default config — สร้างด้วย `axios.create()` |
+| `Promise.reject` | พรอม-มิส รี-เจ็กท์ | บอก async chain ว่า operation ล้มเหลว → catch block รับไปจัดการ |

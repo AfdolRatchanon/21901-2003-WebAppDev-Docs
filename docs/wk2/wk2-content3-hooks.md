@@ -1,5 +1,7 @@
 # Custom Hooks — แยก Logic ออกจาก UI <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** สร้าง useEquipments Hook ที่จะใช้ใน EquipmentPage และ AdminPage ตั้งแต่ wk4 เป็นต้นไป
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Custom Hook เหมือน "สูตรทำอาหารกลาง" — เขียนสูตรครั้งเดียว ทุกหน้าเรียกใช้ได้ ถ้าสูตรเปลี่ยนก็แก้แค่ที่เดียว
-
----
 
 ## 📖 I: Information
 
@@ -59,8 +59,6 @@ const { equipments, isLoading } = useEquipments()  // เหมือนกั�
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 1 — สร้าง Interface Equipment
 
 ก่อนสร้าง Hook ต้องกำหนด **Type ของข้อมูล** ที่ Hook จะจัดการ:
@@ -78,8 +76,6 @@ interface Equipment {
 ```
 
 **สรุป:** Interface บอก TypeScript ว่าทุก `Equipment` object ต้องมี 4 field นี้ ถ้าขาดหรือ type ผิด จะ Error ทันที ✅
-
----
 
 ### ขั้นตอนที่ 2 — Hook เวอร์ชัน 1: ข้อมูล + Loading
 
@@ -133,8 +129,6 @@ export function EquipmentPage() {
   )
 }
 ```
-
----
 
 ### ขั้นตอนที่ 3 — Hook เวอร์ชัน 2: เพิ่ม Error State + refetch
 
@@ -230,7 +224,32 @@ export function EquipmentPage() {
 ทุกครั้งที่ Component re-render ฟังก์ชันใน Component จะถูกสร้างใหม่ (reference ใหม่) `useCallback` จดจำฟังก์ชันไว้ให้ reference เดิม — ถ้าใส่ `fetchEquipments` ใน `useEffect`'s dependency array โดยไม่มี `useCallback` จะเกิด infinite loop: render → function ใหม่ → effect รัน → render → ...
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+Custom Hook ใช้ Generic Type สำหรับ state หลายตัวพร้อมกัน และ return object ที่มีหลาย field พร้อม type ที่แน่นอน
+
+| ชนิด | ใช้เก็บ | ตัวอย่างในบทนี้ |
+| :--- | :--- | :--- |
+| `useState<Equipment[]>` | รายการอุปกรณ์ | `useState<Equipment[]>([])` |
+| `useState<string \| null>` | error message หรือ null | `useState<string \| null>(null)` |
+
+::: code-group
+```ts [✅ ถูกต้อง]
+// Hook return object ที่มี type ครบ
+export function useEquipments() {
+  const [error, setError] = useState<string | null>(null)
+  // TypeScript รู้ว่า error เป็น string | null
+  // Component ใช้ได้: if (error) return <p>{error}</p>
+  return { equipments, isLoading, error, refetch: fetchEquipments }
+}
+```
+
+```ts [❌ ผิด]
+// ไม่ระบุ type ทำให้ useState ได้ never[]
+const [equipments, setEquipments] = useState([])
+// ❌ TypeScript จะ error เมื่อพยายาม setEquipments([{ id: 1, ... }])
+```
+:::
 
 ## 🛠️ A: Application
 
@@ -240,7 +259,12 @@ export function EquipmentPage() {
 "กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้าง Custom Hook ชื่อ `useEquipments` ที่จัดการ: `equipment[]` array state, `isLoading: boolean`, `error: string | null` และมีฟังก์ชัน `refetch` สำหรับโหลดข้อมูลใหม่ ขอให้ใช้ `useCallback` และ `useEffect` อย่างถูกต้อง พร้อม TypeScript interface สำหรับ Equipment — อธิบายว่าทำไมต้องใช้ `useCallback` ด้วย"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า Custom Hook ต้องชื่อขึ้นต้นด้วย `use` เพราะอะไร และ React ใช้กฎนี้ยังไง
+- [ ] บอกได้ว่าถ้าไม่ใช้ `useCallback` กับ `fetchEquipments` แล้ว useEffect จะเกิดปัญหาอะไร
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `src/hooks/useEquipments.ts`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -270,10 +294,8 @@ export function EquipmentPage() {
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk2: add useEquipments custom hook"` → `git push`
-- [ ] เขียนสรุป 3-5 บรรทัดใน Google Doc: Hook คืออะไร, ทำไมต้องแยกออกมา, refetch ใช้ยังไง
-
----
+- [ ] `git add . && git commit -m "wk2-hooks: add useEquipments custom hook by ชื่อ-นามสกุล" && git push`
+- [ ] Google Doc: สรุป 3-5 บรรทัด + ลิงก์ GitHub + screenshot ✅
 
 ## ✅ P: Progress
 
@@ -295,6 +317,14 @@ export function EquipmentPage() {
 **แนวคำตอบ:** 1) **DRY** — ไม่เขียนซ้ำ หลาย Component ใช้ Hook เดียวกัน 2) **Separation of Concerns** — Component ดูแลแค่ UI ส่วน Logic อยู่ใน Hook อ่านและแก้ไขง่ายขึ้น 3) **Testability** — ทดสอบ Hook แยกจาก UI ได้ง่าย 4) **Reusability** — นำ Hook ไปใช้ซ้ำในโปรเจกต์อื่นได้
 :::
 
+### 🐛 Common Errors
+
+| Error / อาการ | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Hook เรียกใน if/loop แล้ว React error | Hook ต้องเรียก top-level เท่านั้น ไม่ใช่ใน if หรือ loop | ย้าย `useEquipments()` ออกมาไว้บนสุดของ Component |
+| `refetch` กดแล้ว loading ไม่แสดง | ลืม `setIsLoading(true)` ต้นฟังก์ชัน `fetchEquipments` | เพิ่ม `setIsLoading(true)` เป็นบรรทัดแรกใน fetchEquipments |
+| Error message ไม่แสดงแม้ throw จะทำงาน | ลืม return `error` จาก Hook หรือไม่ได้ check ใน Component | ตรวจสอบว่า `return { ..., error }` และ Component มี `if (error) return ...` |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -303,15 +333,14 @@ export function EquipmentPage() {
 | Hook ทำงานได้ | loading/error/data/refetch ครบ | บางส่วนขาด | Hook ไม่ทำงาน |
 | Component ใช้ Hook | แสดงผลถูก มีปุ่ม refetch | แสดงได้แต่ไม่ครบ | ไม่ได้ใช้ Hook |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Custom Hook` | ฟังก์ชัน TypeScript ที่ชื่อขึ้นต้นด้วย `use` รวม Logic ของ React Hooks |
-| `useCallback` | Hook สำหรับจดจำ function reference ให้ไม่เปลี่ยนทุก render |
-| `DRY` | Don't Repeat Yourself — หลักการเขียนโค้ดไม่ซ้ำกัน |
-| `refetch` | ฟังก์ชันที่ return จาก Hook เพื่อให้ Component โหลดข้อมูลใหม่ |
-| `Separation of Concerns` | แยก Logic (Hook) ออกจาก UI (Component) เพื่อให้ดูแลง่าย |
-| `finally` | block ที่รันเสมอ ทั้งกรณี try สำเร็จและ catch เกิด error |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Custom Hook` | คัส-ตอม ฮุค | ฟังก์ชัน TypeScript ที่ชื่อขึ้นต้นด้วย `use` รวม Logic ของ React Hooks |
+| `useCallback` | อิว-คอล-แบค | Hook สำหรับจดจำ function reference ให้ไม่เปลี่ยนทุก render |
+| `DRY` | ดี-อาร์-วาย | Don't Repeat Yourself — หลักการเขียนโค้ดไม่ซ้ำกัน |
+| `refetch` | รี-เฟ็ทช์ | ฟังก์ชันที่ return จาก Hook เพื่อให้ Component โหลดข้อมูลใหม่ |
+| `Separation of Concerns` | เซพ-เพอ-เร-ชัน ออฟ คอน-เซิร์นส์ | แยก Logic (Hook) ออกจาก UI (Component) เพื่อให้ดูแลง่าย |
+| `Callback` | คอล-แบค | ฟังก์ชันที่ส่งไปเป็น argument ให้ฟังก์ชันอื่นเรียกใช้ |
+| `finally` | ไฟ-นัล-ลี | block ที่รันเสมอ ทั้งกรณี try สำเร็จและ catch เกิด error |

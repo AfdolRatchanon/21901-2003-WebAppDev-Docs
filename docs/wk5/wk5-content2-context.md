@@ -1,5 +1,7 @@
 # Context API + useContext — แชร์ State ข้าม Component <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เรียนรู้ Context API เพื่อแก้ปัญหา Props Drilling ใน tree ที่ลึก — เป็นทางเลือกของ Props ที่ wk5-content1 ใช้ และเป็นพื้นฐานสำหรับ state management ขนาดใหญ่ในโปรเจกต์จริง
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Context เหมือน "WiFi ส่วนกลาง" — ติดตั้งครั้งเดียว ทุก device ในอาคารเชื่อมต่อได้โดยตรง ไม่ต้องเดินสายผ่านห้องต่อห้อง
-
----
 
 ## 📖 I: Information
 
@@ -83,8 +83,6 @@ function Navbar() {
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 2 — ใช้ Context ในแอปจริง
 
 **ที่ `main.tsx` หรือ `App.tsx` — ห่อ Provider ไว้รอบนอกสุด:**
@@ -114,8 +112,6 @@ export default function App() {
 | ความชัดเจน | เห็นชัดว่าข้อมูลมาจากไหน | ซ่อนอยู่ใน Context |
 | TypeScript | ง่าย — type จาก props interface | ต้องระวัง null check |
 | ตัวอย่างใช้งาน | auth (2-3 component), form state | theme, language, user session ทั่วแอป |
-
----
 
 ### ขั้นตอนที่ 3 — สร้าง Custom Hook ครอบ useContext
 
@@ -169,8 +165,6 @@ function Navbar() {
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 4 — AuthContext สำหรับโปรเจกต์ (แนวคิด)
 
 ถ้าโปรเจกต์ใช้ Context แทน Props สำหรับ auth จะมีหน้าตาแบบนี้:
@@ -216,7 +210,11 @@ export function useAuthContext(): AuthContextType {
 ใน `project/frontend/src/App.tsx` — `auth` ถูกส่งตรงจาก `App` ไปยัง `Navbar`, `LoginPage`, `EquipmentPage` แค่ 2-3 component ที่ไม่ลึก Context จึงไม่จำเป็นและเพิ่มความซับซ้อนโดยไม่คุ้ม แต่ถ้าแอปใหญ่ขึ้นมีหลาย nested components Context จะเหมาะกว่า
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `createContext<ThemeContextType | null>(null)` — Generic type บอก TypeScript ว่า Context มีค่าอะไร
+- `useContext(ThemeContext)` — return type เป็น `ThemeContextType | null` ต้องตรวจ null ก่อนใช้
+- Custom Hook ที่ return `ThemeContextType` (ไม่มี `| null`) — จัดการ null check ครั้งเดียว
 
 ## 🛠️ A: Application
 
@@ -226,7 +224,13 @@ export function useAuthContext(): AuthContextType {
 "กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้าง Context API สำหรับ theme switching มี: 1) `createContext<ThemeContextType | null>(null)` 2) ThemeProvider component ที่ใช้ useState เก็บ 'light' | 'dark' และมีฟังก์ชัน toggleTheme 3) Custom Hook `useTheme()` ที่ครอบ useContext พร้อม null check — อธิบายว่าทำไมต้อง throw error ถ้า context เป็น null"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า `createContext`, `Provider`, `useContext` แต่ละตัวทำหน้าที่อะไร
+- [ ] เข้าใจว่าทำไมต้อง throw error ใน Custom Hook เมื่อ ctx เป็น null
+- [ ] รู้ว่าโปรเจกต์นี้ใช้ Props แทน Context เพราะ tree ไม่ลึก (เพียง 1-2 ชั้น)
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `ThemeContext.tsx`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -255,10 +259,8 @@ export function useAuthContext(): AuthContextType {
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk5: ThemeContext with createContext and useContext"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: Context vs Props ต่างกันเมื่อไหร่, createContext ทำอะไร, ทำไม throw error เมื่อ ctx เป็น null
-
----
+- [ ] `git add . && git commit -m "wk5: ThemeContext with createContext and useContext"` → `git push origin main`
+- [ ] เขียนสรุป 3-5 บรรทัดใน Google Doc: Context vs Props ต่างกันเมื่อไหร่, createContext ทำอะไร, ทำไม throw error เมื่อ ctx เป็น null + ลิงก์ GitHub + screenshot
 
 ## ✅ P: Progress
 
@@ -280,6 +282,14 @@ export function useAuthContext(): AuthContextType {
 **แนวคำตอบ:** ใช้ Context เมื่อ: 1) Component tree ลึกเกิน 3-4 ชั้น 2) Component กลางต้องส่งต่อ props ที่ไม่ได้ใช้เอง 3) ข้อมูลใช้ใน "ทุกที่" เช่น theme, language, user session ส่วน Props เหมาะกับ: 1) Tree ไม่ลึก 2) ข้อมูลที่ไหลทิศทางเดียว 3) Component ที่ reuse ได้ง่ายกว่า (ไม่ผูกกับ Context)
 :::
 
+### 🐛 Common Errors
+
+| Error | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `useTheme ต้องใช้ภายใน ThemeProvider เท่านั้น` | เรียก `useTheme()` ใน component ที่ไม่ได้อยู่ใน `<ThemeProvider>` | ห่อ component ด้วย `<ThemeProvider>` ใน `App.tsx` หรือ `main.tsx` |
+| TypeScript error: `null` ไม่มี property `theme` | ไม่ได้ null check ก่อนใช้ค่าจาก `useContext` | ใช้ Custom Hook `useTheme()` ที่ throw error แทน หรือเพิ่ม `if (!ctx) return null` |
+| theme ไม่เปลี่ยนเมื่อกดปุ่ม | `toggleTheme` ไม่ได้อยู่ใน `value` ของ Provider | เพิ่ม `toggleTheme` เข้า object ใน `<ThemeContext.Provider value={{ theme, toggleTheme }}>` |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -288,16 +298,15 @@ export function useAuthContext(): AuthContextType {
 | useContext + Custom Hook | Custom Hook มี null check + throw error | มี Hook แต่ไม่มี null check | เรียก useContext ตรง ๆ |
 | ใช้งานได้จริง | toggle theme ได้ สีเปลี่ยนถูกต้อง | บางส่วนทำงาน | ไม่มี Provider/Consumer |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Context` | กลไกของ React สำหรับแชร์ state ข้าม component tree โดยไม่ผ่าน props |
-| `createContext<T>` | ฟังก์ชันสร้าง Context object พร้อม TypeScript generic |
-| `Provider` | Component ที่ห่อ tree และส่งค่าผ่าน `value` prop |
-| `useContext` | Hook สำหรับอ่านค่าจาก Context ที่ใกล้ที่สุด |
-| `Props Drilling` | การส่ง props ผ่าน component กลางที่ไม่ได้ใช้ข้อมูลนั้น |
-| `Encapsulation` | การซ่อน implementation detail — ผู้ใช้ไม่ต้องรู้รายละเอียดข้างใน |
-| `null check` | การตรวจสอบว่าค่าไม่เป็น null ก่อนใช้งาน เพื่อป้องกัน runtime error |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Context` | คอน-เทกซ์ท | กลไกของ React สำหรับแชร์ state ข้าม component tree โดยไม่ผ่าน props |
+| `createContext` | ครี-เอท คอน-เทกซ์ท | ฟังก์ชันสร้าง Context object พร้อม TypeScript generic |
+| `Provider` | โพร-ไวด์-เดอร์ | Component ที่ห่อ tree และส่งค่าผ่าน `value` prop |
+| `useContext` | อิว-คอน-เทกซ์ท | Hook สำหรับอ่านค่าจาก Context ที่ใกล้ที่สุด |
+| `Consumer` | คอน-ซู-เมอร์ | Component หรือ Hook ที่อ่านค่าจาก Context |
+| `Props Drilling` | พรอปส์ ดริล-ลิ่ง | การส่ง props ผ่าน component กลางที่ไม่ได้ใช้ข้อมูลนั้น |
+| `Encapsulation` | เอน-แคป-ซู-เล-ชัน | การซ่อน implementation detail — ผู้ใช้ไม่ต้องรู้รายละเอียดข้างใน |
+| `null check` | นัล เช็ค | การตรวจสอบว่าค่าไม่เป็น null ก่อนใช้งาน เพื่อป้องกัน runtime error |

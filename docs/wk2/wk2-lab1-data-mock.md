@@ -1,5 +1,7 @@
 # Lab: State + Mock Data Array <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** สร้าง EquipmentPage พร้อม Mock Data และ Filter ที่จะเป็นพื้นฐานของ wk3 (Tailwind) และ wk4 (API จริง)
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Mock Data เหมือน "ตัวอย่างอาหารจำลอง" ที่ร้าน — ใช้ตกแต่งร้าน จัดวางโต๊ะ ถ่ายภาพเมนูได้เลย โดยไม่ต้องรอทำอาหารจริง
-
----
 
 ## 📖 I: Information
 
@@ -58,8 +58,6 @@ export function EquipmentPage() {
 ```
 
 **สรุป:** Mock Data 4 รายการ → `useState<Equipment[]>` เก็บ → `.map()` แสดง ✅
-
----
 
 ### ขั้นตอนที่ 2 — เพิ่ม Filter ด้วย useState + Array.filter()
 
@@ -132,8 +130,6 @@ export function EquipmentPage() {
 Lab นี้ใช้ **inline style** เพราะยังไม่ได้เรียน Tailwind — ใน **wk3** จะเปลี่ยน `style=&#123;&#123; ... &#125;&#125;` ทั้งหมดเป็น Tailwind class `className="..."` ให้ UI สวยขึ้นมาก
 :::
 
----
-
 ### ขั้นตอนที่ 3 — เพิ่ม Badge สีตาม Status
 
 ```tsx [เพิ่มสี badge ใน .map()]
@@ -163,8 +159,6 @@ const badgeTextColor: Record<string, string> = {
 </span>
 ```
 
----
-
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide
@@ -173,7 +167,12 @@ const badgeTextColor: Record<string, string> = {
 "กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้าง component ชื่อ `EquipmentPage` ที่: 1) มี Mock Data array ของ Equipment (id, name, category, serialNo, status, borrowedBy) 2) ใช้ `useState<Equipment[]>` เก็บ array 3) มีปุ่ม filter ตาม status ใช้ `useState<string>` + `Array.filter()` 4) แสดง badge สีต่างกันตาม status ด้วย inline style — ใช้ TypeScript types พร้อม import จาก types/index.ts"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า Mock Data แตกต่างจาก API จริงอย่างไร และทำไมต้องใช้ก่อน wk4
+- [ ] บอกได้ว่า `Array.filter()` ต่างจาก `Array.map()` อย่างไร และแต่ละอันคืน array ขนาดอย่างไร
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `src/pages/EquipmentPage.tsx`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -203,10 +202,8 @@ const badgeTextColor: Record<string, string> = {
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk2: equipment list with mock data and filter"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: Mock Data คืออะไร, ทำไมต้องใช้ก่อน API จริง, `Array.filter()` ทำงานยังไง พร้อม screenshot หน้าเว็บที่กดปุ่ม filter แล้ว
-
----
+- [ ] `git add . && git commit -m "wk2-lab: equipment list with mock data and filter by ชื่อ-นามสกุล" && git push`
+- [ ] Google Doc: สรุป 3-5 บรรทัด + ลิงก์ GitHub + screenshot ✅
 
 ## ✅ P: Progress
 
@@ -228,6 +225,14 @@ const badgeTextColor: Record<string, string> = {
 **แนวคำตอบ:** `(['all', 'available', ...] as const)` บอก TypeScript ว่า array นี้เป็น readonly tuple ไม่ใช่ `string[]` ธรรมดา ทำให้ TypeScript รู้ค่าที่แน่นอนของแต่ละ element เหมาะใช้กับ literal values เช่น status ที่มีค่าแน่นอน
 :::
 
+### 🐛 Common Errors
+
+| Error / อาการ | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Mock Data Object ขาด field แล้ว TypeScript Error | `Equipment` interface ต้องการ field ครบ ได้แก่ `borrowedBy` | เพิ่ม `borrowedBy: null` ในทุก object ที่ยังว่างอยู่ |
+| กดปุ่ม filter แล้วรายการไม่เปลี่ยน | ใช้ `equipments` แทน `displayed` ใน `.map()` | เปลี่ยน `{equipments.map(...)}` เป็น `{displayed.map(...)}` |
+| Badge สีไม่แสดง / แสดงเป็น undefined | key ใน `badgeColor` ไม่ตรงกับค่า `status` จริง | ตรวจสอบว่า key ใน Record ตรงกับค่า `EquipmentStatus` ทุกตัว |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -236,15 +241,14 @@ const badgeTextColor: Record<string, string> = {
 | Filter ทำงาน | กดปุ่มแล้วกรองถูกต้องทุก status | กรองได้บางส่วน | ไม่มี filter |
 | Badge สีถูกต้อง | เขียว/แดง/เหลืองถูกทุกรายการ | มีบางสถานะ | ไม่มี badge |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Mock Data` | ข้อมูลจำลองใช้แทน API จริงในระหว่างพัฒนา |
-| `Array.filter()` | กรอง array คืน array ใหม่เฉพาะ item ที่ผ่านเงื่อนไข |
-| `Record<K, V>` | TypeScript type สำหรับ object ที่ key เป็น K และ value เป็น V |
-| `Parallel Development` | Frontend และ Backend พัฒนาพร้อมกันโดยไม่รอกัน |
-| `as const` | บอก TypeScript ว่าค่านี้เป็น literal ที่แน่นอน ไม่เปลี่ยนแปลง |
-| `inline style` | กำหนด CSS ผ่าน `style=&#123;&#123; &#125;&#125;` ใน JSX โดยตรง (ก่อนใช้ Tailwind) |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Mock Data` | มอค เด-ต้า | ข้อมูลจำลองใช้แทน API จริงในระหว่างพัฒนา |
+| `Array.filter()` | แอ-เรย์ ฟิล-เตอร์ | กรอง array คืน array ใหม่เฉพาะ item ที่ผ่านเงื่อนไข |
+| `Record<K, V>` | เร-เคิร์ด | TypeScript type สำหรับ object ที่ key เป็น K และ value เป็น V |
+| `Parallel Development` | แพ-เรล-เลล ดี-เวล-อ็อป-เมนท์ | Frontend และ Backend พัฒนาพร้อมกันโดยไม่รอกัน |
+| `as const` | แอส คอนสต์ | บอก TypeScript ว่าค่านี้เป็น literal ที่แน่นอน ไม่เปลี่ยนแปลง |
+| `Array` | แอ-เรย์ | โครงสร้างข้อมูลที่เก็บหลายค่าเรียงลำดับ เข้าถึงด้วย index |
+| `inline style` | อิน-ไลน์ สไตล์ | กำหนด CSS ผ่าน `style=&#123;&#123; &#125;&#125;` ใน JSX โดยตรง (ก่อนใช้ Tailwind) |

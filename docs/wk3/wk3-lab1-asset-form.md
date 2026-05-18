@@ -1,5 +1,7 @@
 # Lab: EquipmentPage ด้วย Tailwind + BorrowForm + Validation <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** Lab นี้รวมความรู้ wk3 ทั้งหมด (Tailwind, Controlled Form, Validation) มาสร้างชิ้นงานที่สมบูรณ์ BorrowForm ที่สร้างในบทนี้จะถูก integrate กับ API จริงใน wk4 และ realtime update ใน wk7
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Lab นี้เหมือน "งานปรับปรุงร้านค้า" — เปลี่ยนป้ายเก่าเป็นป้ายสวย (Tailwind), เพิ่มเคาน์เตอร์บริการ (BorrowForm), และวางระบบตรวจสอบก่อนรับเรื่อง (Validation) — ทั้งหมดนี้คือ wk3 ในไฟล์เดียว
-
----
 
 ## 📖 I: Information
 
@@ -103,8 +103,6 @@ export function EquipmentPage() {
 }
 ```
 
----
-
 ### ขั้นตอนที่ 2 — BorrowForm Component
 
 ฟอร์มยืมอุปกรณ์แสดงแบบ **inline** ใต้การ์ด — กดปุ่ม "ยืมอุปกรณ์" แล้วฟอร์มปรากฏ:
@@ -197,8 +195,6 @@ export function BorrowForm({ onConfirm, onCancel }: BorrowFormProps) {
 }
 ```
 
----
-
 ### ขั้นตอนที่ 3 — ใส่ BorrowForm ใน EquipmentPage (inline borrow flow)
 
 เพิ่ม state `borrowingId` เพื่อรู้ว่ากำลังยืมการ์ดไหนอยู่:
@@ -287,9 +283,12 @@ export function EquipmentPage() {
 - กรอกครบ + กด "ยืนยัน" → `handleConfirmBorrow` → status เปลี่ยน → form ปิด ✅
 - กด "ยกเลิก" → `setBorrowingId(null)` → form ปิด กลับแสดงปุ่ม ✅
 
----
-
 ## 🛠️ A: Application
+
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า `borrowingId: number | null` ทำงานอย่างไร และทำไมไม่ใช้ `boolean` แทน
+- [ ] บอกได้ว่า `type="button"` กับ `type="submit"` ต่างกันอย่างไร และเมื่อไหรต้องระบุ type ให้ชัด
+:::
 
 ### 🤖 AI Prompt Guide
 
@@ -297,7 +296,7 @@ export function EquipmentPage() {
 "กำลังเรียน React 18 + TypeScript + Tailwind CSS v3 อยู่ มี EquipmentPage ที่แสดงรายการอุปกรณ์ด้วย mock data ต้องการเพิ่ม: 1) `statusConfig` object รวม Tailwind class ของ border และ badge ตาม status 2) `BorrowForm` component ที่แสดง inline ในการ์ด มี input text (วัตถุประสงค์) + input date (วันคืน) + validation ก่อน submit 3) state `borrowingId: number | null` ที่ควบคุมว่าการ์ดไหนกำลังแสดง form อยู่ — ใช้ Tailwind CSS + FormEvent TypeScript"
 :::
 
-### 📝 PjBL Lab
+### 📝 PjBL Lab — ชิ้นงาน: `EquipmentPage.tsx`, `BorrowForm.tsx`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -344,10 +343,8 @@ export function EquipmentPage() {
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk3: Tailwind CSS, statusConfig, BorrowForm with validation"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: Tailwind ดีกว่า inline style อย่างไร, `borrowingId` state ทำงานยังไง, `returnDate <= today` ตรวจสอบอะไร พร้อม screenshot form validation + form หลังยืมสำเร็จ
-
----
+- [ ] `git add src/pages/EquipmentPage.tsx src/components/BorrowForm.tsx tailwind.config.js && git commit -m "wk3: Tailwind CSS, statusConfig, BorrowForm with validation"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: Tailwind ดีกว่า inline style อย่างไร, `borrowingId` state ทำงานยังไง, `returnDate <= today` ตรวจสอบอะไร พร้อม screenshot form validation + form หลังยืมสำเร็จ + ลิงก์ repo
 
 ## ✅ P: Progress
 
@@ -369,6 +366,14 @@ export function EquipmentPage() {
 **แนวคำตอบ:** `BorrowForm` รับแค่ `onConfirm` และ `onCancel` — เป็น Component ที่ "ไม่รู้" ว่าตัวเองอยู่ในการ์ดไหน ความรับผิดชอบของมันคือ "รวบรวมข้อมูลจากผู้ใช้และ validate" แล้วส่งกลับ Parent ผ่าน `onConfirm` ส่วน Parent (EquipmentPage) รู้ว่ากำลัง borrow card id อะไรอยู่ นี่คือ **Separation of Concerns** — แยกความรับผิดชอบ
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| กด "ยกเลิก" แล้ว form submit แทน | ปุ่ม "ยกเลิก" ไม่มี `type="button"` — default ใน `<form>` คือ `type="submit"` | เพิ่ม `type="button"` ให้ปุ่มยกเลิกทุกตัวใน form |
+| Tailwind class ใส่แล้วไม่ทำงานใน BorrowForm ใหม่ | ไฟล์ BorrowForm.tsx อยู่นอก `content` glob ของ Tailwind | ตรวจสอบ `tailwind.config.js` ว่า content ครอบคลุม `'./src/**/*.tsx'` |
+| `returnDate <= today` ไม่ตรวจจับวันที่ผิด | วันที่ไม่ใช่ ISO format `YYYY-MM-DD` หรือ today คำนวณผิด | ตรวจสอบ `new Date().toISOString().split('T')[0]` ได้ `'2026-05-18'` รูปแบบถูก |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -377,15 +382,13 @@ export function EquipmentPage() {
 | BorrowForm Validation | ตรวจ purpose + date ถูกต้อง, error แสดงชัดเจน | ตรวจแค่บางส่วน | ไม่มี validation |
 | Inline BorrowForm flow | กด-กรอก-ยืนยัน-การ์ดเปลี่ยน flow ครบ | flow ทำงานบางส่วน | BorrowForm ไม่ integrate |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `borrowingId: number \| null` | state ที่เก็บ ID ของการ์ดที่กำลัง borrow — null เมื่อไม่มีฟอร์มเปิด |
-| `Inline Form` | ฟอร์มที่แสดงอยู่ภายในองค์ประกอบอื่น ไม่ใช่หน้าแยก (Modal, Page) |
-| `Separation of Concerns` | แยกความรับผิดชอบ — BorrowForm รับผิดชอบ UI, EquipmentPage รับผิดชอบ logic |
-| `onConfirm` / `onCancel` | Callback Props — ฟังก์ชันที่ Parent ส่งให้ Child เรียกเมื่อมี event |
-| `ISO 8601` | รูปแบบวันที่ `YYYY-MM-DD` ที่เปรียบเทียบด้วย string ได้ถูกต้อง |
-| `type="button"` | กำหนดให้ปุ่มไม่ trigger form submit เมื่ออยู่ภายใน `<form>` |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `borrowingId: number \| null` | บอร์-โรว-อิง-ไอดี | state ที่เก็บ ID ของการ์ดที่กำลัง borrow — null เมื่อไม่มีฟอร์มเปิด |
+| `Inline Form` | อิน-ไลน์ ฟอร์ม | ฟอร์มที่แสดงอยู่ภายในองค์ประกอบอื่น ไม่ใช่หน้าแยก (Modal, Page) |
+| `Separation of Concerns` | เซ-พา-เร-ชัน ออฟ คอน-เซิร์นส์ | แยกความรับผิดชอบ — BorrowForm รับผิดชอบ UI, EquipmentPage รับผิดชอบ logic |
+| `onConfirm` / `onCancel` | ออน-คอน-เฟิร์ม / ออน-แคน-เซิล | Callback Props — ฟังก์ชันที่ Parent ส่งให้ Child เรียกเมื่อมี event |
+| `ISO 8601` | ไอ-เอส-โอ แปด-หก-ศูนย์-หนึ่ง | รูปแบบวันที่ `YYYY-MM-DD` ที่เปรียบเทียบด้วย string ได้ถูกต้อง |
+| `type="button"` | ไทพ์ บัท-เทิน | กำหนดให้ปุ่มไม่ trigger form submit เมื่ออยู่ภายใน `<form>` |

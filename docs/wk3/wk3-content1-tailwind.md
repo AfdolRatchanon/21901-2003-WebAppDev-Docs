@@ -1,5 +1,7 @@
 # Tailwind CSS — จาก inline style สู่ Utility Classes <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** บทนี้สอนติดตั้ง Tailwind CSS v3 และแปลง inline style เป็น utility classes พร้อม pattern `statusConfig` สำหรับจัดการสีตาม status ความรู้นี้ใช้ทุก wk ตั้งแต่ wk3 เป็นต้นไปในทุก component ของโปรเจกต์
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Tailwind CSS เหมือน "ชุดสีสำเร็จรูป" ของนักออกแบบ — แทนที่จะผสมสีใหม่ทุกครั้ง แค่บอกว่า `green-100` หรือ `red-500` Tailwind รู้ว่าสีนั้นคืออะไรเลย ประหยัดเวลา และทุก component ใช้ "ภาษาสี" เดียวกัน
-
----
 
 ## 📖 I: Information
 
@@ -65,8 +65,6 @@ module.exports = {
 
 **สรุปการทำงาน:** 3 คำสั่ง → 3 ไฟล์ → Tailwind พร้อมใช้ใน JSX ✅
 
----
-
 ### ขั้นตอนที่ 2 — แปลง inline style → Tailwind class
 
 เปรียบเทียบ code จาก wk2 (inline style) กับ wk3 (Tailwind):
@@ -120,8 +118,6 @@ module.exports = {
 `p-1` = 4px, `p-2` = 8px, `p-3` = 12px, `p-4` = 16px, `p-6` = 24px
 ทุกหน่วยคูณ 4px — ใช้ 1-4 สำหรับ spacing ทั่วไป, 6-8 สำหรับ padding ใหญ่
 :::
-
----
 
 ### ขั้นตอนที่ 3 — statusConfig Pattern + Responsive Grid
 
@@ -231,9 +227,34 @@ Tailwind ต้องเห็น class name เต็มในซอร์ส�
 ดังนั้นใน `statusConfig` ต้องเขียนชื่อ class เต็มทุกตัว
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+บทนี้ใช้ TypeScript features ต่อไปนี้:
+
+```tsx [TypeScript ที่ใช้ในบทนี้]
+// [1] Record<K, V> — object ที่ key เป็น K, value เป็น V
+//     ใช้กำหนด type ของ statusConfig และ statusLabel
+const statusConfig: Record<string, { border: string; badge: string }> = { ... }
+
+// [2] as const — ทำให้ TypeScript อ่าน array เป็น tuple ที่ค่าคงที่
+(['all', 'available', 'borrowed', 'maintenance'] as const).map(...)
+
+// [3] Template literal type — รวม string คงที่กับ dynamic string
+//     TypeScript อนุมาน type ให้อัตโนมัติใน JSX className
+const cls = `bg-white ${config.border}` // string
+
+// [4] useState<Equipment[]> — Generic type กำหนดว่า state เป็น array ของ Equipment
+const [equipments] = useState<Equipment[]>(mockEquipments)
+```
+
+**สรุป:** `Record<string, T>` ใช้บ่อยมากใน Tailwind pattern เพื่อ map status → class names ✅
 
 ## 🛠️ A: Application
+
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า `statusConfig` pattern แก้ปัญหา if/else อย่างไร และทำไมต้องเขียน class name เต็มในซอร์สโค้ด
+- [ ] บอกได้ว่า `sm:grid-cols-2` หมายถึงอะไร และ Tailwind Mobile-First ทำงานอย่างไร
+:::
 
 ### 🤖 AI Prompt Guide
 
@@ -241,7 +262,7 @@ Tailwind ต้องเห็น class name เต็มในซอร์ส�
 "กำลังเรียน React 18 + TypeScript + Tailwind CSS v3 อยู่ มี component EquipmentPage ที่ใช้ inline style ทั้งหมด ช่วยแปลงเป็น Tailwind class โดย: 1) แสดงการ์ดด้วย `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4` 2) สร้าง statusConfig object ที่รวม class ของ border และ badge แต่ละ status ไว้ด้วยกัน 3) ใช้ template literal รวม static กับ dynamic class — ห้ามใช้ dynamic interpolation เช่น `border-l-${color}-500` เพราะ Tailwind หา class ไม่เจอ"
 :::
 
-### 📝 PjBL Lab
+### 📝 PjBL Lab — ชิ้นงาน: `EquipmentPage.tsx`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -274,10 +295,8 @@ Tailwind ต้องเห็น class name เต็มในซอร์ส�
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk3: convert inline styles to Tailwind, add statusConfig and responsive grid"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: Tailwind คืออะไร, ทำไม statusConfig ถึงดีกว่า if/else, dynamic class ใน template literal ทำงานยังไง พร้อม screenshot UI ที่ตรวจสอบ Responsive แล้ว
-
----
+- [ ] `git add src/pages/EquipmentPage.tsx tailwind.config.js src/index.css && git commit -m "wk3: convert inline styles to Tailwind, add statusConfig and responsive grid"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: Tailwind คืออะไร, ทำไม statusConfig ถึงดีกว่า if/else, dynamic class ใน template literal ทำงานยังไง พร้อม screenshot UI ที่ตรวจสอบ Responsive แล้ว + ลิงก์ repo
 
 ## ✅ P: Progress
 
@@ -299,6 +318,14 @@ Tailwind ต้องเห็น class name เต็มในซอร์ส�
 **แนวคำตอบ:** Tailwind สแกน source code ในขั้นตอน build เพื่อหา class ที่ใช้จริง ถ้าเขียน dynamic interpolation เช่น `` `border-l-${color}-500` `` Tailwind มองไม่เห็น class เต็ม จึงไม่ include ไว้ใน CSS ผลคือ style ไม่แสดง วิธีแก้คือเขียน class เต็มในซอร์สโค้ดเสมอ เช่น `'border-l-green-500'` หรือ `'border-l-red-500'` แล้วค่อย map ด้วย object ตาม key
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Tailwind class ใส่แล้วสีไม่เปลี่ยน | ไม่ได้เพิ่ม `@tailwind` directives ใน `index.css` หรือ `content` ใน config ไม่ครอบคลุมไฟล์ | ตรวจสอบ `src/index.css` มีครบ 3 บรรทัด และ `tailwind.config.js` มี `'./src/**/*.{ts,tsx}'` |
+| Dynamic class ไม่ทำงาน เช่น `border-l-${color}-500` | Tailwind ต้องเห็น class name เต็มใน build step | เปลี่ยนเป็น object map: `statusConfig` ที่มี class name เต็มทุกตัว |
+| `grid-cols-2` ไม่ responsive | ใส่ `grid-cols-2` เพียวๆ โดยไม่มี prefix | ใช้ `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` ตาม Mobile-First pattern |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -307,16 +334,16 @@ Tailwind ต้องเห็น class name เต็มในซอร์ส�
 | แปลง inline → Tailwind | ไม่มี style=&#123;&#123; &#125;&#125; เหลือเลย | แปลงบางส่วน | ยังใช้ inline style ทั้งหมด |
 | statusConfig + Grid | object ครบ 3 status, responsive ทำงาน | มีแต่ไม่ครบ | ใช้ if/else หรือไม่มี responsive |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Utility-First CSS` | แนวคิดใช้ class เล็กๆ สำเร็จรูปต่อกันใน HTML แทนเขียน CSS เอง |
-| `Responsive Prefix` | `sm:` `md:` `lg:` — บอก Tailwind ว่าใช้ class นี้เมื่อหน้าจอกว้างแค่ไหน |
-| `Mobile-First` | ออกแบบสำหรับมือถือก่อน แล้วขยายสำหรับหน้าจอใหญ่ด้วย prefix |
-| `PurgeCSS` | กระบวนการลบ Tailwind class ที่ไม่ได้ใช้ออกจาก production bundle |
-| `Template Literal` | `` `static ${dynamic}` `` รวม string คงที่กับตัวแปรใน JavaScript |
-| `Indexed Access Type` | `Type['field']` — ดึง type ของ field ออกมาใช้ซ้ำใน TypeScript |
-| `border-l-4` | Tailwind: ขอบซ้ายหนา 4px — ใช้สร้าง accent bar สีบนการ์ด |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Utility-First CSS` | ยู-ทิล-ลิ-ตี้ เฟิร์สต์ ซีเอสเอส | แนวคิดใช้ class เล็กๆ สำเร็จรูปต่อกันใน HTML แทนเขียน CSS เอง |
+| `Tailwind` | เทล-วินด์ | CSS framework แบบ Utility-First ที่ใช้ class ตรงใน JSX |
+| `className` | คลาส-เนม | prop ของ JSX element สำหรับใส่ CSS class (แทน `class` ใน HTML) |
+| `Responsive Prefix` | รี-สพอน-ซีฟ พรี-ฟิกซ์ | `sm:` `md:` `lg:` — บอก Tailwind ว่าใช้ class นี้เมื่อหน้าจอกว้างแค่ไหน |
+| `Mobile-First` | โมบาย-เฟิร์สต์ | ออกแบบสำหรับมือถือก่อน แล้วขยายสำหรับหน้าจอใหญ่ด้วย prefix |
+| `PurgeCSS` | เพิร์จ-ซีเอสเอส | กระบวนการลบ Tailwind class ที่ไม่ได้ใช้ออกจาก production bundle |
+| `Template Literal` | เทม-เพลท ลิท-เทอ-รัล | `` `static ${dynamic}` `` รวม string คงที่กับตัวแปรใน JavaScript |
+| `Indexed Access Type` | อิน-เด็กซ์ด แอก-เซส ไทพ์ | `Type['field']` — ดึง type ของ field ออกมาใช้ซ้ำใน TypeScript |
+| `border-l-4` | บอร์-เดอร์-แอล-โฟร์ | Tailwind: ขอบซ้ายหนา 4px — ใช้สร้าง accent bar สีบนการ์ด |

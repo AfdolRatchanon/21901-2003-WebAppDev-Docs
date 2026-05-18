@@ -1,5 +1,7 @@
 # Final Exam: ทบทวนและประเมินผล <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เตรียมสอบปลายภาค — ทบทวน 9 module ที่เรียนมา, ฝึกอ่าน code จริงและอธิบาย comment, เขียน component ใหม่ด้วย TypeScript, และประเมินตัวเองว่าพร้อมเป็น Junior Frontend Developer แค่ไหน
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เป้าหมาย:** ไม่ใช่แค่ผ่าน exam — แต่มี **ทักษะ** ที่ใช้ได้จริงในอุตสาหกรรม Frontend Development
-
----
 
 ## 📖 I: Information
 
@@ -29,8 +29,6 @@
 | wk7 | JWT + React Router + Socket.io Realtime | Advanced Types | Secure app + Real-time |
 | wk8 | Test Plan + Production Build | Utility Types | Go-live production ได้ |
 | wk9 | Project Defense + Final Exam | - | นำเสนอ + สรุปความรู้ทั้งหมด |
-
----
 
 ### ขั้นตอนที่ 2 — ประเภทคำถาม Final Exam
 
@@ -73,9 +71,7 @@ export function useEquipments() {
 > - `[3]` ทำไม error เป็น `string | null` ไม่ใช่ `string?` (optional)?
 > - `refetch: fetchEquipments` ใช้ที่ไหนในโปรเจกต์และทำไม?
 
----
-
-#### ส่วนที่ 2: Code Writing (40 คะแนน)
+### ขั้นตอนที่ 2 — ส่วนที่ 2: Code Writing (40 คะแนน)
 
 เขียน code ตาม spec ที่กำหนด — ต้องถูกต้องทั้ง TypeScript และ logic:
 
@@ -96,9 +92,7 @@ return Promise<Equipment> — ใส่ TypeScript type ที่ถูกต้
 borrowedBy (string), purpose (string), borrowDate (string), returnDate (string | null)"
 ```
 
----
-
-#### ส่วนที่ 3: Conceptual (30 คะแนน)
+### ขั้นตอนที่ 3 — ส่วนที่ 3: Conceptual (30 คะแนน)
 
 ตอบคำถามเชิงแนวคิด — อธิบายได้ในภาษาธรรมชาติ:
 
@@ -111,9 +105,7 @@ borrowedBy (string), purpose (string), borrowDate (string), returnDate (string |
 □ ทำไม cleanup function ใน useEffect ถึงสำคัญกับ Socket.io?
 ```
 
----
-
-### ขั้นตอนที่ 3 — Self-Assessment Checklist
+### ขั้นตอนที่ 4 — Self-Assessment Checklist
 
 ตรวจสอบตัวเองว่าทำได้แค่ไหน:
 
@@ -141,8 +133,6 @@ borrowedBy (string), purpose (string), borrowDate (string), returnDate (string |
 - ✅ 9-11 ข้อ → เข้าใจ concept ทั้งหมด ต้องฝึก implementation เพิ่ม
 - ✅ < 9 ข้อ → ทบทวน wk ที่ยังไม่แน่ใจ
 
----
-
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide
@@ -151,18 +141,14 @@ borrowedBy (string), purpose (string), borrowDate (string), returnDate (string |
 "เรียนคอร์สพัฒนาเว็บด้วย React + TypeScript + Node.js จบแล้ว ช่วยสร้าง self-assessment checklist ที่ครอบคลุม: TypeScript types, React hooks (useState/useEffect/useCallback/useContext), Axios interceptors, authentication flow, real-time WebSocket และ production build — พร้อมแนะนำโปรเจกต์ 3 อย่างสำหรับฝึกทักษะเหล่านี้ต่อในระดับ Junior Developer"
 :::
 
-### 📝 Final Lab — ทบทวนความรู้
+### 📝 Final Lab — ชิ้นงาน: `src/pages/BorrowHistoryPage.tsx`
 
 **เป้าหมาย:** ทดสอบว่าอ่าน code จริงได้และเขียน component ใหม่ได้
-
----
 
 #### ขั้น 0 — Student Identity
 
 ตรวจสอบว่า `<footer>` ชื่อ-รหัสยังอยู่ใน Component หลัก ✅
 GitHub repository มี commit ครบทุก wk1-8 ✅
-
----
 
 #### ขั้น 1 — Code Reading Quiz (15 นาที)
 
@@ -171,8 +157,6 @@ GitHub repository มี commit ครบทุก wk1-8 ✅
 - [ ] เปิด `src/hooks/useAuth.ts` — อธิบาย Lazy Initializer ใน `useState(() => {...})` ได้
 - [ ] เปิด `src/api/config.ts` — อธิบาย request interceptor และ response interceptor แต่ละขั้นตอนได้
 - [ ] เปิด `src/components/ProtectedRoute.tsx` — trace logic: redirect เมื่อไหร่ บน path ไหน
-
----
 
 #### ขั้น 2 — Mini Project (60 นาที)
 
@@ -191,8 +175,6 @@ GitHub repository มี commit ครบทุก wk1-8 ✅
 - [ ] สร้าง `src/pages/BorrowHistoryPage.tsx` ✅
 - [ ] เพิ่ม route ใน App.tsx ✅
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ตอบ Self-Assessment Checklist ด้านบน — บันทึกใน Google Doc
@@ -203,8 +185,6 @@ GitHub repository มี commit ครบทุก wk1-8 ✅
   - ทักษะที่แข็งแกร่งที่สุดใน wk1-8 คืออะไร
   - อยากพัฒนาเรื่องอะไรต่อไป
   - ลิงก์ GitHub + screenshots ทุก feature
-
----
 
 ## ✅ P: Progress
 
@@ -243,19 +223,18 @@ GitHub repository มี commit ครบทุก wk1-8 ✅
 | ผ่าน | 60-79 | เข้าใจพื้นฐาน ต้องฝึก implementation เพิ่ม |
 | ไม่ผ่าน | < 60 | ต้องทบทวนและทดสอบใหม่ |
 
----
-
 ### 📚 CLIL Vocabulary — สรุปคำศัพท์สำคัญทั้งหมด
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Component` | ส่วนประกอบย่อยของ UI ที่ใช้ซ้ำได้ รับ props และ render JSX |
-| `Hook` | React function พิเศษที่เริ่มด้วย `use` — จัดการ state/lifecycle |
-| `TypeScript` | JavaScript ที่มี Type system ช่วยป้องกัน bug ก่อน runtime |
-| `REST API` | มาตรฐาน API โดยใช้ HTTP methods (GET/POST/PATCH/DELETE) |
-| `JWT` | JSON Web Token — token 3 ส่วน Header.Payload.Signature |
-| `WebSocket` | Protocol สำหรับสื่อสารสองทิศทาง real-time แบบ persistent |
-| `Interceptor` | Middleware ของ Axios — รันก่อน/หลังทุก request/response |
-| `Context API` | React built-in สำหรับแชร์ state โดยไม่ต้อง Props Drilling |
-| `Deploy` | นำระบบขึ้น server ให้ผู้ใช้จริงเข้าถึงได้ |
-| `TPQI 10302` | มาตรฐานอาชีพไอที ระดับ 3 — Developer พัฒนา Web Application |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Component` | คอม-โพ-เนนท์ | ส่วนประกอบย่อยของ UI ที่ใช้ซ้ำได้ รับ props และ render JSX |
+| `Hook` | ฮุค | React function พิเศษที่เริ่มด้วย `use` — จัดการ state/lifecycle |
+| `TypeScript` | ไทพ์-สคริปท์ | JavaScript ที่มี Type system ช่วยป้องกัน bug ก่อน runtime |
+| `REST API` | เรสท์ เอ-พี-ไอ | มาตรฐาน API โดยใช้ HTTP methods (GET/POST/PATCH/DELETE) |
+| `JWT` | เจ-ดับ-บลิว-ที | JSON Web Token — token 3 ส่วน Header.Payload.Signature |
+| `WebSocket` | เว็บ-ซ็อค-เก็ต | Protocol สำหรับสื่อสารสองทิศทาง real-time แบบ persistent |
+| `Interceptor` | อิน-เตอร์-เซ็ป-เตอร์ | Middleware ของ Axios — รันก่อน/หลังทุก request/response |
+| `Context API` | คอน-เท็กซ์ เอ-พี-ไอ | React built-in สำหรับแชร์ state โดยไม่ต้อง Props Drilling |
+| `Deploy` | ดี-พลอย | นำระบบขึ้น server ให้ผู้ใช้จริงเข้าถึงได้ |
+| `Defense` | ดี-เฟนส์ | การนำเสนอและพิสูจน์ผลงานต่อกรรมการ |
+| `TPQI 10302` | ที-พี-คิว-ไอ | มาตรฐานอาชีพไอที ระดับ 3 — Developer พัฒนา Web Application |

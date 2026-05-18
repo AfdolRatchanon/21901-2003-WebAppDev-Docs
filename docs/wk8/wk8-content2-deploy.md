@@ -1,5 +1,7 @@
 # เตรียม Deploy ระบบ <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เข้าใจความแตกต่าง Development vs Production environment, กระบวนการ build frontend, การตั้ง environment variables ด้วย `VITE_` prefix, และเตรียม deploy checklist ครบถ้วน
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Development เหมือน "ซ้อม" อยู่หลังเวที — Production เหมือน "แสดงจริง" ต่อหน้าผู้ชม กฎ กติกา และความระมัดระวังต่างกันมาก
-
----
 
 ## 📖 I: Information
 
@@ -29,8 +29,6 @@
 | Error Details | แสดงเต็ม (stack trace) | ซ่อน — แสดงแค่ message ทั่วไป |
 
 **กฎสำคัญ:** Vite `server.proxy` ทำงานเฉพาะตอน `npm run dev` — เมื่อ build แล้วต้องตั้ง `VITE_API_URL` แทน
-
----
 
 ### ขั้นตอนที่ 2 — Build Frontend
 
@@ -86,8 +84,6 @@ ls dist/
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 3 — Environment Variables
 
 ```ts [src/api/config.ts — ใช้ env var]
@@ -138,8 +134,6 @@ export default defineConfig({
 
 **สรุปการทำงาน:** Development → `baseURL = ''` → Vite proxy `[4]` รับคำขอ `/api/...` → forward ไป `:3000` | Production → `baseURL = 'https://api...'` `[2]` → axios ส่งตรงไป Backend จริง
 
----
-
 ### Deploy Checklist
 
 ```bash
@@ -161,7 +155,11 @@ export default defineConfig({
 □ Backup ข้อมูลก่อน deploy ทุกครั้ง
 ```
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `import.meta.env.VITE_API_URL` — Vite inject type definitions ให้ `ImportMeta.env` อัตโนมัติ
+- `?? ''` — Nullish Coalescing เพื่อ fallback เป็น relative URL ใน development
+- TypeScript ตรวจ `VITE_` prefix ใน `env.d.ts` ได้ถ้าต้องการ type-safe env vars
 
 ## 🛠️ A: Application
 
@@ -171,17 +169,18 @@ export default defineConfig({
 "อะไรคือความแตกต่างหลักระหว่าง React development environment กับ production build ควรตั้ง environment variables อะไรบ้างสำหรับ production และ Vite proxy ทำงานอย่างไร ทำไมถึงใช้ไม่ได้ใน production — อธิบาย `VITE_` prefix และทำไม JWT_SECRET ต้องอยู่ใน Backend เท่านั้น"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] `npx tsc --noEmit` ผ่าน — 0 TypeScript errors
+- [ ] เข้าใจว่า Vite proxy ทำงานเฉพาะ dev mode และต้องใช้ VITE_API_URL แทนใน production
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `dist/` folder + `.env.production`
 
 **เป้าหมาย:** สร้าง production build สำเร็จและเข้าใจ dev/prod ต่างกันอย่างไร
-
----
 
 #### ขั้น 0 — Student Identity
 
 ตรวจสอบว่า `<footer>` ชื่อ-รหัสยังอยู่ใน Component หลัก ✅
-
----
 
 #### ขั้น 1 — TypeScript Check + Build
 
@@ -197,8 +196,6 @@ npm run preview    # เปิด localhost:4173
 - [ ] `npm run preview` — เปิดใน browser ทำงานได้ปกติ ✅
 - [ ] บันทึก bundle size ที่ได้ (js + css กี่ kB?)
 
----
-
 #### ขั้น 2 — ตรวจ dist/ และ Environment Variables
 
 - [ ] เปิด `dist/` folder — ดูว่ามีไฟล์อะไรบ้าง? ชื่อ [hash] ใน filename คืออะไร?
@@ -206,17 +203,13 @@ npm run preview    # เปิด localhost:4173
 - [ ] ตอบคำถาม: ถ้าต้อง deploy จริง ต้องตั้ง `VITE_API_URL` เป็นอะไร?
 - [ ] ตอบคำถาม: ทำไม Vite proxy ถึงใช้ไม่ได้ใน production?
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ถ่าย screenshot: terminal หลัง build (แสดง bundle size) + localhost:4173 ทำงาน
 - [ ] `git add project/frontend/dist/` (ถ้าต้องการ)
 - [ ] `git commit -m "wk8: production build success, understand dev vs prod"`
 - [ ] `git push origin main`
-- [ ] เขียนสรุปใน Google Doc: `npm run build` ทำอะไร, `VITE_` prefix ทำไมสำคัญ, proxy กับ production ต่างกันอย่างไร + screenshot
-
----
+- [ ] เขียนสรุปใน Google Doc: `npm run build` ทำอะไร, `VITE_` prefix ทำไมสำคัญ, proxy กับ production ต่างกันอย่างไร + screenshot + ลิงก์ GitHub
 
 ## ✅ P: Progress
 
@@ -238,6 +231,14 @@ npm run preview    # เปิด localhost:4173
 **แนวคำตอบ:** `server.proxy` เป็น feature ของ Vite **development server** (`npm run dev`) เมื่อ build แล้ว (`npm run build`) สิ่งที่ได้คือ static files ใน `dist/` — ไม่มี Vite server ทำงานอยู่ → ไม่มีใครรับ request `/api/...` และ forward ไป Backend → ต้องตั้ง `VITE_API_URL` ให้ชี้ไป Backend URL จริง หรือตั้ง reverse proxy (Nginx) แทน
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `tsc --noEmit` แสดง errors | มี TypeScript type errors ใน codebase | แก้ทุก error ก่อน — อ่าน error message บรรทัดที่แจ้ง |
+| `npm run preview` API ไม่ทำงาน | Vite proxy ไม่ทำงานใน preview mode | ตั้ง `VITE_API_URL=http://localhost:3000` ใน `.env` ก่อน preview |
+| Build ผ่านแต่หน้าเว็บ blank | index.html ไม่ได้อยู่ใน `dist/` หรือ path ผิด | ตรวจ `dist/index.html` มีอยู่และ serve จาก root |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -246,17 +247,17 @@ npm run preview    # เปิด localhost:4173
 | Environment Variables | เข้าใจความแตกต่าง dev/prod + `VITE_` prefix | รู้ว่าต้องตั้งแต่ไม่รู้ทำไม | ไม่รู้จัก env vars |
 | Deploy checklist | ผ่านทุกข้อ + อธิบายได้ | ผ่านบางข้อ | ไม่ได้ทำ |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Build` | กระบวนการแปลง Source Code เป็น Optimized Files สำหรับ Production |
-| `Bundle` | ไฟล์ที่รวม JavaScript หลายไฟล์เข้าด้วยกันเป็นไฟล์เดียว |
-| `Environment Variable` | ค่าตัวแปรที่เปลี่ยนตาม environment (dev/staging/prod) |
-| `Minify` | บีบอัด JavaScript ให้เล็กลงโดยลบ space/comment/ชื่อตัวแปรออก |
-| `dist/` | โฟลเดอร์ผลลัพธ์จากการ build พร้อม deploy |
-| `CORS` | Cross-Origin Resource Sharing — นโยบาย Browser ที่ Backend ต้องตั้งค่า |
-| `Cache Busting` | เทคนิค hash ในชื่อไฟล์เพื่อบังคับ Browser โหลด version ใหม่ |
-| `Source Map` | ไฟล์แมป minified code กลับไปหา source code ต้นฉบับ (สำหรับ debug) |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Deploy` | ดี-พลอย | นำระบบขึ้น server ให้ผู้ใช้จริงเข้าถึงได้ |
+| `CI/CD` | ซีไอ ซีดี | Continuous Integration/Delivery — ระบบ deploy อัตโนมัติ |
+| `Environment` | เอน-ไว-รอน-เมนท์ | สภาพแวดล้อมการรัน เช่น development, staging, production |
+| `Build` | บิ้วด์ | กระบวนการแปลง Source Code เป็น Optimized Files สำหรับ Production |
+| `Bundle` | บัน-เดิล | ไฟล์ที่รวม JavaScript หลายไฟล์เข้าด้วยกันเป็นไฟล์เดียว |
+| `Minify` | มิ-นิ-ไฟ | บีบอัด JavaScript ให้เล็กลงโดยลบ space/comment/ชื่อตัวแปรออก |
+| `dist/` | ดิสท์ | โฟลเดอร์ผลลัพธ์จากการ build พร้อม deploy |
+| `CORS` | คอส | Cross-Origin Resource Sharing — นโยบาย Browser ที่ Backend ต้องตั้งค่า |
+| `Cache Busting` | แคช บัส-ติง | เทคนิค hash ในชื่อไฟล์เพื่อบังคับ Browser โหลด version ใหม่ |
+| `Source Map` | ซอร์ส แมป | ไฟล์แมป minified code กลับไปหา source code ต้นฉบับ (สำหรับ debug) |

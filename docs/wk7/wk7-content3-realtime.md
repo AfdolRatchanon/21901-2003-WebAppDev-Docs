@@ -1,5 +1,7 @@
 # Real-time ด้วย Socket.io — อัปเดตทันทีโดยไม่ Refresh <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เข้าใจความแตกต่างระหว่าง HTTP polling และ WebSocket, สร้าง custom hook `useEquipmentRealtime` ด้วย Socket.io, และใช้ `useCallback` ป้องกัน reconnect loop
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** HTTP polling เหมือนโทรถาม "มีข่าวไหม?" ทุก 5 นาที ส่วน Socket.io เหมือนให้ไปรษณีย์ "กดกริ่ง" เมื่อมีจดหมายถึง — เร็วกว่าและไม่เปลืองทรัพยากร
-
----
 
 ## 📖 I: Information
 
@@ -33,8 +33,6 @@ Client A (ยืมอุปกรณ์)      Backend (Node.js)        Client B
         │◀── HTTP response ───────│────────────────────▶│
         │                        │                  อัปเดต UI ทันที!
 ```
-
----
 
 ### ขั้นตอนที่ 2 — useEquipmentRealtime Hook
 
@@ -77,8 +75,6 @@ export function useEquipmentRealtime(
 ```
 
 **สรุปการทำงาน:** เชื่อมต่อ `[4]` → เข้า room `[8]` → รับฟัง event `[6]` → เมื่อ Server emit → call callback `[7]` → Component อัปเดต UI → cleanup `[9]` เมื่อออกจากหน้า
-
----
 
 ### ขั้นตอนที่ 3 — ใช้ Hook ใน EquipmentPage
 
@@ -157,7 +153,11 @@ server: {
 ```
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `EquipmentStatusChangedPayload` — interface ของข้อมูลที่ Server emit มาพร้อม Socket event
+- `useCallback<(payload: EquipmentStatusChangedPayload) => void>` — Generic type ของ callback function
+- Object Spread `{ ...eq, status: newStatus }` — TypeScript ตรวจ type ของ field ที่ override อัตโนมัติ
 
 ## 🛠️ A: Application
 
@@ -167,25 +167,24 @@ server: {
 "สร้าง custom React hook ชื่อ `useEquipmentRealtime` ด้วย TypeScript + socket.io-client ที่: 1) รับ `onStatusChange` callback เป็น parameter 2) เชื่อมต่อ Socket.io และรับฟัง event 'equipmentStatusChanged' 3) เข้า room 'equipment-updates' 4) return `isConnected: boolean` 5) disconnect เมื่อ unmount — อธิบายว่าทำไม `onStatusChange` ต้องอยู่ใน dependency array ของ useEffect"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] Backend รันอยู่ที่ port 3000 และ Socket.io ทำงาน
+- [ ] vite.config.ts มี `ws: true` ใน proxy สำหรับ `/socket.io`
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `src/hooks/useEquipmentRealtime.ts`
 
 **เป้าหมาย:** เห็น Real-time update ด้วยตาตนเอง
-
----
 
 #### ขั้น 0 — Student Identity
 
 เพิ่ม `<footer>` ชื่อ-รหัสในหน้า EquipmentPage
-
----
 
 #### ขั้น 1 — ตรวจสอบ Setup
 
 1. เปิด `src/hooks/useEquipmentRealtime.ts` — อ่าน code ทุกบรรทัดพร้อม comment `[1]-[11]`
 2. เปิด `vite.config.ts` — ตรวจว่ามี `ws: true` ใน proxy สำหรับ `/socket.io`
 3. รัน Backend + Frontend พร้อมกัน
-
----
 
 #### ขั้น 2 — ทดสอบ Real-time
 
@@ -195,16 +194,13 @@ server: {
 4. ดู Connection indicator — ต้องแสดง "เชื่อมต่อแล้ว (Real-time)" ✅
 5. ปิด Backend → indicator ควรเปลี่ยนเป็น "ออฟไลน์" ✅
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ถ่าย video screen หรือ 2 screenshot ของ 2 window ที่ sync กัน
 - [ ] ตอบในรายงาน: "ทำไม Socket.io ดีกว่า polling, useCallback ช่วยยังไง"
 - [ ] `git commit -m "wk7: understand socket.io realtime pattern"`
 - [ ] `git push origin main`
-
----
+- [ ] เขียนสรุป Google Doc + ลิงก์ GitHub + screenshots
 
 ## ✅ P: Progress
 
@@ -226,6 +222,14 @@ server: {
 **แนวคำตอบ:** ถ้าไม่มี cleanup: เมื่อ EquipmentPage unmount (ผู้ใช้ navigate ออก) Socket.io connection ยังคงเปิดอยู่ → Server ยังส่ง event → callback เรียก `setEquipments` ใน component ที่ unmount แล้ว → React warning "memory leak" → อาจทำให้ state ผิดพลาด cleanup `socket.disconnect()` ตัด connection ให้เรียบร้อยเมื่อ component ออกจาก tree
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Connection indicator ค้างที่ "ออฟไลน์" | ลืมตั้ง `ws: true` ใน vite.config.ts | เพิ่ม `ws: true` ใน `/socket.io` proxy entry |
+| Socket reconnect loop ไม่หยุด | `handleRealtimeChange` ไม่ได้ wrap ด้วย `useCallback` | ใช้ `useCallback` กับ callback ที่ส่งเข้า hook |
+| UI ไม่อัปเดตแม้ Socket event มา | ลืม call `setEquipments` ใน callback | ตรวจ `onStatusChange` ถูก call และ `setEquipments` อยู่ใน closure |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -234,16 +238,17 @@ server: {
 | Connection indicator | แสดงถูกต้อง online/offline | แสดงบางกรณี | ไม่มี |
 | Cleanup | disconnect เมื่อ unmount | - | ไม่มี cleanup (memory leak) |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `WebSocket` | Protocol สำหรับสื่อสารสองทิศทางระหว่าง Client-Server แบบ persistent |
-| `Socket.io` | Library บน WebSocket เพิ่ม rooms, events, auto-reconnect |
-| `emit` | ส่ง event จาก Client ไป Server หรือ Server ไป Client |
-| `Room` | กลุ่มย่อยของ connections — emit เฉพาะสมาชิกในห้อง |
-| `Object Spread` | `{ ...obj, key: value }` — copy object แล้ว override บาง field |
-| `Polling` | เช็ค API ซ้ำตามเวลา — ไม่ efficient เท่า WebSocket |
-| `Cleanup Function` | ฟังก์ชัน return จาก useEffect — รันเมื่อ component unmount |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `WebSocket` | เว็บ-ซ็อค-เก็ต | Protocol สำหรับสื่อสารสองทิศทางระหว่าง Client-Server แบบ persistent |
+| `Socket.io` | ซ็อค-เก็ต ไอโอ | Library บน WebSocket เพิ่ม rooms, events, auto-reconnect |
+| `Realtime` | เรียล-ไทม์ | อัปเดตข้อมูลทันทีโดยไม่ต้อง refresh หรือ polling |
+| `emit` | อี-มิท | ส่ง event จาก Client ไป Server หรือ Server ไป Client |
+| `Broadcast` | บรอด-คาสท์ | ส่ง event ไปยัง clients ทุกคนพร้อมกัน |
+| `Event` | อี-เวนท์ | สัญญาณที่ส่งระหว่าง client-server ใน Socket.io |
+| `Room` | รูม | กลุ่มย่อยของ connections — emit เฉพาะสมาชิกในห้อง |
+| `Object Spread` | อ็อบ-เจ็คท์ สเปรด | `{ ...obj, key: value }` — copy object แล้ว override บาง field |
+| `Polling` | โพล-ลิง | เช็ค API ซ้ำตามเวลา — ไม่ efficient เท่า WebSocket |
+| `Cleanup Function` | คลีน-อัพ ฟังก์-ชัน | ฟังก์ชัน return จาก useEffect — รันเมื่อ component unmount |

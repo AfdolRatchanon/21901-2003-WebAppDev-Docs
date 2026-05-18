@@ -1,5 +1,7 @@
 # Form Validation — ตรวจสอบก่อนส่ง <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** บทนี้สอน pattern Object Form State กับ `keyof` TypeScript และการเขียน validate function ที่คืน `string | null` เพื่อ validate ก่อน submit ความรู้นี้ใช้โดยตรงใน Lab wk3 (BorrowForm) และ wk8 (Test Plan ของ form)
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Validation เหมือน "ระบบ checklist" ก่อน deploy — ถ้าข้อมูลไม่ครบหรือไม่ถูกรูปแบบ "ระบบหยุด" และบอกทันที แทนที่จะรอให้ server ปฏิเสธ
-
----
 
 ## 📖 I: Information
 
@@ -95,8 +95,6 @@ handleChange('name', value)  // ✅ ถูกต้อง
 :::
 
 **สรุป:** Object state → ขยาย field ง่าย · `keyof` → TypeScript ตรวจ field name ✅
-
----
 
 ### ขั้นตอนที่ 2 — Validation Function (คืน `string | null`)
 
@@ -196,8 +194,6 @@ export function AddEquipmentForm() {
 }
 ```
 
----
-
 ### ขั้นตอนที่ 3 — Per-Field Error (แสดง error ใต้แต่ละ field)
 
 ยกระดับ UX: แทนที่จะแสดง error message เดียวที่บนสุด ให้แสดงใต้ field ที่มีปัญหา:
@@ -249,9 +245,33 @@ async function handleSubmit(e: FormEvent) {
 Per-Field errors ใน Step 3 เป็น bonus สำหรับ UX ที่ดีขึ้น โปรเจกต์จริง (answer key) ใช้แบบ Step 2 — แสดง error message เดียวที่บนสุด ก็เพียงพอแล้วสำหรับ wk3
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+```tsx [TypeScript ที่ใช้ในบทนี้]
+// [1] keyof T — Union ของ key ทั้งหมดใน interface T
+//     ช่วยตรวจสอบ field name ณ compile time
+function handleChange(field: keyof EquipmentFormData, value: string) { ... }
+
+// [2] Computed Property Name — ใช้ตัวแปรเป็น key ของ object
+setForm(prev => ({ ...prev, [field]: value }))
+// ถ้า field = 'name' → { ...prev, name: value }
+
+// [3] string | null — Union Type สำหรับ return value ที่อาจเป็น null
+function validateEquipmentForm(form: EquipmentFormData): string | null { ... }
+
+// [4] Partial<Record<K, V>> — สร้าง object ที่ทุก key เป็น optional
+//     ใช้สำหรับ per-field errors ที่ไม่ต้องมีทุก field
+type FormErrors = Partial<Record<keyof EquipmentFormData, string>>
+```
+
+**สรุป:** `keyof` + Computed Property + `string | null` คือ 3 TypeScript concept หลักของบทนี้ ✅
 
 ## 🛠️ A: Application
+
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า `keyof EquipmentFormData` คืน type อะไร และช่วยตรวจสอบอะไรเมื่อเวลา compile
+- [ ] บอกได้ว่าทำไม validate function ถึงคืน `string | null` แทน `boolean` และ Early Return ช่วยอะไร
+:::
 
 ### 🤖 AI Prompt Guide
 
@@ -259,7 +279,7 @@ Per-Field errors ใน Step 3 เป็น bonus สำหรับ UX ที�
 "กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้าง form เพิ่มอุปกรณ์ (name, category, serialNo) โดย: 1) ใช้ `useState<EquipmentFormData>({...})` แทนการสร้าง useState ทีละ field 2) มี handleChange ที่รับ `field: keyof EquipmentFormData` และ value string แล้วใช้ computed property `[field]` 3) มี validateForm ที่คืน `string | null` ตรวจสอบว่าทุก field ไม่ว่าง 4) แสดง `formError` state ด้วย alert สีแดง, `formSuccess` ด้วยสีเขียว 5) ปุ่ม disabled ขณะ isSubmitting — ใช้ Tailwind CSS"
 :::
 
-### 📝 PjBL Lab
+### 📝 PjBL Lab — ชิ้นงาน: `AddEquipmentForm.tsx`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -294,10 +314,8 @@ Per-Field errors ใน Step 3 เป็น bonus สำหรับ UX ที�
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk3: add form validation with object state and keyof TypeScript"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: Object form state ต่างจาก individual state อย่างไร, `keyof` คืออะไร, `validateForm` คืน `string | null` แปลว่าอะไร พร้อม screenshot แสดง error message และ success message
-
----
+- [ ] `git add src/pages/EquipmentPage.tsx src/types/index.ts && git commit -m "wk3: add form validation with object state and keyof TypeScript"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: Object form state ต่างจาก individual state อย่างไร, `keyof` คืออะไร, `validateForm` คืน `string | null` แปลว่าอะไร พร้อม screenshot แสดง error message และ success message + ลิงก์ repo
 
 ## ✅ P: Progress
 
@@ -319,6 +337,14 @@ Per-Field errors ใน Step 3 เป็น bonus สำหรับ UX ที�
 **แนวคำตอบ:** ถ้าคืน `boolean` เรารู้แค่ว่า "ผ่าน" หรือ "ไม่ผ่าน" แต่ไม่รู้ว่าผิดอะไร ต้องสร้าง error message แยก ส่วน `string | null` รวม 2 อย่างไว้ใน return value เดียว — `null` หมายถึงผ่าน, `string` หมายถึงมี error พร้อมข้อความบอก ทำให้ใช้ได้ทันที: `const error = validate(form); if (error) setFormError(error)`
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| TypeScript error เมื่อใช้ `handleChange('nam', value)` | `'nam'` ไม่ใช่ key ที่มีอยู่ใน `EquipmentFormData` | นี่คือพฤติกรรมที่ถูกต้อง — แก้เป็น `'name'` ให้ถูกต้องตาม interface |
+| Form reset ไม่ครบ ค่าเก่าค้างอยู่ | เรียก `setXxx('')` ไม่ครบทุก field | ใช้ Object state แล้วรีเซ็ตด้วย `setForm({ name: '', category: '', serialNo: '' })` ครั้งเดียว |
+| Error message แสดงแล้วไม่หายเมื่อ submit ใหม่ | ลืม `setFormError(null)` ต้นฟังก์ชัน handleSubmit | เพิ่ม `setFormError(null)` บรรทัดแรกเสมอ ก่อนเรียก validate |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -327,16 +353,16 @@ Per-Field errors ใน Step 3 เป็น bonus สำหรับ UX ที�
 | Validation Function | ตรวจครบทุก field คืน `string \| null` | ตรวจได้บางส่วน | ไม่มี validation |
 | Error/Success UX | แสดง alert, disabled submit, form reset | มีบางส่วน | ไม่แสดง feedback |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `keyof T` | TypeScript operator คืน Union ของ key ทั้งหมดใน type T |
-| `Computed Property Name` | `[variable]: value` — ใช้ตัวแปรเป็นชื่อ key ของ object ใน JavaScript |
-| `Partial<T>` | TypeScript utility type ทำให้ทุก field ใน T เป็น optional |
-| `Record<K, V>` | TypeScript type: object ที่ key เป็น K และ value เป็น V |
-| `Early Return` | return ออกจากฟังก์ชันทันทีเมื่อพบเงื่อนไข เพื่อหลีกเลี่ยง nested if |
-| `Form Reset` | การล้างค่าใน form กลับสู่ค่าเริ่มต้นหลัง submit สำเร็จ |
-| `disabled:opacity-60` | Tailwind class ที่ใช้เมื่อ element มี attribute `disabled` |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Validation` | แวล-ลิ-เด-ชัน | การตรวจสอบความถูกต้องของข้อมูลก่อนส่ง |
+| `keyof T` | คีย์-ออฟ | TypeScript operator คืน Union ของ key ทั้งหมดใน type T |
+| `Schema` | สกี-มา | โครงสร้างที่กำหนดว่าข้อมูลต้องมีรูปแบบอะไร |
+| `Computed Property Name` | คอม-พิว-เทด พร็อพ-เพอร์-ตี้ เนม | `[variable]: value` — ใช้ตัวแปรเป็นชื่อ key ของ object ใน JavaScript |
+| `Partial<T>` | พาร์-เชิล | TypeScript utility type ทำให้ทุก field ใน T เป็น optional |
+| `Record<K, V>` | เรค-คอร์ด | TypeScript type: object ที่ key เป็น K และ value เป็น V |
+| `Early Return` | เอิร์-ลี่ รี-เทิร์น | return ออกจากฟังก์ชันทันทีเมื่อพบเงื่อนไข เพื่อหลีกเลี่ยง nested if |
+| `Form Reset` | ฟอร์ม รี-เซ็ท | การล้างค่าใน form กลับสู่ค่าเริ่มต้นหลัง submit สำเร็จ |
+| `disabled:opacity-60` | ดิส-เอ-เบิลด์ โอ-แพ-ซิ-ตี้ | Tailwind class ที่ใช้เมื่อ element มี attribute `disabled` |

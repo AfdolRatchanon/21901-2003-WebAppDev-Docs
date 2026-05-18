@@ -1,5 +1,7 @@
 # Lab: Login UI + Auth Flow ครบวงจร <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** Lab สัปดาห์ที่ 6 — รวม wk3 (Forms + Tailwind), wk6-content1 (localStorage), และ wk6-content2 (Axios Interceptor) เข้าด้วยกันเป็น `LoginPage` ที่สมบูรณ์ รองรับ error state, loading state, และ redirect อัตโนมัติโดยไม่ต้อง navigate เอง
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เป้าหมาย Lab นี้:** สร้าง `LoginPage` ที่สมบูรณ์ด้วย Tailwind CSS — รวมความรู้จาก wk3 (Forms + Validation) + wk6 (localStorage + Interceptor) เข้าด้วยกัน
-
----
 
 ## 📖 I: Information
 
@@ -165,8 +165,6 @@ export function LoginPage({ auth }: LoginPageProps) {
 
 **สรุปการทำงาน:** Form `[12]` ใช้ Controlled Form pattern จาก wk3 → `handleSubmit` `[4]` เรียก `auth.login()` → ได้ `false` → แสดง error `[7]` → ได้ `true` → App re-render เอง `[8]` (ไม่ต้อง navigate ที่นี่)
 
----
-
 ### ขั้นตอนที่ 3 — App.tsx: จัดการ Route ที่ถูกต้อง
 
 ```tsx [src/App.tsx — route /login]
@@ -200,7 +198,11 @@ function App() {
 **ทำไม `<Navigate to="/" replace />` ทำงานอัตโนมัติ:**
 เมื่อ `login()` สำเร็จ → `setToken(newToken)` ใน useAuth → React re-render App → `auth.isAuthenticated` เป็น `true` → `<Navigate to="/" replace />` ถูก render แทน `<LoginPage>` → router redirect ไป `/`
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `useState<string | null>(null)` — error state ที่อาจเป็น null หรือ string ข้อความ error
+- `type FormEvent` — TypeScript type ของ event จาก `<form onSubmit>` — auto-complete `.preventDefault()`
+- `async function handleSubmit(e: FormEvent)` — async handler พร้อม type annotation
 
 ## 🛠️ A: Application
 
@@ -210,11 +212,15 @@ function App() {
 "สร้าง React login page component ด้วย TypeScript + Tailwind CSS ที่มี: 1) Controlled Form สำหรับ email และ password 2) Error message กล่องสีแดงเมื่อ login ล้มเหลว 3) ปุ่ม Submit ที่มี `disabled` ระหว่าง loading พร้อมข้อความ 'กำลังเข้าสู่ระบบ...' 4) Layout การ์ดกลางหน้าพร้อม gradient background — อธิบายว่าทำไม component ไม่ต้อง navigate เองเมื่อ login สำเร็จ"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] Backend รันอยู่ที่ port 3000 และ `GET /api/health` ตอบ `{ "status": "ok" }`
+- [ ] `useAuth.ts` และ `src/api/config.ts` (Interceptor) พร้อมแล้ว จาก wk5 และ wk6-content2
+- [ ] เข้าใจว่า LoginPage ไม่ต้อง navigate เอง — App.tsx จัดการให้เมื่อ `auth.isAuthenticated` เปลี่ยน
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `LoginPage.tsx`
 
 **เป้าหมาย:** สร้างหน้า Login ที่ทำงานได้จริงครบวงจร
-
----
 
 #### ขั้น 0 — Student Identity
 
@@ -225,8 +231,6 @@ function App() {
   จัดทำโดย: ชื่อ-นามสกุล · รหัสนักเรียน
 </footer>
 ```
-
----
 
 #### ขั้น 1 — ตรวจสอบ Backend พร้อม
 
@@ -243,15 +247,11 @@ GET http://localhost:3000/api/health → { "status": "ok" }
 npx prisma db push && npm run db:seed
 ```
 
----
-
 #### ขั้น 2 — สร้าง LoginPage
 
 1. สร้างหรืออัปเดต `src/pages/LoginPage.tsx` ตาม code ในขั้นตอนที่ 2
 2. `npm run dev` → เปิด `http://localhost:5173/login`
 3. ตรวจสอบ UI: ต้องเห็นการ์ดสีขาวพร้อม form บน gradient พื้นหลัง ✅
-
----
 
 #### ขั้น 3 — ทดสอบ Auth Flow ทุก Case
 
@@ -264,8 +264,6 @@ npx prisma db push && npm run db:seed
 | Logout | กดปุ่ม logout | redirect ไป `/login` ✅ |
 | Student → /admin | Login เป็น student → ไปที่ `/admin` | หน้า 403 ✅ |
 
----
-
 #### ขั้น 4 — ตรวจสอบ Network Tab
 
 1. Login สำเร็จ → เปิด DevTools → Network
@@ -277,8 +275,6 @@ Content-Type: application/json
 ```
 4. เปิด **Application → Local Storage** → ต้องเห็น key `token` และ `user`
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ทดสอบครบทุก case ในตาราง ขั้น 3
@@ -286,9 +282,7 @@ Content-Type: application/json
 - [ ] `git add src/pages/LoginPage.tsx src/api/`
 - [ ] `git commit -m "wk6: complete login page with auth flow"`
 - [ ] `git push origin main`
-- [ ] เขียนสรุปใน Google Doc: Auth Flow ทำงานยังไง, ทำไม LoginPage ไม่ต้อง navigate เอง, Interceptor ช่วยยังไง + ลิงก์ GitHub + screenshots
-
----
+- [ ] เขียนสรุป 3-5 บรรทัดใน Google Doc: Auth Flow ทำงานยังไง, ทำไม LoginPage ไม่ต้อง navigate เอง, Interceptor ช่วยยังไง + ลิงก์ GitHub + screenshots
 
 ## ✅ P: Progress
 
@@ -310,6 +304,14 @@ Content-Type: application/json
 **แนวคำตอบ:** `FormEvent` คือ type ที่ TypeScript รู้ว่า parameter `e` มี method `.preventDefault()` อยู่ → auto-complete ทำงาน → ถ้าพิมพ์ `.preventDefaults()` (ผิด) TypeScript แจ้ง Error ทันที ส่วน `any` ปิด type checking → พิมพ์ผิดก็ไม่รู้ จนกว่าจะ run แล้ว crash ที่ runtime
 :::
 
+### 🐛 Common Errors
+
+| Error | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| กด Login แล้วหน้า reload ทันที (ไม่ทำ API call) | ลืม `e.preventDefault()` ใน handleSubmit | เพิ่ม `e.preventDefault()` บรรทัดแรกใน `handleSubmit` |
+| Login สำเร็จแต่ไม่ redirect ไปหน้าหลัก | `App.tsx` ไม่มี `auth.isAuthenticated ? <Navigate to="/" /> : <LoginPage />` | ตรวจ route `/login` ใน App.tsx ว่ามีเงื่อนไข navigate |
+| ปุ่ม Submit กดซ้ำได้ระหว่าง loading | ไม่ได้ผูก `disabled={isLoading}` กับ button | เพิ่ม `disabled={isLoading}` และ Tailwind classes `disabled:opacity-60 disabled:cursor-not-allowed` |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -318,16 +320,17 @@ Content-Type: application/json
 | Auth Flow | login → persist → logout + ทุก case ผ่าน | login ได้แต่ไม่ persist | ไม่ทำงาน |
 | Network Tab | เห็น Authorization header ถูกต้อง | เห็น request แต่ไม่มี header | ไม่ได้ตรวจ |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `FormEvent` | TypeScript type ของ event จาก `<form onSubmit>` — มี `.preventDefault()` |
-| `e.preventDefault()` | หยุด default browser behavior เมื่อ submit form |
-| `disabled` | HTML attribute ที่ทำให้ element ไม่ตอบสนองต่อ interaction |
-| `Double Submit` | การ submit ซ้ำกันก่อนได้รับ response — ป้องกันด้วย disabled |
-| `Auth Flow` | ขั้นตอนการตรวจสอบตัวตนครบวงจร: login → persist → logout |
-| `Reactive Routing` | Router เปลี่ยน URL โดยอัตโนมัติตาม state โดยไม่ต้องเรียก navigate() |
-| `gradient` | การไล่สีพื้นหลัง — `bg-gradient-to-br from-slate-800 to-slate-700` |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `FormEvent` | ฟอร์ม อี-เวนท์ | TypeScript type ของ event จาก `<form onSubmit>` — มี `.preventDefault()` |
+| `e.preventDefault()` | พรี-วิน-เดฟ-ฟอลท์ | หยุด default browser behavior เมื่อ submit form |
+| `disabled` | ดิส-เอ-เบิ้ล | HTML attribute ที่ทำให้ element ไม่ตอบสนองต่อ interaction |
+| `Double Submit` | ดับ-เบิล ซับ-มิท | การ submit ซ้ำกันก่อนได้รับ response — ป้องกันด้วย disabled |
+| `Authentication` | ออ-เทน-ติ-เค-ชัน | กระบวนการพิสูจน์ตัวตนว่าผู้ใช้คือใคร |
+| `Authorization` | ออ-เทอ-ไร-เซ-ชัน | กระบวนการตรวจสอบว่าผู้ใช้มีสิทธิ์ทำอะไรได้บ้าง |
+| `Auth Flow` | ออ-ท์ โฟล | ขั้นตอนการตรวจสอบตัวตนครบวงจร: login → persist → logout |
+| `Reactive Routing` | รี-แอก-ทีฟ เราท์-ติ้ง | Router เปลี่ยน URL โดยอัตโนมัติตาม state โดยไม่ต้องเรียก navigate() |
+| `Token` | โท-เคน | ข้อมูลที่ใช้พิสูจน์ตัวตน — ส่งไปกับทุก API request |
+| `gradient` | เกร-ดี-เอนท์ | การไล่สีพื้นหลัง — `bg-gradient-to-br from-slate-800 to-slate-700` |

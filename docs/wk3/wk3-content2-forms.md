@@ -1,5 +1,7 @@
 # Controlled Forms — onChange, value, FormEvent <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** บทนี้สอนสร้าง Controlled Form ด้วย React state ให้ทุก keystroke ผ่าน onChange เสมอ พร้อม pattern `isLoading` สำหรับป้องกัน submit ซ้ำ ความรู้นี้ใช้ใน wk6 (Login form กับ auth API) และ wk7 (BorrowForm กับ realtime update)
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Controlled Form เหมือน "พนักงานรับออเดอร์ที่จดทุกอย่าง" — ทุกอักษรที่พิมพ์ถูกบันทึกใน state ทันที React รู้ค่าล่าสุดเสมอ ต่างจาก Uncontrolled Form ที่เหมือน "กล่องรับคำร้อง" — ต้องเปิดกล่องถึงจะรู้ว่ามีอะไรอยู่ข้างใน
-
----
 
 ## 📖 I: Information
 
@@ -63,8 +63,6 @@ function LoginForm() {
 - `value={state}` — ผูก input กับ state (ควบคุมค่า)
 - `onChange={e => setState(e.target.value)}` — อัปเดต state ทุก keystroke
 
----
-
 ### ขั้นตอนที่ 2 — TypeScript กับ onChange
 
 `e.target.value` มาจาก `e` ที่เป็น `React.ChangeEvent<HTMLInputElement>`:
@@ -102,8 +100,6 @@ function LoginForm() {
 <select onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRole(e.target.value)} />
 ```
 :::
-
----
 
 ### ขั้นตอนที่ 3 — หลาย Input + handleSubmit
 
@@ -179,8 +175,6 @@ export function LoginForm() {
 1. ผู้ใช้พิมพ์ → `onChange` → `setState` → React re-render → input แสดงค่าใหม่
 2. ผู้ใช้กด Submit → `handleSubmit` → `e.preventDefault()` → ใช้ค่าจาก state ✅
 
----
-
 ### ขั้นตอนที่ 4 — เพิ่ม isLoading + Disable Button
 
 ```tsx [v2 — เพิ่ม loading state]
@@ -233,9 +227,34 @@ export function LoginForm() {
 ใน **wk3-content1** เรียน Tailwind แล้ว สามารถแทนที่ `style=&#123;&#123; &#125;&#125;` ทั้งหมดด้วย className เช่น `className="border border-slate-300 rounded-lg px-3 py-2.5 text-sm"` — ดูตัวอย่าง Tailwind form ใน `project/frontend/src/pages/LoginPage.tsx`
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+```tsx [TypeScript ที่ใช้ในบทนี้]
+// [1] useState<string> — กำหนด type ของ state ชัดเจน
+const [email, setEmail] = useState<string>('')
+
+// [2] useState<boolean> — type สำหรับ flag state
+const [isLoading, setIsLoading] = useState<boolean>(false)
+
+// [3] FormEvent — type สำหรับ event จาก <form onSubmit={...}>
+import type { FormEvent } from 'react'
+function handleSubmit(e: FormEvent) { ... }
+
+// [4] React.ChangeEvent<HTMLInputElement> — type ของ onChange event
+//     TypeScript ช่วย autocomplete e.target.value ได้ถูกต้อง
+function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  setEmail(e.target.value)  // .value เป็น string เสมอ
+}
+```
+
+**สรุป:** `FormEvent` ใช้กับ `onSubmit`, `ChangeEvent<HTMLInputElement>` ใช้กับ `onChange` ✅
 
 ## 🛠️ A: Application
+
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า Controlled Form ต่างจาก Uncontrolled Form อย่างไร และทำไมต้องมี `value={state}` + `onChange`
+- [ ] บอกได้ว่า `e.preventDefault()` ใน `handleSubmit` ป้องกันอะไร และ `isLoading` ใช้ทำอะไร
+:::
 
 ### 🤖 AI Prompt Guide
 
@@ -243,7 +262,7 @@ export function LoginForm() {
 "กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้าง Controlled Form สำหรับ Login ที่มี: email input (type=email), password input (type=password), และ submit button ขอให้: 1) ใช้ useState สำหรับแต่ละ input field 2) handleSubmit ที่มี e.preventDefault() และ type เป็น FormEvent 3) isLoading state สำหรับ disable ปุ่มระหว่าง submit 4) ทั้งหมดเป็น TypeScript พร้อม type annotation ให้ครบ"
 :::
 
-### 📝 PjBL Lab
+### 📝 PjBL Lab — ชิ้นงาน: `LoginForm.tsx`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -277,10 +296,8 @@ export function LoginForm() {
 
 **ขั้นสุดท้าย: Submit**
 
-- [ ] `git add . && git commit -m "wk3: controlled login form with loading state"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: Controlled vs Uncontrolled ต่างกันยังไง, ทำไมต้อง `e.preventDefault()`, isLoading ใช้ทำอะไร
-
----
+- [ ] `git add src/pages/LoginForm.tsx && git commit -m "wk3: controlled login form with loading state"` → `git push`
+- [ ] เขียนสรุปใน Google Doc: Controlled vs Uncontrolled ต่างกันยังไง, ทำไมต้อง `e.preventDefault()`, isLoading ใช้ทำอะไร + screenshot form พร้อมลิงก์ repo
 
 ## ✅ P: Progress
 
@@ -302,6 +319,14 @@ export function LoginForm() {
 **แนวคำตอบ:** ถ้า field มาก ควรเก็บเป็น object ใน state เดียว เช่น `const [form, setForm] = useState({ email: '', password: '', name: '' })` แล้วอัปเดตด้วย `setForm(prev => ({ ...prev, email: e.target.value }))` แต่สำหรับ Login Form 2-3 field ก็แยก state แต่ละ field ได้อย่างชัดเจนกว่า
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Input พิมพ์ไม่ได้ / ค่าไม่เปลี่ยน | ใส่ `value={email}` แต่ลืม `onChange` — React lock ค่าไว้ | เพิ่ม `onChange={e => setEmail(e.target.value)}` ให้ครบทุก controlled input |
+| หน้า reload เมื่อกด Submit | ลืม `e.preventDefault()` ใน handleSubmit | เพิ่ม `e.preventDefault()` บรรทัดแรกของ handleSubmit เสมอ |
+| TypeScript error: "Property 'value' does not exist" | ใส่ type event ผิด เช่นใช้ `Event` แทน `React.ChangeEvent<HTMLInputElement>` | เปลี่ยน type เป็น `React.ChangeEvent<HTMLInputElement>` หรือปล่อย TypeScript อนุมานเมื่อ inline |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -310,17 +335,15 @@ export function LoginForm() {
 | handleSubmit | e.preventDefault() + FormEvent type | มีแต่ลืม type หรือ preventDefault | ไม่มี handleSubmit |
 | isLoading state | disable ปุ่ม + เปลี่ยนข้อความถูกต้อง | มีบางส่วน | ไม่มี loading state |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Controlled Form` | ฟอร์มที่ React ควบคุมค่าผ่าน state — ทุก keystroke ผ่าน onChange |
-| `Uncontrolled Form` | ฟอร์มที่อ่านค่าจาก DOM โดยตรง — React ไม่รู้ค่า real-time |
-| `onChange` | event ที่เกิดทุกครั้งที่ค่าใน input เปลี่ยน |
-| `onSubmit` | event ที่เกิดเมื่อผู้ใช้กด submit button หรือ Enter |
-| `e.preventDefault()` | หยุดพฤติกรรมเริ่มต้นของ browser (เช่น form reload) |
-| `FormEvent` | TypeScript type สำหรับ event ที่เกิดจากการ submit form |
-| `ChangeEvent<T>` | TypeScript type สำหรับ event ที่เกิดจากการเปลี่ยนค่า input |
-| `disabled` | prop ที่ทำให้ input/button ไม่สามารถโต้ตอบได้ชั่วคราว |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Controlled Form` | คอน-โทรลด์ ฟอร์ม | ฟอร์มที่ React ควบคุมค่าผ่าน state — ทุก keystroke ผ่าน onChange |
+| `Uncontrolled Form` | อัน-คอน-โทรลด์ ฟอร์ม | ฟอร์มที่อ่านค่าจาก DOM โดยตรง — React ไม่รู้ค่า real-time |
+| `onChange` | ออน-เชนจ์ | event ที่เกิดทุกครั้งที่ค่าใน input เปลี่ยน |
+| `onSubmit` | ออน-ซับ-มิท | event ที่เกิดเมื่อผู้ใช้กด submit button หรือ Enter |
+| `e.preventDefault()` | อี-พรี-วิ-เวนต์-ดี-ฟอลต์ | หยุดพฤติกรรมเริ่มต้นของ browser (เช่น form reload) |
+| `FormEvent` | ฟอร์ม-อี-เวนต์ | TypeScript type สำหรับ event ที่เกิดจากการ submit form |
+| `ChangeEvent<T>` | เชนจ์-อี-เวนต์ | TypeScript type สำหรับ event ที่เกิดจากการเปลี่ยนค่า input |
+| `disabled` | ดิส-เอ-เบิลด์ | prop ที่ทำให้ input/button ไม่สามารถโต้ตอบได้ชั่วคราว |

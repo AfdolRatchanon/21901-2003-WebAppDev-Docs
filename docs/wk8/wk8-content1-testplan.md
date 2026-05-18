@@ -1,5 +1,7 @@
 # แผนการทดสอบระบบ (Test Plan) <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เรียนรู้ประเภทของการทดสอบซอฟต์แวร์ (Unit/Integration/E2E/Manual), เขียน Test Case Table ครอบคลุม 4 module ของโปรเจกต์, และฝึก computed derived state pattern ใน TypeScript
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** Test Plan เหมือน "checklist ก่อนบิน" ของนักบิน — ตรวจทุกระบบตามลำดับก่อนออกเดินทาง ไม่ใช่บินแล้วค่อยเช็คในอากาศ
-
----
 
 ## 📖 I: Information
 
@@ -26,8 +26,6 @@
 | **Manual Test** | ทดสอบด้วยมือตาม checklist | กรอกฟอร์ม, ดู Network tab |
 
 **โปรเจกต์นี้ใช้:** Manual Testing ด้วย Browser DevTools — เหมาะกับ project ขนาดเล็ก เริ่มเรียนรู้กระบวนการก่อน Automated Testing
-
----
 
 ### ขั้นตอนที่ 2 — Test Case Tables (4 Module)
 
@@ -68,8 +66,6 @@
 | เพิ่มอุปกรณ์ใหม่ | กรอกครบ 3 field | อุปกรณ์ปรากฏในตาราง | ⬜ |
 | เพิ่มซ้ำ Serial No. | serialNo ที่มีอยู่แล้ว | แสดง error | ⬜ |
 | ลบอุปกรณ์ว่าง | กด "ลบ" | รายการหายออกจากตาราง | ⬜ |
-
----
 
 ### ขั้นตอนที่ 3 — TypeScript: Computed Counts Pattern
 
@@ -135,7 +131,11 @@ countByStatus.available === 0 ✅
 ```
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `EquipmentStatus = 'available' | 'borrowed' | 'maintenance'` — Union type ป้องกัน status ผิดพลาด
+- `.filter(e => e.status === 'available')` — TypeScript ตรวจ type ของ comparison ให้อัตโนมัติ
+- Computed value ที่ derive จาก array — ไม่ต้องมี `useState` แยก
 
 ## 🛠️ A: Application
 
@@ -145,11 +145,14 @@ countByStatus.available === 0 ✅
 "สร้าง test plan checklist สำหรับ React web application ระบบเบิก-จ่ายอุปกรณ์ รวม test case สำหรับ: authentication (login/logout/persist), รายการอุปกรณ์ (load/error/empty/loading), การยืม/คืน (happy path + edge case) และ admin CRUD จัดรูปแบบเป็น markdown table มีคอลัมน์ Test Case, Input, Expected Output และ Status อธิบายความต่างระหว่าง happy path กับ edge case ด้วย"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] Backend รันอยู่ที่ port 3000 และ seed data ครบ
+- [ ] เข้าใจความต่างระหว่าง happy path กับ edge case
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `test-plan.md`
 
 **เป้าหมาย:** ทดสอบระบบครบทุก module ตาม Test Plan และบันทึกผล
-
----
 
 #### ขั้น 0 — Student Identity
 
@@ -160,8 +163,6 @@ countByStatus.available === 0 ✅
   จัดทำโดย: ชื่อ-นามสกุล · รหัสนักเรียน
 </footer>
 ```
-
----
 
 #### ขั้น 1 — เตรียม Backend + ดาวน์โหลด Test Plan
 
@@ -174,8 +175,6 @@ npm run dev       # Backend รันที่ port 3000
 - [ ] สร้างไฟล์ `test-plan.md` — copy test case tables จากด้านบน
 - [ ] เปิด DevTools → Application → Local Storage ไว้ติดตามขณะทดสอบ
 
----
-
 #### ขั้น 2 — ทดสอบ Module 1: Authentication
 
 - [ ] Login ด้วย admin@school.ac.th / password123 → ต้องเห็น Navbar + badge "ผู้ดูแล"
@@ -185,8 +184,6 @@ npm run dev       # Backend รันที่ port 3000
 
 ทำเครื่องหมาย ✅ หรือ ❌ ในไฟล์ test-plan.md
 
----
-
 #### ขั้น 3 — ทดสอบ Module 2: Equipment List
 
 1. DevTools → Network → ตั้ง Throttle เป็น "Slow 3G"
@@ -195,8 +192,6 @@ npm run dev       # Backend รันที่ port 3000
 - [ ] ปิด Backend server → เปิดหน้า / → ต้องเห็น error message
 - [ ] เปิด Backend กลับ → Refresh → รายการปรากฏตามปกติ
 
----
-
 #### ขั้น 4 — ทดสอบ Module 3 + 4
 
 - [ ] ยืมอุปกรณ์โดยไม่กรอก purpose → ต้องเห็น validation error
@@ -204,17 +199,13 @@ npm run dev       # Backend รันที่ port 3000
 - [ ] Login เป็น student → พิมพ์ URL `/admin` ตรง → ต้องเห็นหน้า 403
 - [ ] Login เป็น admin → เพิ่มอุปกรณ์ใหม่ → ปรากฏในตาราง
 
----
-
 #### ขั้น Submit — ส่งงาน
 
 - [ ] ทำ test-plan.md ครบทุก test case (✅ หรือ ❌) + บันทึก bug ที่พบ
 - [ ] `git add test-plan.md`
 - [ ] `git commit -m "wk8: complete test plan with all module results"`
 - [ ] `git push origin main`
-- [ ] เขียนสรุปใน Google Doc: test case ไหนผ่าน/ไม่ผ่าน, bug ที่พบคืออะไร, แก้อย่างไร
-
----
+- [ ] เขียนสรุปใน Google Doc: test case ไหนผ่าน/ไม่ผ่าน, bug ที่พบคืออะไร, แก้อย่างไร + ลิงก์ GitHub
 
 ## ✅ P: Progress
 
@@ -236,6 +227,14 @@ npm run dev       # Backend รันที่ port 3000
 **แนวคำตอบ:** ⬜ = ยังไม่ได้ทดสอบ → เมื่อทดสอบแล้ว: ✅ = ผ่าน (Expected Output ตรงกัน), ❌ = ไม่ผ่าน (พฤติกรรมต่างจากที่คาด) → สำหรับกรณีที่ ❌ ต้องบันทึก: สิ่งที่เกิดจริง + ขั้นตอน reproduce + ไฟล์/บรรทัดที่น่าจะเป็นสาเหตุ
 :::
 
+### 🐛 Common Errors
+
+| ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Login ผิดรหัสแล้ว error ไม่แสดง | LoginPage ไม่ catch error จาก API | ตรวจ try-catch ใน login handler + แสดง `error.message` ใน UI |
+| ยืมอุปกรณ์แล้ว tab อื่นไม่อัปเดต | Socket.io ไม่ส่ง event หรือ Frontend ไม่ join room | ตรวจ Backend emit + Frontend `socket.emit('joinRoom', ...)` |
+| F5 แล้วถูก logout ทั้งที่ยัง login | Lazy Initializer ใน useAuth ไม่อ่าน localStorage | ตรวจ `useState(() => localStorage.getItem('token'))` ใน useAuth |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -244,17 +243,15 @@ npm run dev       # Backend รันที่ port 3000
 | ทดสอบตาม plan | ผ่านทุก test case ✅ | ผ่านบางส่วน | ไม่ได้ทดสอบ |
 | บันทึก bugs | พบ bug + reproduce steps ครบ | พบ bug แต่ไม่มี steps | ไม่บันทึก |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Test Plan` | เอกสารกำหนดว่าจะทดสอบอะไร อย่างไร และคาดหวังผลอะไร |
-| `Happy Path` | กรณีที่ทุกอย่างถูกต้อง — ผู้ใช้ทำตาม "เส้นทางปกติ" |
-| `Edge Case` | กรณีที่อยู่ที่ "ขอบ" ของ input — ค่าผิดปกติหรือสถานการณ์พิเศษ |
-| `Regression Test` | ทดสอบซ้ำหลังแก้ bug เพื่อให้แน่ใจว่าไม่พังส่วนอื่น |
-| `Reproduce` | ทำซ้ำ bug ได้ตามขั้นตอนที่กำหนด |
-| `Computed Value` | ค่าที่คำนวณจาก state อื่น — ไม่ต้องเก็บใน useState แยก |
-| `Unit Test` | ทดสอบ function เดียวแยกจากส่วนอื่น |
-| `E2E Test` | End-to-End — ทดสอบทั้งระบบเหมือนผู้ใช้จริง |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Test Plan` | เทสท์ แพลน | เอกสารกำหนดว่าจะทดสอบอะไร อย่างไร และคาดหวังผลอะไร |
+| `Unit Test` | ยู-นิท เทสท์ | ทดสอบ function เดียวแยกจากส่วนอื่น |
+| `Happy Path` | แฮ็ป-ปี พาธ | กรณีที่ทุกอย่างถูกต้อง — ผู้ใช้ทำตาม "เส้นทางปกติ" |
+| `Edge Case` | เอดจ์ เคส | กรณีที่อยู่ที่ "ขอบ" ของ input — ค่าผิดปกติหรือสถานการณ์พิเศษ |
+| `Regression Test` | รี-เกรส-ชัน เทสท์ | ทดสอบซ้ำหลังแก้ bug เพื่อให้แน่ใจว่าไม่พังส่วนอื่น |
+| `Reproduce` | รี-โพร-ดิ้วส์ | ทำซ้ำ bug ได้ตามขั้นตอนที่กำหนด |
+| `Computed Value` | คอม-พิวท์-เท็ด แวล-ยู | ค่าที่คำนวณจาก state อื่น — ไม่ต้องเก็บใน useState แยก |
+| `E2E Test` | อี ทู อี เทสท์ | End-to-End — ทดสอบทั้งระบบเหมือนผู้ใช้จริง |

@@ -110,6 +110,13 @@ export default defineConfig({
           { text: '📝 Final Exam — ทบทวน wk1-9', link: '/wk9/wk9-final-exam' },
         ],
       },
+      {
+        text: '🍎 Mac สำหรับมือใหม่',
+        collapsed: false,
+        items: [
+          { text: 'คู่มือ MacBook Air M4', link: '/mac/mac-basics' },
+        ],
+      },
     ],
 
     outline: { label: 'สารบัญ', level: [2, 3] },

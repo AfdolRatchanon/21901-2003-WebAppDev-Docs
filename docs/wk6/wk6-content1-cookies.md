@@ -1,5 +1,7 @@
 # Cookies & localStorage — บันทึก/อ่าน/ลบข้อมูล Browser <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เรียนรู้ความแตกต่างระหว่าง localStorage, sessionStorage และ Cookie — เพื่อเลือกใช้ให้เหมาะกับการเก็บ JWT token ในโปรเจกต์ และเข้าใจวิธี restore auth state เมื่อ refresh หน้า ซึ่งเป็นพื้นฐานของ wk6-content2 (Axios Interceptor) และ wk6-lab (Login UI)
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** localStorage เหมือน "โน้ตบุ๊กของตัวเอง" ที่วางไว้บนโต๊ะ — เปิดและเขียนได้เองเมื่อต้องการ ส่วน Cookie เหมือน "บัตรผ่าน" ที่ Browser พกไปส่งให้ Server อัตโนมัติทุกครั้งที่ออกนอกบ้าน
-
----
 
 ## 📖 I: Information
 
@@ -75,8 +75,6 @@ localStorage.getItem('test')          // → null
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 2 — เปรียบเทียบ 3 วิธีเก็บข้อมูล
 
 | | **localStorage** | **sessionStorage** | **Cookie** |
@@ -110,8 +108,6 @@ apiClient.defaults.headers.common['Authorization'] =
 // ✅ เหมาะกับ production มากกว่า แต่ซับซ้อนกว่า
 ```
 :::
-
----
 
 ### ขั้นตอนที่ 3 — Restore State เมื่อ Refresh
 
@@ -157,7 +153,11 @@ export function useAuth(): AuthContextType {
 | Login สำเร็จ → Refresh | อ่านจาก localStorage → ไม่ต้อง Login ใหม่ |
 | Logout แล้ว Refresh | localStorage ว่าง → กลับไปหน้า Login |
 
----
+#### 🔷 TypeScript ในบทนี้
+
+- `JSON.parse(stored) as User` — type assertion บอก TypeScript ว่าข้อมูลที่ parse แล้วเป็น `User` type
+- `useState<string | null>(() => localStorage.getItem('token'))` — Lazy Initializer + Generic type
+- `getStoredUser(): User | null` — explicit return type บังคับให้ function ต้องคืนค่าที่ถูกต้อง
 
 ## 🛠️ A: Application
 
@@ -167,17 +167,19 @@ export function useAuth(): AuthContextType {
 "กำลังเรียน React 18 + TypeScript อยู่ อธิบายความแตกต่างระหว่าง localStorage, sessionStorage, และ Cookies สำหรับเก็บ JWT token — ควรใช้วิธีไหน, ทำไม production ควรใช้ HttpOnly Cookie, และแสดงตัวอย่าง useState Lazy Initializer ที่อ่านข้อมูลจาก localStorage พร้อม try-catch"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า localStorage, sessionStorage, Cookie ต่างกันอย่างไรในแง่อายุข้อมูลและความปลอดภัย
+- [ ] รู้ว่าต้องใช้ `JSON.stringify` ก่อน setItem และ `JSON.parse` หลัง getItem เพราะ localStorage เก็บแค่ string
+- [ ] เข้าใจว่า Lazy Initializer ป้องกัน state หายเมื่อ refresh ได้อย่างไร
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `useAuth.ts` (localStorage section)
 
 **เป้าหมาย:** ทำความเข้าใจว่าโปรเจกต์เก็บ session อย่างไร + ทดสอบพฤติกรรม refresh
-
----
 
 #### ขั้น 0 — Student Identity
 
 เพิ่ม `<footer>` ชื่อ-รหัสของตนเองใน Component หลักที่แก้ไขในสัปดาห์นี้
-
----
 
 #### ขั้น 1 — ทดสอบ localStorage ด้วย DevTools Console
 
@@ -200,23 +202,17 @@ localStorage.removeItem('testObj')
 
 3. ดู DevTools → Application → Local Storage → `localhost:5173`
 
----
-
 #### ขั้น 2 — ตรวจสอบ Auth Flow จริงของโปรเจกต์
 
 1. Login ด้วย `admin@school.ac.th / password123`
 2. DevTools → Application → Local Storage → ตรวจว่ามี key `token` และ `user`
 3. **กด Refresh** → ยังอยู่ในหน้าหลัก ไม่ต้อง Login ใหม่ ✅
-4. กด Logout → ตรวจว่า localStorage ถูกล้อง + redirect ไป /login ✅
-
----
+4. กด Logout → ตรวจว่า localStorage ถูกล้าง + redirect ไป /login ✅
 
 #### ขั้น 3 — ทดสอบ Edge Cases
 
 1. Login แล้วเปิด DevTools → แก้ค่า `token` ใน localStorage ให้ผิด → Refresh → แอปต้องจัดการได้ (ไม่ crash)
 2. ลองลบ key `user` ออกจาก localStorage ด้วยมือ → Refresh → แอปต้องไม่ crash (lazy initializer ใช้ try-catch)
-
----
 
 #### ขั้น Submit — ส่งงาน
 
@@ -224,8 +220,7 @@ localStorage.removeItem('testObj')
 - [ ] บันทึก screenshot DevTools Application tab ที่เห็น `token` และ `user`
 - [ ] `git add . && git commit -m "wk6: understand localStorage vs cookies auth session"`
 - [ ] `git push origin main`
-
----
+- [ ] เขียนสรุป 3-5 บรรทัดใน Google Doc พร้อม screenshot + ลิงก์ GitHub
 
 ## ✅ P: Progress
 
@@ -252,6 +247,14 @@ localStorage.removeItem('testObj')
 โปรเจกต์ใช้ localStorage เพราะ: (1) เน้นการสอน JWT + Authorization header (2) ง่ายกว่า ไม่ต้องตั้งค่า Backend cookie (3) เหมาะกับ prototype และการเรียน — production จริงควรใช้ HttpOnly Cookie
 :::
 
+### 🐛 Common Errors
+
+| Error | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| `SyntaxError: Unexpected token` จาก `JSON.parse` | ค่าใน localStorage ไม่ใช่ JSON ที่ถูกต้อง | ใช้ `try-catch` ครอบ `JSON.parse` และ `removeItem` เมื่อ error |
+| `localStorage.getItem()` คืน `null` แต่โค้ดไม่ตรวจ | ลืมเพิ่ม null check ก่อน `JSON.parse` | เพิ่ม `stored ? JSON.parse(stored) : null` ก่อนใช้ค่า |
+| Refresh แล้ว state หาย ทั้งที่มีข้อมูลใน localStorage | ไม่ได้ใช้ Lazy Initializer — ใส่ค่าตรงใน `useState` | เปลี่ยนเป็น `useState(() => localStorage.getItem('token'))` |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -260,17 +263,16 @@ localStorage.removeItem('testObj')
 | Restore on refresh | lazy initializer + try-catch ถูกต้อง | restore ได้ แต่ไม่มี try-catch | ต้อง login ใหม่ทุกครั้ง |
 | เข้าใจ Cookie vs localStorage | อธิบายได้พร้อม trade-off | อธิบายได้บางส่วน | ไม่เข้าใจ |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `localStorage` | Web Storage API เก็บข้อมูลใน Browser ข้าม session (คงอยู่จนลบ) |
-| `sessionStorage` | Web Storage API เก็บชั่วคราว หายเมื่อปิด Tab |
-| `Cookie` | ข้อมูลเล็กๆ ที่ Browser เก็บและส่งไปกับทุก HTTP Request อัตโนมัติ |
-| `HttpOnly` | Cookie flag ที่ป้องกัน JavaScript อ่าน cookie — ป้องกัน XSS |
-| `XSS` | Cross-Site Scripting — ช่องโหว่ที่ code แปลกปลอมรันใน browser ผู้ใช้ |
-| `Lazy Initializer` | Function ที่ส่งให้ useState — รันครั้งเดียวตอน mount |
-| `JSON.stringify` | แปลง JavaScript object → JSON string (เพื่อเก็บใน localStorage) |
-| `JSON.parse` | แปลง JSON string → JavaScript object (เพื่ออ่านจาก localStorage) |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `localStorage` | โล-คัล สตอ-ร์เรจ | Web Storage API เก็บข้อมูลใน Browser ข้าม session (คงอยู่จนลบ) |
+| `sessionStorage` | เซ็ส-ชัน สตอ-ร์เรจ | Web Storage API เก็บชั่วคราว หายเมื่อปิด Tab |
+| `Cookie` | คุก-กี้ | ข้อมูลเล็กๆ ที่ Browser เก็บและส่งไปกับทุก HTTP Request อัตโนมัติ |
+| `Session` | เซ็ส-ชัน | ช่วงเวลาที่ผู้ใช้ใช้งานแอปตั้งแต่ login จนถึง logout |
+| `HttpOnly` | เอช-ที-ที-พี โอน-ลี่ | Cookie flag ที่ป้องกัน JavaScript อ่าน cookie — ป้องกัน XSS |
+| `XSS` | เอ็กซ์-เอส-เอส | Cross-Site Scripting — ช่องโหว่ที่ code แปลกปลอมรันใน browser ผู้ใช้ |
+| `JWT` | เจ-ดับ-บลิว-ที | JSON Web Token — token มาตรฐานสำหรับ authentication |
+| `JSON.stringify` | เจ-สัน สตริง-กิ-ไฟ | แปลง JavaScript object → JSON string (เพื่อเก็บใน localStorage) |
+| `JSON.parse` | เจ-สัน พาร์ส | แปลง JSON string → JavaScript object (เพื่ออ่านจาก localStorage) |

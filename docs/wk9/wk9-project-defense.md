@@ -1,5 +1,7 @@
 # Project Defense: นำเสนอโปรเจกต์ <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** เตรียมนำเสนอโปรเจกต์ต่อกรรมการ — ซ้อม demo 15 นาที, เตรียมตอบคำถามเชิง technical จาก code จริง, และสรุปสิ่งที่เรียนรู้ตลอด 9 สัปดาห์
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **Project Defense** คือการพิสูจน์ว่าเราเข้าใจ code ที่เขียน — ตอบคำถามได้ ชี้ bug ได้ และอธิบาย design decision ได้
-
----
 
 ## 📖 I: Information
 
@@ -33,8 +33,6 @@
 ระยะเวลา 9 สัปดาห์ ตั้งแต่ wk1 ถึง wk8"
 ```
 
----
-
 ### ขั้นตอนที่ 2 — Demo Checklist
 
 ทำตามลำดับนี้ระหว่าง Demo:
@@ -47,8 +45,6 @@
 - [ ] Login เป็น student → พิมพ์ `/admin` ตรง → เห็น 403 Forbidden
 - [ ] Login เป็น admin → Admin Page: stats cards + เพิ่มอุปกรณ์ใหม่
 - [ ] เปิด DevTools Network tab — แสดง API calls + Authorization header
-
----
 
 ### ขั้นตอนที่ 3 — คำถามที่กรรมการมักถาม
 
@@ -72,8 +68,6 @@
 **แนวคำตอบ:** 1) `Equipment` interface ป้องกันส่งข้อมูลผิด field 2) `EquipmentStatus = 'available' | 'borrowed' | 'maintenance'` ป้องกัน typo ใน status 3) `ApiResponse<T>` Generic ทำให้ `res.data.data` มี type ถูกต้อง — `data.name` auto-complete 4) `UserRole` ป้องกัน role ผิด 5) สรุป: bug จาก type mismatch เจอตอน compile ไม่ใช่ตอน runtime ต่อหน้าผู้ใช้
 :::
 
----
-
 ### สิ่งที่ต้องเตรียมก่อน Defense
 
 ```markdown
@@ -96,8 +90,6 @@
 - [ ] DevTools เปิดไว้ที่ Network tab
 ```
 
----
-
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide
@@ -106,18 +98,19 @@
 "ต้องนำเสนอโปรเจกต์เว็บแอปพลิเคชัน React + TypeScript + Node.js + Socket.io ต่อกรรมการ 15 นาที ช่วยสร้างโครงร่างการนำเสนอที่ครอบคลุม: แรงจูงใจ, live demo, technical stack, ปัญหาที่พบ และเตรียมตอบคำถามเกี่ยวกับ JWT security, real-time, TypeScript benefits และการเลือก React — ให้คำแนะนำการซ้อม demo ด้วย"
 :::
 
-### 📝 PjBL Lab — Project Defense Preparation
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] ซ้อม demo ครบ 3 รอบ ทำได้ภายใน 5 นาทีโดยไม่ดูโน้ต
+- [ ] ตอบคำถาม 5 ข้อในขั้นตอนที่ 3 ได้โดยไม่ดูเฉลย
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `README.md` + Demo Video/Screenshot
 
 **เป้าหมาย:** ซ้อมให้พร้อม — demo ใน 5 นาที และตอบคำถามได้ทุกข้อ
-
----
 
 #### ขั้น 0 — Student Identity
 
 ตรวจสอบว่า `<footer>` ชื่อ-รหัสยังอยู่ใน EquipmentPage ✅
 ตรวจสอบ GitHub repository — ชื่อ, description, README ✅
-
----
 
 #### ขั้น 1 — เตรียม Demo (30 นาที)
 
@@ -125,30 +118,22 @@
 - [ ] ซ้อม "Opening Statement" ภาษาธรรมชาติ — อย่าอ่านจากโน้ต
 - [ ] ทดสอบ real-time 2 tab ทำงานได้จริงก่อน demo
 
----
-
 #### ขั้น 2 — เตรียมคำถาม (30 นาที)
 
 - [ ] อ่านคำถาม 5 ข้อในขั้นตอนที่ 3 — ตอบออกมาดัง ๆ โดยไม่ดูคำตอบ
 - [ ] ดู source code จริง: `useAuth.ts`, `ProtectedRoute.tsx`, `useEquipmentRealtime.ts` — เข้าใจทุกบรรทัด
 - [ ] เตรียม "ปัญหาที่พบ 3 ข้อ" และวิธีแก้สั้น ๆ
 
----
-
 #### ขั้น 3 — Peer Review (15 นาที)
 
 - [ ] ให้เพื่อนถามคำถามแบบกรรมการ (ใช้คำถามจากขั้นตอนที่ 3)
 - [ ] จดบันทึกคำถามที่ตอบไม่ได้ → ไปศึกษาเพิ่มก่อน Defense
-
----
 
 #### ขั้น Submit — ส่งงาน
 
 - [ ] Push code ล่าสุด + README ครบถ้วน: `git push origin main`
 - [ ] ตรวจ `npx tsc --noEmit` → 0 errors
 - [ ] ส่งลิงก์ GitHub + Google Doc สรุปโปรเจกต์ทั้ง wk1-8 ให้ครู
-
----
 
 ## ✅ P: Progress
 
@@ -179,17 +164,15 @@
 | ตอบคำถาม | ตอบได้ทุกคำถาม จากความเข้าใจ | ตอบได้บางส่วน | ตอบไม่ได้ |
 | Code Quality | 0 TS errors + clean code | บาง warning | มี error |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Project Defense` | การนำเสนอและพิสูจน์ผลงาน ตอบคำถามกรรมการ |
-| `Demo` | การสาธิตการทำงานของระบบ live ต่อหน้าผู้ชม |
-| `Technical Stack` | ชุดเทคโนโลยีที่ใช้ในโปรเจกต์ทั้งหมด |
-| `Opening Statement` | ประโยคเปิดนำเสนอ — บอก context และ purpose |
-| `Stakeholder` | ผู้มีส่วนเกี่ยวข้องกับโปรเจกต์ (ครู, ผู้ใช้, กรรมการ) |
-| `README` | ไฟล์เอกสารหลักของโปรเจกต์ บอกวิธีติดตั้งและใช้งาน |
-| `Design Decision` | การตัดสินใจออกแบบ — อธิบายว่าทำไมถึงเลือกวิธีนั้น |
-| `XSS` | Cross-Site Scripting — การโจมตีโดย inject script เพื่อขโมยข้อมูล |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Project Defense` | โพร-เจ็คท์ ดี-เฟนส์ | การนำเสนอและพิสูจน์ผลงาน ตอบคำถามกรรมการ |
+| `Demo` | ดี-โม | การสาธิตการทำงานของระบบ live ต่อหน้าผู้ชม |
+| `Technical Stack` | เทค-นิ-คัล สแต็ค | ชุดเทคโนโลยีที่ใช้ในโปรเจกต์ทั้งหมด |
+| `Opening Statement` | โอ-เพน-นิง สเตท-เมนท์ | ประโยคเปิดนำเสนอ — บอก context และ purpose |
+| `Stakeholder` | สเตค-โฮล-เดอร์ | ผู้มีส่วนเกี่ยวข้องกับโปรเจกต์ (ครู, ผู้ใช้, กรรมการ) |
+| `README` | รีด-มี | ไฟล์เอกสารหลักของโปรเจกต์ บอกวิธีติดตั้งและใช้งาน |
+| `Design Decision` | ดี-ไซน์ ดี-ซิ-ชัน | การตัดสินใจออกแบบ — อธิบายว่าทำไมถึงเลือกวิธีนั้น |
+| `XSS` | เอ็กซ์-เอส-เอส | Cross-Site Scripting — การโจมตีโดย inject script เพื่อขโมยข้อมูล |

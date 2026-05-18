@@ -1,5 +1,7 @@
 # useEffect — Side Effects และการโหลดข้อมูล <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** ฝึก useEffect + Dependency Array เพื่อโหลดข้อมูลจาก API จริงใน wk4
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
@@ -7,8 +9,6 @@
 :::
 
 > 💡 **เปรียบเทียบ:** `useEffect` เหมือน "ตั้งนาฬิกาปลุก" — บอกว่า "ให้ทำสิ่งนี้ตอนที่หน้าเปิดขึ้น (หรือเมื่อค่าบางอย่างเปลี่ยน)" ไม่ใช่ทำทุกครั้งที่ render
-
----
 
 ## 📖 I: Information
 
@@ -54,8 +54,6 @@ export function EquipmentList() {
 ```
 :::
 
----
-
 ### ขั้นตอนที่ 1 — โครงสร้างของ useEffect
 
 ```tsx [src/App.tsx]
@@ -92,8 +90,6 @@ export default function App() {
 2. `useEffect` รันหลัง render → โหลดข้อมูล (delay 1 วิ)
 3. `setEquipments` และ `setIsLoading` → re-render → แสดงรายการ ✅
 
----
-
 ### ขั้นตอนที่ 2 — Dependency Array ควบคุม "เมื่อไหร่ที่ useEffect รัน"
 
 ::: code-group
@@ -124,8 +120,6 @@ useEffect(() => {
 ::: warning ⚠️ ลืม dependency array
 ถ้าลืมใส่ `[]` และ effect ของคุณเรียก `setState` ข้างใน → วนซ้ำไม่หยุด! เป็น Bug ที่พบบ่อยมากใน React
 :::
-
----
 
 ### ขั้นตอนที่ 3 — useEffect กับ async/await
 
@@ -160,7 +154,30 @@ useEffect(async () => {
 ```
 :::
 
----
+#### 🔷 TypeScript ในบทนี้
+
+บทนี้ใช้ TypeScript กำหนด type ของ state ที่ใช้ร่วมกับ useEffect เช่น array ว่างและ boolean
+
+| ชนิด | ใช้เก็บ | ตัวอย่างในบทนี้ |
+| :--- | :--- | :--- |
+| `useState<string[]>` | array ของ string เช่น รายชื่ออุปกรณ์ | `useState<string[]>([])` |
+| `useState<boolean>` | สถานะกำลังโหลด | `useState<boolean>(true)` |
+
+::: code-group
+```ts [✅ ถูกต้อง]
+const [equipments, setEquipments] = useState<string[]>([])
+const [isLoading, setIsLoading]   = useState<boolean>(true)
+
+// TypeScript รู้ว่า equipments เป็น string[] — .map() ปลอดภัย
+equipments.map(name => name.toUpperCase())
+```
+
+```ts [❌ ผิด]
+const [equipments, setEquipments] = useState([])
+// ❌ TypeScript อนุมาน type เป็น never[] — .map() จะ Error
+equipments.map(name => name.toUpperCase())  // ❌ 'name' is type 'never'
+```
+:::
 
 ## 🛠️ A: Application
 
@@ -170,7 +187,12 @@ useEffect(async () => {
 "กำลังเรียน React 18 + TypeScript อยู่ ต้องการโหลดข้อมูลจาก API ตอน Component mount โดยใช้ useEffect + useState ช่วยเขียนตัวอย่างที่จัดการ loading state และ error state ด้วย ขอ TypeScript แบบเต็ม พร้อม interface สำหรับ response data"
 :::
 
-### 📝 PjBL Lab
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] อธิบายได้ว่า Dependency Array `[]`, `[value]`, และไม่ใส่ต่างกันอย่างไร
+- [ ] บอกได้ว่าทำไม async function ต้องประกาศข้างใน useEffect ไม่ใช่ใส่เป็น callback โดยตรง
+:::
+
+### 📝 PjBL Lab — ชิ้นงาน: `App.tsx`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
@@ -195,7 +217,10 @@ useEffect(async () => {
 - [ ] เพิ่มปุ่ม filter เช่น "Notebook", "Tablet", "ทั้งหมด"
 - [ ] เพิ่ม `useEffect` ที่มี `[selectedCategory]` ใน dependency → log category เมื่อกดปุ่ม ✅
 
----
+**ขั้นสุดท้าย: Submit**
+
+- [ ] `git add . && git commit -m "wk2-effect: useEffect + loading state by ชื่อ-นามสกุล" && git push`
+- [ ] Google Doc: สรุป 3-5 บรรทัด + ลิงก์ GitHub + screenshot ✅
 
 ## ✅ P: Progress
 
@@ -217,6 +242,14 @@ useEffect(async () => {
 **แนวคำตอบ:** `useEffect` จะรันทุกครั้งที่ Component re-render ถ้า effect นั้นเรียก `setState` → เกิด re-render อีก → effect รันอีก → วนไม่หยุด (infinite loop) นี่เป็น Bug ที่พบบ่อยมาก — ต้องใส่ `[]` เสมอเมื่อต้องการรันแค่ครั้งเดียว
 :::
 
+### 🐛 Common Errors
+
+| Error / อาการ | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Console แสดง "mounted" วนซ้ำไม่หยุด | ลืมใส่ `[]` ใน dependency array ขณะที่ effect เรียก setState | เพิ่ม `[]` เป็น argument ที่ 2 ของ `useEffect` |
+| หน้าค้างแสดง "กำลังโหลด..." ตลอด | ลืมเรียก `setIsLoading(false)` ใน finally/setTimeout | ตรวจสอบว่ามี `setIsLoading(false)` ทุก path รวมถึง catch |
+| `useEffect(async () => {...})` แล้ว ESLint warning | async callback ตรง ๆ ทำให้ useEffect ได้ Promise แทน cleanup | ประกาศ `async function` ข้างในแล้วเรียกแยก |
+
 ### 📋 Rubric (10 คะแนน)
 
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
@@ -225,15 +258,15 @@ useEffect(async () => {
 | Loading State | แสดง "กำลังโหลด..." แล้วข้อมูล | มีบางส่วน | ไม่มี loading state |
 | Dependency Array | เข้าใจและใช้ถูกต้อง | มีแต่ไม่แน่ใจ | ไม่เข้าใจ |
 
----
-
 ### 📚 CLIL Vocabulary
 
-| Technical Term | Meaning in Context |
-| :--- | :--- |
-| `Side Effect` | การกระทำที่อยู่นอกการ render เช่น fetch API, timer, event listener |
-| `useEffect` | Hook สำหรับทำ side effect หลัง render |
-| `Dependency Array` | Array ที่บอก useEffect ว่าให้รันใหม่เมื่อค่าไหนเปลี่ยน |
-| `Mount` | ตอนที่ Component ถูกสร้างและแสดงใน DOM ครั้งแรก |
-| `Unmount` | ตอนที่ Component ถูกลบออกจาก DOM |
-| `Cleanup Function` | ฟังก์ชันที่ return จาก useEffect สำหรับทำความสะอาดก่อน unmount |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
+| `Side Effect` | ไซด์ เอฟ-เฟ็กท์ | การกระทำที่อยู่นอกการ render เช่น fetch API, timer, event listener |
+| `useEffect` | อิว-เอฟ-เฟ็กท์ | Hook สำหรับทำ side effect หลัง render |
+| `Dependency Array` | ดี-เพน-เดน-ซี แอ-เรย์ | Array ที่บอก useEffect ว่าให้รันใหม่เมื่อค่าไหนเปลี่ยน |
+| `Mount` | เมาท์ | ตอนที่ Component ถูกสร้างและแสดงใน DOM ครั้งแรก |
+| `Unmount` | อัน-เมาท์ | ตอนที่ Component ถูกลบออกจาก DOM |
+| `Cleanup Function` | คลีน-อัพ ฟังก์-ชัน | ฟังก์ชันที่ return จาก useEffect สำหรับทำความสะอาดก่อน unmount |
+| `Async` | เอ-ซิงค์ | การทำงานแบบไม่รอผลทันที ใช้กับ await และ Promise |
+| `Promise` | พรอม-มิส | Object ที่แทนการทำงาน async ที่จะเสร็จในอนาคต |
