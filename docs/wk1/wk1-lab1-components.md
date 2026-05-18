@@ -266,4 +266,4 @@ function Card(props: Props) { return <h3>{props.name}</h3> } // ใช้ได�
 | `Destructuring` | ดี-สตรัค-เชอ-ริ่ง | แกะข้อมูลออกจาก Object โดยตรง เช่น `{ name, category }` |
 | `Named Export` | เนมด์ เอ็กซ์-พอร์ท | `export function Foo()` — import ด้วยชื่อเดิมคือ `{ Foo }` |
 | `Conditional Rendering` | คอน-ดิ-ชัน-นัล เรน-เดอ-ริ่ง | แสดง UI ตามเงื่อนไข — ใช้ `? :` หรือ `&&` ใน JSX |
-| `Inline Style` | อิน-ไลน์ สไตล์ | กำหนด CSS ตรงใน JSX ด้วย `style={{ ... }}` |
+| `Inline Style` | อิน-ไลน์ สไตล์ | กำหนด CSS ตรงใน JSX ด้วย `style=` พร้อม object ซ้อนกัน |

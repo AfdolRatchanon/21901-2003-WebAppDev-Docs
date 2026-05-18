@@ -288,7 +288,7 @@ export function useAuthContext(): AuthContextType {
 | :--- | :--- | :--- |
 | `useTheme ต้องใช้ภายใน ThemeProvider เท่านั้น` | เรียก `useTheme()` ใน component ที่ไม่ได้อยู่ใน `<ThemeProvider>` | ห่อ component ด้วย `<ThemeProvider>` ใน `App.tsx` หรือ `main.tsx` |
 | TypeScript error: `null` ไม่มี property `theme` | ไม่ได้ null check ก่อนใช้ค่าจาก `useContext` | ใช้ Custom Hook `useTheme()` ที่ throw error แทน หรือเพิ่ม `if (!ctx) return null` |
-| theme ไม่เปลี่ยนเมื่อกดปุ่ม | `toggleTheme` ไม่ได้อยู่ใน `value` ของ Provider | เพิ่ม `toggleTheme` เข้า object ใน `<ThemeContext.Provider value={{ theme, toggleTheme }}>` |
+| theme ไม่เปลี่ยนเมื่อกดปุ่ม | `toggleTheme` ไม่ได้อยู่ใน `value` ของ Provider | เพิ่ม `toggleTheme` เข้า object ใน `value` prop ของ `<ThemeContext.Provider>` |
 
 ### 📋 Rubric (10 คะแนน)
 

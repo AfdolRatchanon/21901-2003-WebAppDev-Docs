@@ -232,8 +232,8 @@ const statusLabel: Record<string, string> = {
 
 ### 🗣️ Code Review
 
-::: details ❓ ทำไม JSX ถึงใช้ `{ }` ครอบค่าตัวแปร ไม่ใช้ `{{ }}` แบบ Vue?
-**แนวคำตอบ:** JSX คือ JavaScript — `{ }` ตัวเดียวหมายถึง "ตรงนี้คือ JavaScript expression" เช่น `{name}` หรือ `{count * 2}` ส่วน Vue ใช้ `{{ }}` (Mustache syntax) เพราะเป็น Template ที่แยกออกจาก JavaScript — คนละแนวคิดกัน
+::: details ❓ ทำไม JSX ถึงใช้ `{ }` ครอบค่าตัวแปร ไม่ใช้ double braces แบบ Vue?
+**แนวคำตอบ:** JSX คือ JavaScript — `{ }` ตัวเดียวหมายถึง "ตรงนี้คือ JavaScript expression" เช่น `{name}` หรือ `{count * 2}` ส่วน Vue ใช้ double braces (Mustache syntax) เพราะเป็น Template ที่แยกออกจาก JavaScript — คนละแนวคิดกัน
 :::
 
 ::: details ❓ ทำไมต้องใส่ `key` ใน `.map()`? จะใช้ index (0, 1, 2) เป็น key ได้ไหม?
