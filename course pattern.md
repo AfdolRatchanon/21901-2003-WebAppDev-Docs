@@ -3,38 +3,16 @@
 คู่มือและมาตรฐานการเขียนเนื้อหารายวิชา 21901-2003 การพัฒนาเว็บแอปพลิเคชัน
 ออกแบบมาเพื่อการจัดการเรียนการสอนอาชีวศึกษา (Active Learning + PjBL + MIAP + CLIL)
 
-> 🤖 **AI-Generated Textbook:** เอกสารนี้เป็น "แม่แบบ (Blueprint)" สำหรับให้ AI สร้างเนื้อหาบทเรียนลงใน VitePress เพื่อใช้แทนหนังสือเรียนแบบดั้งเดิม
+> 🤖 **AI-Generated Textbook:** เอกสารนี้เป็น "แม่แบบ (Blueprint)" สำหรับให้ AI สร้างเนื้อหาบทเรียนลงใน VitePress
 
 ---
 
-## 📖 โปรเจกต์นี้คืออะไร?
+## ⚙️ คำชี้แจงสำหรับ AI
 
-เอกสารรายวิชาเว็บแอปพลิเคชันที่สร้างด้วย VitePress บูรณาการกระบวนการสอน MIAP + PjBL + CLIL + AI เพื่อตอบสนองมาตรฐาน TPQI รหัส 10302 (นักพัฒนาระบบ ระดับ 3)
-
----
-
-## ✨ จุดเด่น (Key Features)
-
-- **Code-First Examples** — โค้ดมาก่อนทฤษฎีเสมอ หลายตัวอย่างเรียงจากง่ายไปยาก
-- **Progressive Difficulty** — ทุกบทเริ่มง่าย แล้วค่อย ๆ เพิ่มความซับซ้อนทีละขั้น
-- **MIAP Flow** — ทุกหน้าเดินตาม Motivation → Information → Application → Progress
-- **CLIL Integration** — โค้ดทุกชิ้นใช้ภาษาอังกฤษ มีคลังคำศัพท์ท้ายบท
-- **Progressive TypeScript** — สอน TypeScript แบบ Just-in-Time ตามระดับสัปดาห์ ไม่ Overload
-- **Student Identity in Lab** — task แรกของทุก Lab ให้นักเรียนใส่ชื่อตนเองในโค้ด
-- **Code Review Prep** — คำถาม 3-4 ข้อท้ายบท เน้น "ทำไม" ไม่ใช่ท่อง
-
----
-
-## ⚙️ คำชี้แจงสำหรับ AI (AI Generator Instructions)
-
-เมื่อ AI ได้รับคำสั่งให้สร้างเนื้อหา AI ต้อง:
-
-1. **Code-First:** เริ่มด้วยโค้ดตัวอย่างที่รันได้ก่อนเสมอ — อธิบายทฤษฎีแทรกในโค้ด ไม่ใช่ก่อนโค้ด
-2. **เรียงง่ายไปยาก:** เวอร์ชัน 1 (พื้นฐาน) → เวอร์ชัน 2 (เพิ่มคุณสมบัติ) ภายในบทเดียวกัน
-3. **ตัวอย่างเยอะ:** ทุก concept ต้องมีอย่างน้อย 2 ตัวอย่าง — ✅ ถูก และ ❌ ผิด
-4. **สอดแทรกบริบท** "ระบบเบิก-จ่ายอุปกรณ์ไอที" ในทุกใบงาน Lab
-5. **TypeScript Just-in-Time:** สอน TypeScript ตามระดับที่ระบุใน Course Outline เท่านั้น
-6. **Student Identity:** ใส่ task แรกของทุก Lab เป็นการพิมพ์ชื่อนักเรียน
+1. **Project Reference:** เปิด `project/frontend/src/` ดูไฟล์จริงก่อนเขียนทุกครั้ง — ห้ามแต่งชื่อ component / variable / interface ขึ้นมาใหม่
+2. **TypeScript Just-in-Time:** สอน TypeScript ตามระดับที่ระบุใน Course Outline เท่านั้น
+3. **บริบท:** สอดแทรก "ระบบเบิก-จ่ายอุปกรณ์ไอที" ในทุกตัวอย่างและใบงาน
+4. **Incremental:** แต่ละ wk เพิ่มโค้ด **2-5 บรรทัด** จาก wk ก่อน — ห้ามโยนโค้ดใหม่ทั้งก้อน
 
 ---
 
@@ -46,75 +24,81 @@
 | `wkX-labY-topic.md` | ใบงานปฏิบัติ | `wk3-lab1-asset-form.md` |
 | `wkX-project.md` | จุดเช็คพอยต์ | `wk5-project-midterm.md` |
 
-(X = โมดูลที่ 1-9, Y = ลำดับเนื้อหาในโมดูลนั้น)
-
 ---
 
-## 🏅 Vocational Gold Standard — Layout Blueprint
+## 🏅 Layout Blueprint (MIAP)
 
-ทุกหน้าต้องมีโครงสร้าง MIAP ครบ 4 ขั้น:
+ทุกหน้าต้องมีโครงสร้างนี้ครบ:
 
 ```markdown
 # ชื่อหัวข้อ <Badge type="info" text="TPQI 10302" />
 
+> **บทนี้เตรียมอะไร:** [concept ที่สอน] — จะใช้จริงใน wkY เรื่อง [ชื่อหัวข้อ]
+
 ## 🎯 M: Motivation
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)
-[ปัญหาจาก "ระบบเบิก-จ่ายอุปกรณ์ไอที" ที่ทำให้นักเรียนอยากเรียนหัวข้อนี้]
+[ปัญหาจากระบบเบิก-จ่ายฯ ที่เกิดขึ้นจริง ถ้าไม่มี concept นี้]
 :::
 > 💡 **เปรียบเทียบ:** [อุปมาเชื่อมกับชีวิตประจำวัน]
 
----
-
 ## 📖 I: Information
-[เนื้อหา — Code-First, เรียงง่ายไปยาก, ดูรูปแบบย่อยด้านล่าง]
+[เนื้อหา Code-First เรียงง่ายไปยาก — ดู Information Patterns]
 
----
+#### 🔷 TypeScript ในบทนี้
+[type / interface ที่ใช้จริงใน concept บทนี้ — ใช้ Code Tabs ✅/❌/💡]
 
 ## 🛠️ A: Application
 
-### 🤖 AI Prompt Guide
-::: info 💬 ถาม AI
-"[Prompt ภาษาไทยสำหรับขอความช่วยเหลือจาก ChatGPT/Claude]"
+::: tip ✅ เช็คก่อนเริ่ม Lab
+- [ ] [สิ่งที่ต้องเข้าใจก่อนทำ Lab]
 :::
 
-### 📝 PjBL Lab
-[ใบงาน — เริ่มด้วย Student Identity, เรียงง่ายไปยาก, ดูรูปแบบย่อยด้านล่าง]
+### 🤖 AI Prompt
+::: info 💬 ถาม AI
+"[Prompt สั้น ๆ เกี่ยวกับ concept บทนี้]"
+:::
 
----
+### 📝 PjBL Lab — ชิ้นงาน: [ชื่อไฟล์/component ที่สร้าง]
+[ใบงาน — ดู Lab Pattern]
 
 ## ✅ P: Progress
 
 ### 🗣️ Code Review
-::: details ❓ คำถาม (3-4 ข้อ เน้น "ทำไม")
-**แนวคำตอบ:** ...
+::: details ❓ [คำถาม] (3-4 ข้อ เน้น "ทำไม" ไม่ใช่ "อะไร")
+**แนวคำตอบ:** [ไม่เกิน 3 ประโยค]
 :::
+
+### 🐛 Common Errors
+| Error / อาการ | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
 
 ### 📋 Rubric (10 คะแนน)
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
 | :--- | :--- | :--- | :--- |
 
----
-
 ### 📚 CLIL Vocabulary
-| Technical Term | Meaning in Context |
-| :--- | :--- |
+| Technical Term | คำอ่าน | Meaning in Context |
+| :--- | :--- | :--- |
 ```
 
+**กฎเพิ่มเติม:**
+- `บทนี้เตรียมอะไร` ต้องระบุ wk + ชื่อหัวข้อจริงจาก Course Outline — ถ้าเป็นบทแรกสุดใส่ว่า "ใช้ตลอดทั้ง course"
+- `ชิ้นงาน` ต้องระบุชื่อไฟล์จริงที่นักเรียนจะได้ในตอนท้าย Lab เสมอ
+- Common Errors: ใส่เฉพาะ Error ที่เกิดจาก concept ในบทนั้น
+- Code Review: สลับคำถามแบบ เปรียบเทียบ / อธิบาย / ทำไม — ห้ามถามสิ่งที่ I ไม่ได้สอน
+
 ---
 
-## 🎨 Information Section Patterns
+## 🎨 Information Patterns
 
-### รูปแบบ 1: Step-by-step (สำหรับเนื้อหาที่มีขั้นตอนชัดเจน)
-
-เรียงขั้นตอนจากพื้นฐาน → ซับซ้อน ทีละขั้น อย่าข้ามขั้น:
+### รูปแบบ 1: Step-by-step
 
 ```markdown
 ### ขั้นตอนที่ 1 — ชื่อขั้นตอน
 
-อธิบายสั้น ๆ ว่าทำอะไร (1-2 บรรทัด)
+อธิบาย 1-2 บรรทัด
 
 \`\`\`bash
-# คำสั่งที่ต้องรัน
 npm create vite@latest my-project -- --template react-ts
 \`\`\`
 
@@ -122,20 +106,22 @@ Terminal จะแสดงผล:
 
 \`\`\`
 ✔ Project name: my-project
-Done. Now run:
-  cd my-project && npm install
+Done. Now run: cd my-project && npm install
 \`\`\`
-
----
-
-### ขั้นตอนที่ 2 — ชื่อขั้นตอน
 ```
 
-**กฎ:** ทุกคำสั่ง bash ต้องมี block แสดง expected output — นักเรียนรู้ว่า "สำเร็จ" หน้าตาเป็นอย่างไร
+**กฎ:** ทุกคำสั่งต้องมี expected output — ถ้ามีการสร้างไฟล์/โฟลเดอร์ใหม่ให้แสดง folder tree ก่อนเสมอ:
+
+```
+src/
+├── components/
+│   └── EquipmentCard.tsx   ← สร้างในขั้นตอนนี้
+└── App.tsx
+```
 
 ---
 
-### รูปแบบ 2: โค้ดอธิบายทีละบรรทัด (สำหรับไฟล์สำคัญ)
+### รูปแบบ 2: โค้ดอธิบายทีละบรรทัด
 
 ```markdown
 ::: code-group
@@ -145,8 +131,8 @@ import { createRoot } from 'react-dom/client' // [2] นำเข้าฟัง
 import App from './App.tsx'                   // [3] นำเข้า Component หลัก
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>   {/* [4] StrictMode ช่วยตรวจจับ bug */}
-    <App />      {/* [5] render Component หลัก */}
+  <StrictMode>   {/* [4] ตรวจจับ bug ระหว่าง development */}
+    <App />
   </StrictMode>,
 )
 \`\`\`
@@ -157,11 +143,11 @@ createRoot(document.getElementById('root')!).render(
 2. React วาง `<App />` ลงใน `<div id="root">`
 ```
 
-**กฎ:** ใช้ `// [1] [2]...` สำหรับบรรทัดสำคัญ ตามด้วย "สรุปการทำงาน:" เสมอ
+**กฎ:** ใช้ `// [1] [2]...` เฉพาะบรรทัดที่ไม่ชัดเจน — ห้ามใช้ "อธิบายทีละบรรทัด:" block หลังโค้ด ตามด้วย "สรุปการทำงาน:" เท่านั้น — 1 block ไม่เกิน 10 บรรทัด
 
 ---
 
-### รูปแบบ 3: Code Tabs ✅/❌/💡 (สำหรับสอน TypeScript)
+### รูปแบบ 3: Code Tabs ✅/❌/💡
 
 ```markdown
 ::: code-group
@@ -175,178 +161,184 @@ const totalCount: number = 'หก'  // ❌ Type 'string' is not assignable to t
 \`\`\`
 
 \`\`\`ts [💡 Type Inference]
-// TypeScript เดา Type ได้เองถ้าให้ค่าตั้งต้น
-const equipmentName = 'MacBook Pro'  // รู้ว่าเป็น string
+const equipmentName = 'MacBook Pro'  // TypeScript เดา type ได้เองจากค่าที่กำหนด
 \`\`\`
 :::
 ```
 
-**กฎ:** Tab ✅ ❌ 💡 ใช้กับ TypeScript เสมอ และต้องมีทั้ง 3 tab ในหัวข้อ TypeScript ทุกหัวข้อ
+**กฎ:** ต้องมีครบ 3 tab — แต่ละ tab ไม่เกิน 5 บรรทัด
 
 ---
 
-### รูปแบบ 4: Progressive Versions (เวอร์ชันง่ายไปยาก ภายในบทเดียว)
+### รูปแบบ 4: Progressive Versions + Diff Syntax
+
+แต่ละเวอร์ชันเพิ่มโค้ด **2-5 บรรทัด** จากเวอร์ชันก่อน ใช้ `[!code ++]` / `[!code --]` แสดงทุกครั้ง
+
+> **JSX rule:** ใช้ `// [!code ++]` ท้ายบรรทัดได้ทั้ง TypeScript lines และ JSX element lines — ห้ามใช้ `{/* [!code ++] */}` เพราะ VitePress ไม่รู้จัก JSX comment syntax และจะแสดงปีกกา `{}` ออกมา
 
 ```markdown
-### [Component name] เวอร์ชัน 1 — พื้นฐาน
+### EquipmentCard เวอร์ชัน 1 — พื้นฐาน
 
 \`\`\`tsx
-// เวอร์ชัน 1: แสดงข้อมูลพื้นฐาน ยังไม่มี styling
+// wk2 — เวอร์ชัน 1: แสดงข้อมูลพื้นฐาน
 export function EquipmentCard({ name, status }: Props) {
+  return <div><h3>{name}</h3><p>{status}</p></div>
+}
+\`\`\`
+
+บันทึกไฟล์ → ต้องเห็นข้อมูลแสดงใน Browser ✅
+
+### EquipmentCard เวอร์ชัน 2 — เพิ่ม Status Badge
+
+\`\`\`tsx
+// wk2 — เวอร์ชัน 2: เพิ่มสีตามสถานะ
+export function EquipmentCard({ name, status }: Props) {
+  const color = { available: 'green', borrowed: 'red' }  // [!code ++]
   return (
     <div>
       <h3>{name}</h3>
-      <p>{status}</p>
+      <p>{status}</p>                                     // [!code --]
+      <span style={{ color: color[status] }}>{status}</span>  // [!code ++]
     </div>
   )
 }
 \`\`\`
 
-บันทึกไฟล์ → ดู Browser → ต้องเห็นข้อมูลแสดงออกมา ✅
-
----
-
-### [Component name] เวอร์ชัน 2 — เพิ่ม Status Badge
-
-\`\`\`tsx
-// เวอร์ชัน 2: เพิ่ม badge สีตามสถานะ
-export function EquipmentCard({ name, status }: Props) {
-  const color = { available: 'green', borrowed: 'red' }
-
-  return (
-    <div>
-      <h3>{name}</h3>
-      <span style={{ color: color[status] }}>{status}</span>  {/* ← เพิ่มสี */}
-    </div>
-  )
-}
-\`\`\`
+บันทึกไฟล์ → ต้องเห็นสีเขียว/แดงตาม status ✅
 ```
 
-**กฎ:** ทุกเวอร์ชันต้องรันได้จริง — อย่าให้นักเรียนรอถึงเวอร์ชันสุดท้ายแล้วค่อยเห็นผล
+**กฎ:** ทุกเวอร์ชันต้องรันได้จริงและมี expected output — นักเรียนไม่ต้องรอเวอร์ชันสุดท้ายแล้วค่อยเห็นผล
 
 ---
 
-### รูปแบบ 5: โครงสร้างโฟลเดอร์
+### รูปแบบ 6: TypeScript Sub-section (บังคับทุกหน้า)
+
+วางท้าย I: Information เสมอ:
 
 ```markdown
-\`\`\`
-my-project/
-├── src/                 ← โค้ดทั้งหมดอยู่ที่นี่
-│   ├── components/      ← React Components ย่อย
-│   ├── pages/           ← หน้าเว็บต่าง ๆ
-│   ├── App.tsx          ← Component หลัก
-│   └── main.tsx         ← Entry point
-├── index.html           ← HTML template (มี <div id="root">)
-└── vite.config.ts       ← การตั้งค่า Vite
+#### 🔷 TypeScript ในบทนี้
+
+::: code-group
+\`\`\`ts [✅ ถูกต้อง]
+interface Equipment {
+  id: number
+  name: string
+  status: 'available' | 'borrowed'
+}
 \`\`\`
 
-::: tip 💡 โฟลเดอร์ที่สำคัญ
-[บอกว่าควรโฟกัสที่ไหน เช่น "เกือบทุกอย่างอยู่ใน src/"]
+\`\`\`ts [❌ ผิด]
+const equipment = {}  // ❌ ไม่รู้ว่ามี field อะไร — Editor ช่วยไม่ได้
+\`\`\`
 :::
 ```
 
+**กฎ:** สอนเฉพาะ type ที่ใช้จริงในบทนั้น — ดูระดับที่อนุญาตจาก Course Outline ก่อนเสมอ
+
 ---
 
-## 📝 PjBL Lab Pattern
+## 📝 Lab Pattern
 
-### Task แรก: Student Identity (บังคับทุก Lab)
+### ขั้น 0: Student Identity (บังคับทุก Lab)
 
 ```markdown
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
-- [ ] เพิ่ม footer แสดงชื่อของตนเองไว้ที่ด้านล่างสุดของ Component หลักใน Lab:
+- [ ] เพิ่ม footer แสดงชื่อที่ด้านล่างสุดของ Component หลัก:
 
 \`\`\`tsx
-{/* footer แสดงชื่อผู้จัดทำ — เปลี่ยนเป็นชื่อ-รหัสของตนเอง */}
 <footer style={{ marginTop: 40, borderTop: '1px solid #eee', paddingTop: 12, color: '#aaa', fontSize: 12 }}>
   จัดทำโดย: ชื่อ-นามสกุล · รหัสนักเรียน
 </footer>
 \`\`\`
 
-- [ ] บันทึกไฟล์ → ต้องเห็นชื่อของตนเองปรากฏบนหน้าเว็บ ✅
+- [ ] บันทึกไฟล์ → ต้องเห็นชื่อปรากฏบนหน้าเว็บ ✅
 ```
 
-### Lab ส่วนที่เหลือ: ขั้นตอนพร้อม expected outcome
+### ขั้นที่เหลือ
 
 ```markdown
 **ขั้น 1: ชื่อขั้น (X นาที)**
+- [ ] task → npm run dev → ต้องเห็น [ผลลัพธ์ที่ระบุ] ✅
 
-- [ ] task ที่ต้องทำ
-- [ ] task ที่ต้องทำ → ต้องเห็น [ผลลัพธ์ที่คาดหวัง] ✅
-
-**ขั้น 2: เพิ่มคุณสมบัติ (X นาที)**
-
-- [ ] task → Browser อัปเดตทันที ✅
-
-**ขั้น 3: ทดสอบ Error (5 นาที)**
-
-- [ ] ลอง [สิ่งที่ผิด] → ต้องเห็น Error ✅
+**ขั้น 2: ทดสอบ TypeScript Error (5 นาที)**
+- [ ] ลอง [สิ่งที่ผิด] → ต้องเห็น Error ขีดแดงใน Editor ✅
 - [ ] แก้กลับ → Error หาย ✅
 
 **🎯 Bonus (ถ้าเวลาเหลือ)**
+- [ ] [ต่อยอดสำหรับนักเรียนที่เร็ว]
 
-- [ ] [ต่อยอดที่ยากขึ้น สำหรับนักเรียนที่เร็ว]
-```
-
-### Task สุดท้าย: Submit (บังคับทุก Lab)
-
-```markdown
 **ขั้น X: ส่งงาน**
-
-- [ ] Push code ขึ้น GitHub repo ส่วนตัว:
-
-\`\`\`bash
-git add .
-git commit -m "wkX-lab: [ชื่อ Lab] by ชื่อ-นามสกุล"
-git push
-\`\`\`
-
-- [ ] เปิด Google Doc ประจำรายวิชา → เขียนสรุป 3-5 บรรทัด:
-  - เรียนรู้อะไรจาก Lab นี้?
-  - ปัญหาที่เจอและวิธีแก้?
-  - แปะลิงก์ GitHub repo + screenshot หน้าเว็บที่มีชื่อตนเอง
+- [ ] `git add . && git commit -m "wkX-lab: [ชื่อ] by ชื่อ-นามสกุล" && git push`
+- [ ] Google Doc: สรุป 3-5 บรรทัด + ลิงก์ GitHub + screenshot
 ```
 
-**กฎสำหรับ Lab:**
-- **ขั้น 0 Student Identity** ต้องเป็น task แรกเสมอ (ก่อน task เนื้อหา)
-- **Task สุดท้าย** ต้องเป็น Submit (GitHub + Google Doc) เสมอ
-- แต่ละขั้นมีเวลาโดยประมาณ (ช่วยนักเรียนวางแผน)
-- task สำคัญมี ✅ บอก expected outcome ชัดเจน
-- มี **Bonus Task** สำหรับนักเรียนที่ทำเสร็จก่อน
-- Task ทดสอบ TypeScript Error ต้องมีในทุก Lab
+**กฎ:** ขั้น 0 (Identity) → เนื้อหา → Submit เสมอ — ทุก task ต้องมี expected output และต้องรันโค้ดจริงเพื่อยืนยัน ห้ามข้ามการทดสอบ
 
 ---
 
-## 🗣️ Code Review Pattern
+## 🔔 Callout Standards
+
+| Callout | ใช้เมื่อ |
+| :--- | :--- |
+| `:::tip` | ข้อแนะนำที่มีประโยชน์ แต่ไม่บังคับ |
+| `:::warning` | ข้อผิดพลาดที่พบบ่อย ต้องระวัง |
+| `:::danger` | ถ้าทำผิดจะพังหนักหรือกระทบ security |
+| `:::info` | ข้อมูลเสริม เช่น AI Prompt |
+| `>` blockquote | note สั้น ๆ ทั่วไป เช่น เปรียบเทียบ |
+
+---
+
+## 🌐 CLIL Tooltip Pattern
+
+```html
+<!-- ใส่ที่คำศัพท์ที่ปรากฏครั้งแรกในหน้านั้น -->
+<abbr title="คอม-โพ-เนนท์">Component</abbr>
+<abbr title="อิน-เทอร์-เฟส">Interface</abbr>
+<abbr title="โพรพ-เพอร์-ตี้">Props</abbr>
+```
+
+เพิ่มคอลัมน์ "คำอ่าน" ในตาราง CLIL Vocabulary ทุกหน้า:
 
 ```markdown
-### 🗣️ Code Review
-
-::: details ❓ คำถาม (3-4 ข้อต่อบท)
-**แนวคำตอบ:** [ตอบได้โดยไม่ต้องดูโค้ด — เน้นความเข้าใจ ไม่ใช่ท่อง]
-:::
+| Technical Term | คำอ่าน | Meaning in Context |
+| `Component` | คอม-โพ-เนนท์ | ส่วนประกอบย่อยของ UI |
 ```
-
-**กฎ:**
-- **3-4 คำถามต่อบท** — ไม่น้อยกว่า 3
-- สลับใช้คำถามแบบ: เปรียบเทียบ (A vs B) · อธิบาย (ทำงานอย่างไร) · ทำไม (เหตุผล)
-- แนวคำตอบต้องอธิบาย "ทำไม" ไม่ใช่แค่ "อะไร"
-- คำถามต้องเชื่อมกับโค้ดที่นักเรียนเพิ่งเขียน ไม่ใช่ทฤษฎีลอย ๆ
 
 ---
 
-## 🚫 Anti-Patterns (สิ่งที่ต้องหลีกเลี่ยง)
+## 🔄 Cross-Week Continuity
+
+| สิ่งที่ต้องทำ | รายละเอียด |
+| :--- | :--- |
+| M อ้างถึง wk ก่อน | Motivation ต้องเชื่อมกับสิ่งที่ทำค้างอยู่จาก wk ที่แล้ว |
+| Lab ต่อยอด codebase เดิม | ห้ามให้นักเรียนเริ่มโปรเจกต์ใหม่ทุก wk |
+| "บทนี้เตรียมอะไร" ถูกต้อง | ระบุ wk จริงจาก Course Outline ต้องสอดคล้องทั้ง course |
+
+---
+
+## 🚫 Anti-Patterns
 
 | ❌ ห้ามทำ | ✅ ควรทำแทน |
 | :--- | :--- |
-| ทฤษฎียาวก่อนโค้ด | โค้ดก่อน อธิบายแทรกในโค้ด |
+| ทฤษฎียาวก่อนโค้ด | โค้ดก่อน อธิบายแทรกเป็น inline comment |
+| ใช้ "อธิบายทีละบรรทัด:" block หลังโค้ด | ใช้ `// [1]` inline + "สรุปการทำงาน:" สั้นๆ |
 | ตัวอย่างเดียวต่อ concept | อย่างน้อย 2 ตัวอย่าง: ✅ ถูก และ ❌ ผิด |
-| เวอร์ชันสมบูรณ์ทันที | เริ่มง่าย → ค่อย ๆ เพิ่มในขั้นถัดไป |
-| Lab เป็น checklist ไม่มีคำอธิบาย | แบ่งขั้น มี expected output ชัดเจน |
-| ไม่มี Student Identity ใน Lab | task แรกเสมอ: `STUDENT_NAME` + แสดงบน UI |
+| โยนโค้ดใหม่ทั้งก้อน | เพิ่ม 2-5 บรรทัดต่อเวอร์ชัน + ใช้ `[!code ++]` / `[!code --]` |
+| เวอร์ชันสุดท้ายเห็นผลครั้งเดียว | ทุกเวอร์ชันต้องรันได้และมี expected output |
+| ไม่มี Student Identity ใน Lab | task แรกเสมอ: footer แสดงชื่อบน UI |
 | TypeScript ซับซ้อนเกินระดับสัปดาห์ | ดู Course Outline — สอนแค่ที่กำหนด |
-| Code Review 2 คำถาม | อย่างน้อย 3 คำถาม เน้น "ทำไม" |
-| ตัวแปรภาษาไทย (`const ชื่อ = ...`) | CLIL: ตัวแปรต้องเป็นอังกฤษเสมอ |
-| Terminal command ไม่มี expected output | แสดง output ทุกครั้งเพื่อให้นักเรียนตรวจสอบ |
-| โค้ดไม่มีคอมเมนต์ | บรรทัดสำคัญต้องมีคอมเมนต์ภาษาไทยอธิบาย |
+| Code Review น้อยกว่า 3 คำถาม | อย่างน้อย 3 คำถาม เน้น "ทำไม" |
+| ตัวแปรภาษาไทย | CLIL: ตัวแปรต้องเป็นอังกฤษเสมอ |
+| Terminal command ไม่มี expected output | แสดง output ทุกครั้ง |
+| โค้ด 1 block ยาวเกิน 10 บรรทัด | ตัดเหลือแค่ส่วนที่แสดง concept — รันได้จริง |
+| bullet อธิบาย + ตารางซ้ำกัน | เลือกอย่างใดอย่างหนึ่ง |
+| อธิบาย concept เกิน 2 บรรทัด | ถ้ายาวกว่านั้นย้ายเข้า `:::details` |
+| Mermaid `graph` กับ text ภาษาไทย | ใช้ตาราง Markdown แทน |
+| เขียน "บทถัดไปเราจะเรียน..." | VitePress มี prev/next navigation อยู่แล้ว |
+| ใช้ `---` คั่น section ในไฟล์เนื้อหา | ใช้ `##` / `###` แทน |
+| ชื่อ component / variable แต่งขึ้นใหม่ | ดูจาก `project/frontend/src/` แล้วใช้ชื่อเดิม |
+| M, I, A, P ไม่เชื่อมกัน | ทุกขั้นต้องอ้างถึงปัญหาและ concept เดียวกัน |
+| Lab เริ่มโปรเจกต์ใหม่ทุก wk | ต่อยอด codebase เดิมจาก wk ก่อนเสมอ |
+| ไม่ระบุ "ชิ้นงาน" ใน Lab | ระบุชื่อไฟล์/component จริงที่นักเรียนได้ในตอนท้าย |
+| ทดสอบโดยไม่รันโค้ดจริง | รัน `npm run dev` → เห็นผลใน Browser ทุกครั้ง |

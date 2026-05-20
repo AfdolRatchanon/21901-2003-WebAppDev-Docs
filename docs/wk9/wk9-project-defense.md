@@ -164,6 +164,14 @@
 | ตอบคำถาม | ตอบได้ทุกคำถาม จากความเข้าใจ | ตอบได้บางส่วน | ตอบไม่ได้ |
 | Code Quality | 0 TS errors + clean code | บาง warning | มี error |
 
+### 🐛 Common Errors
+
+| อาการ | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| Demo ทำงานได้ก่อนนำเสนอ แต่พอนำเสนอจริงมีปัญหา | ลืมรัน Backend หรือ Database ก่อน demo | ทำ Demo Checklist ทุกครั้ง: backend → seed → frontend |
+| กรรมการถามแล้วตอบไม่ได้ | Copy code โดยไม่อ่านและเข้าใจ | อ่าน source code ทุกบรรทัดใน `useAuth.ts`, `ProtectedRoute.tsx` ก่อน defense |
+| Demo ใช้เวลาเกิน 5 นาที | ไม่ได้ซ้อม ไม่รู้ลำดับขั้นตอน | ซ้อมตาม Demo Checklist 3 รอบก่อนวันจริง |
+
 ### 📚 CLIL Vocabulary
 
 | Technical Term | คำอ่าน | Meaning in Context |

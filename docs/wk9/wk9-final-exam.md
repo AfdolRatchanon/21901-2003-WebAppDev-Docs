@@ -141,6 +141,11 @@ borrowedBy (string), purpose (string), borrowDate (string), returnDate (string |
 "เรียนคอร์สพัฒนาเว็บด้วย React + TypeScript + Node.js จบแล้ว ช่วยสร้าง self-assessment checklist ที่ครอบคลุม: TypeScript types, React hooks (useState/useEffect/useCallback/useContext), Axios interceptors, authentication flow, real-time WebSocket และ production build — พร้อมแนะนำโปรเจกต์ 3 อย่างสำหรับฝึกทักษะเหล่านี้ต่อในระดับ Junior Developer"
 :::
 
+::: tip ✅ Mini-Checkpoint ก่อน Lab
+- [ ] ทบทวน wk1-8 ครบ — ตอบ Conceptual 5 ข้อในขั้นตอนที่ 3 ได้โดยไม่ดูเฉลย
+- [ ] เปิด source code โปรเจกต์ได้ — อ่าน `useEquipments.ts` และอธิบายทุก [comment] ได้
+:::
+
 ### 📝 Final Lab — ชิ้นงาน: `src/pages/BorrowHistoryPage.tsx`
 
 **เป้าหมาย:** ทดสอบว่าอ่าน code จริงได้และเขียน component ใหม่ได้
@@ -222,6 +227,14 @@ GitHub repository มี commit ครบทุก wk1-8 ✅
 | ดี | 80-89 | เข้าใจ concept ทั้งหมด ทำงานได้โดยมี mentor |
 | ผ่าน | 60-79 | เข้าใจพื้นฐาน ต้องฝึก implementation เพิ่ม |
 | ไม่ผ่าน | < 60 | ต้องทบทวนและทดสอบใหม่ |
+
+### 🐛 Common Errors
+
+| อาการ | สาเหตุ | วิธีแก้ |
+| :--- | :--- | :--- |
+| เขียน TypeScript ในข้อสอบไม่ได้ | ไม่คุ้นกับ type syntax เมื่อไม่มี autocomplete | ฝึกเขียน `interface` และ Generic type ด้วยมือก่อนสอบ |
+| อ่าน code คนอื่นแล้วไม่เข้าใจ | เคยแต่ copy ไม่เคยวิเคราะห์ทีละบรรทัด | ฝึกอ่าน source code โดยอธิบาย `[comment]` แต่ละบรรทัดออกมาดัง ๆ |
+| ตอบคำถาม Conceptual ไม่ได้ | จำได้แต่อธิบายไม่เป็น | ฝึกอธิบายด้วยภาษาตัวเองให้เพื่อนฟัง |
 
 ### 📚 CLIL Vocabulary — สรุปคำศัพท์สำคัญทั้งหมด
 

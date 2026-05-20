@@ -25,6 +25,14 @@ export default defineConfig({
         ],
       },
       {
+        text: '🍎 Mac สำหรับมือใหม่',
+        collapsed: false,
+        items: [
+          { text: 'คู่มือ MacBook Air M4', link: '/mac/mac-basics' },
+          { text: 'Git & GitHub บน Mac', link: '/mac/mac-git' },
+        ],
+      },
+      {
         text: '📦 wk1 · โครงสร้างพื้นฐาน',
         collapsed: false,
         items: [
@@ -108,13 +116,6 @@ export default defineConfig({
         items: [
           { text: '🎤 Project Defense — นำเสนอโปรเจกต์', link: '/wk9/wk9-project-defense' },
           { text: '📝 Final Exam — ทบทวน wk1-9', link: '/wk9/wk9-final-exam' },
-        ],
-      },
-      {
-        text: '🍎 Mac สำหรับมือใหม่',
-        collapsed: false,
-        items: [
-          { text: 'คู่มือ MacBook Air M4', link: '/mac/mac-basics' },
         ],
       },
     ],
