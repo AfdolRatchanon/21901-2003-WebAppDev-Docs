@@ -2,6 +2,21 @@
 
 > **บทนี้เตรียมอะไร:** Lab นี้รวมความรู้ wk3 ทั้งหมด (Tailwind, Controlled Form, Validation) มาสร้างชิ้นงานที่สมบูรณ์ BorrowForm ที่สร้างในบทนี้จะถูก integrate กับ API จริงใน wk4 และ realtime update ใน wk7
 
+::: info 🔗 ต่อยอดจาก wk1 + wk3-content4
+Lab นี้ **ต่อยอดจากโค้ดที่มีอยู่แล้ว** ไม่ได้สร้างใหม่ทั้งหมด:
+- `src/components/EquipmentCard.tsx` — สร้างไว้ตั้งแต่ wk1 และ refactor เพิ่ม `onBorrow` ใน wk3-content4 แล้ว
+- `src/pages/EquipmentPage.tsx` — มี `borrowingId` state และ `handleBorrow` จาก wk3-content4 แล้ว
+- Lab นี้จะ **แปลง inline style → Tailwind** และ **เพิ่ม BorrowForm** เข้าไป
+:::
+
+```
+wk1  EquipmentCard  (string props, แสดงข้อมูล)
+wk2  EquipmentPage  (useState + mock data array)
+wk3-content4  EquipmentCard + onBorrow, EquipmentPage + borrowingId
+     ↓  Lab นี้
+wk3-lab  EquipmentCard + Tailwind, EquipmentPage + BorrowForm + Validation
+```
+
 ## 🎯 M: Motivation
 
 ::: danger 🚨 ปัญหาจากโปรเจกต์ (PjBL Hook)

@@ -116,6 +116,19 @@ const [user, setUser] = useState<User | null>(
 
 ### ขั้นตอนที่ 2 — Props Drilling: App.tsx ส่ง auth ลงไป
 
+```
+App.tsx  ← useAuth() อยู่ที่นี่
+│
+│  auth={auth}          ← ส่งลงทุกคนที่ต้องการ
+├── Navbar              (ใช้: auth.user, auth.logout)
+├── LoginPage           (ใช้: auth.login)
+├── EquipmentPage       (ใช้: auth.user.role)
+└── ProtectedRoute      (ใช้: auth.isAuthenticated)
+```
+
+> สำหรับโปรเจกต์นี้ Props Drilling แค่ **1 ชั้น** (App → Page) — จัดการได้ไม่ซับซ้อน  
+> wk5-content2 จะสอน Context API สำหรับกรณีที่ tree ลึกกว่านี้
+
 `App.tsx` เป็น Single Source of Truth — สร้าง `auth` ที่นี่ที่เดียว แล้วส่งลงไปทุก Component ที่ต้องการ
 
 ```tsx [src/App.tsx]

@@ -41,6 +41,22 @@ function handleBorrow() {
 ```
 :::
 
+### วงจร Render ของ useState
+
+```
+① ผู้ใช้กดปุ่ม
+       ↓
+② setStatus('borrowed')  ← เรียก setter
+       ↓
+③ React รับรู้ว่า state เปลี่ยน
+       ↓
+④ React re-render component ใหม่
+       ↓
+⑤ UI แสดงค่าล่าสุด: "ถูกยืม"
+       ↓
+   (กลับไป ① รอ event ต่อไป)
+```
+
 ### ขั้นตอนที่ 1 — รูปแบบของ useState
 
 ```tsx [src/App.tsx]

@@ -60,6 +60,7 @@ export default defineConfig({
           { text: 'Tailwind CSS — Utility Classes', link: '/wk3/wk3-content1-tailwind' },
           { text: 'Controlled Forms — onChange + value', link: '/wk3/wk3-content2-forms' },
           { text: 'Form Validation + Zod', link: '/wk3/wk3-content3-validation' },
+          { text: 'Component Patterns — Function Props + Lifting State', link: '/wk3/wk3-content4-component-patterns' },
           { text: '🛠️ Lab: EquipmentPage + BorrowForm', link: '/wk3/wk3-lab1-asset-form' },
         ],
       },
@@ -74,12 +75,12 @@ export default defineConfig({
         ],
       },
       {
-        text: '⚖️ wk5 · Midterm + State',
+        text: '🔄 wk5 · State Management',
         collapsed: false,
         items: [
-          { text: '📝 สอบกลางภาค + Project Review', link: '/wk5/wk5-midterm-exam' },
           { text: 'Props Drilling & useAuth', link: '/wk5/wk5-content1-props' },
           { text: 'Context API + useContext', link: '/wk5/wk5-content2-context' },
+          { text: '🛠️ Lab: AuthContext + Navbar', link: '/wk5/wk5-lab1-auth-context' },
         ],
       },
       {
