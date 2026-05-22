@@ -328,8 +328,10 @@ git push origin feature/login-page   # push branch ขึ้น GitHub
 # [1] logout gh — ลบ token ออกจาก Keychain
 gh auth logout
 
-# [2] ลบ credential helper ที่ gh ตั้งไว้
+# [2.1] ลบ credential helper ที่ gh ตั้งไว้
 git config --global --unset-all credential.helper
+# [2.2] หรือถ้าวิธีที่ 2.1 ไม่ได้ใช้ใช้วิธีนี้
+git config --global credential.helper ""
 
 # [3] ลบ git identity
 git config --global --unset user.name
