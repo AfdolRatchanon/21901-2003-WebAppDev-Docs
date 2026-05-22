@@ -159,6 +159,35 @@ export function useAuth(): AuthContextType {
 - `useState<string | null>(() => localStorage.getItem('token'))` — Lazy Initializer + Generic type
 - `getStoredUser(): User | null` — explicit return type บังคับให้ function ต้องคืนค่าที่ถูกต้อง
 
+### Security Basics — localStorage vs httpOnly Cookie
+
+| | `localStorage` | `httpOnly Cookie` |
+| :--- | :--- | :--- |
+| JS อ่านได้ | ✅ ได้ | ❌ ไม่ได้ |
+| เสี่ยง XSS | สูง | ต่ำกว่ามาก |
+| ใช้เมื่อ | ระบบภายในองค์กร | ระบบ public/เงินจริง |
+
+::: info โปรเจกต์นี้ใช้ localStorage เพราะ
+- ระบบภายในองค์กร (ไม่ใช่ internet banking)
+- เรียนรู้ง่าย เข้าใจกลไกได้ชัด
+- กฎที่ต้องปฏิบัติตาม: **ไม่เก็บ password**, logout ต้องลบ token
+:::
+
+::: danger กฎที่ห้ามทำผิด
+```ts
+// ❌ ห้ามเก็บ password ไม่ว่ากรณีใด
+localStorage.setItem('password', password)  // ❌ ห้ามสัมบูรณ์
+
+// ✅ เก็บแค่ token (JWT) + user info
+localStorage.setItem('token', token)
+localStorage.setItem('user', JSON.stringify(user))
+
+// ✅ logout ต้องลบออกทั้งคู่
+localStorage.removeItem('token')
+localStorage.removeItem('user')
+```
+:::
+
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide

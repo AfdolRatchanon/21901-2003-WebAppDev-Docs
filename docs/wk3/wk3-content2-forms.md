@@ -249,6 +249,58 @@ function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
 
 **สรุป:** `FormEvent` ใช้กับ `onSubmit`, `ChangeEvent<HTMLInputElement>` ใช้กับ `onChange` ✅
 
+### e.preventDefault() — ต้องมีใน handleSubmit เสมอ
+
+::: danger 🚨 Critical Bug ที่พบบ่อยที่สุด
+```tsx
+// ❌ ลืม e.preventDefault() → หน้าเว็บ refresh ทันทีที่กด Submit
+// React state ถูกล้าง, form data หาย, debug ยากมาก
+async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  // e.preventDefault() ← ลืม!
+  const result = await login(email, password)
+}
+
+// ✅ วางเป็น line แรกเสมอ ไม่มีข้อยกเว้น
+async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault()  // ← บรรทัดแรก เสมอ
+  const result = await login(email, password)
+}
+```
+:::
+
+### Accessibility ใน Forms — สิ่งที่ไม่ควรข้าม
+
+::: code-group
+```tsx [✅ label + input คู่กันเสมอ]
+{/* htmlFor ต้องตรงกับ id — ทำให้คลิก label แล้ว focus input ได้ */}
+<label htmlFor="email" className="block text-sm font-medium mb-1">
+  อีเมล
+</label>
+<input
+  id="email"
+  type="email"
+  value={email}
+  onChange={e => setEmail(e.target.value)}
+  className="w-full border rounded px-3 py-2"
+/>
+```
+```tsx [✅ button type ต้องระบุเสมอ]
+{/* type="submit" — กด Enter ใน form จะ submit */}
+<button type="submit">เข้าสู่ระบบ</button>
+
+{/* type="button" — ไม่ submit form เมื่อคลิก */}
+<button type="button" onClick={handleCancel}>ยกเลิก</button>
+```
+```tsx [❌ div onClick แทน button]
+{/* ❌ ไม่ accessible — keyboard users กด Enter ไม่ได้ */}
+<div onClick={handleSubmit} className="cursor-pointer">
+  ส่ง
+</div>
+{/* ✅ ใช้ button เสมอ */}
+<button type="submit">ส่ง</button>
+```
+:::
+
 ## 🛠️ A: Application
 
 ::: tip ✅ Mini-Checkpoint ก่อน Lab

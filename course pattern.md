@@ -211,6 +211,94 @@ export function EquipmentCard({ name, status }: Props) {
 
 ---
 
+### รูปแบบ 5: Mermaid Diagram
+
+ใช้เพื่ออธิบาย flow หรือ architecture ที่ ASCII art ทำได้ไม่ชัดเจน
+
+```markdown
+\`\`\`mermaid
+flowchart LR
+  App --> EquipmentPage --> EquipmentCard
+\`\`\`
+ภาษาไทยอธิบายวางนอก diagram: EquipmentPage รับ props จาก App และส่งต่อให้ EquipmentCard
+```
+
+**ประเภทที่ใช้ได้:**
+
+| Type | ใช้สำหรับ | ตัวอย่าง |
+| :--- | :--- | :--- |
+| `flowchart LR` | Props flow, Data flow | wk1, wk3 |
+| `graph TD` | Component tree, File structure | wk1, wk3 |
+| `sequenceDiagram` | API request/response cycle | wk4, wk6 |
+
+**กฎ Mermaid:**
+- ✅ node label เป็นอังกฤษ: `App`, `EquipmentPage`, `API`
+- ✅ คำอธิบายภาษาไทยวางเป็น paragraph ข้างนอก diagram
+- ❌ ห้าม: `node["ส่ง props ลงไป"]` — Thai text ใน node ทำให้ build พัง
+
+---
+
+### รูปแบบ 7: Theory Foundation Section
+
+ใช้เมื่อหน้านั้นต้องอธิบาย concept เชิงทฤษฎีก่อนเข้าโค้ด วางก่อน I: Information
+
+```markdown
+## 📖 I: Information
+
+### แนวคิดหลัก: [ชื่อ concept]
+
+[อธิบาย 2-3 ประโยค: ทำไมต้องมี + แก้ปัญหาอะไร]
+
+\`\`\`
+ASCII art หรือ Mermaid แสดง concept
+\`\`\`
+
+[เปรียบเทียบกับชีวิตจริง 1 ประโยค]
+
+> ➡️ ตอนนี้ดูโค้ดที่รันได้จริง:
+```
+
+**กฎ:** Theory Foundation ต้องสั้น — ไม่เกิน 1 หน้า A4 / ต้องมี diagram / จบด้วยเชื่อมเข้าโค้ดเสมอ
+
+---
+
+### Naming Convention Standard (บังคับทุกหน้าที่สอน TypeScript)
+
+เพิ่มตารางนี้ใน Section เกี่ยวกับ naming ครั้งแรกที่ปรากฏในบทนั้น:
+
+| รูปแบบ | ใช้สำหรับ | ตัวอย่าง |
+| :--- | :--- | :--- |
+| `PascalCase` | Component, Interface, Type, Props type | `EquipmentCard`, `Equipment`, `EquipmentStatus`, `EquipmentCardProps` |
+| `camelCase` | variable, function, hook, event handler | `equipments`, `fetchData`, `useAuth`, `handleBorrow` |
+| `use` prefix | Custom hook เท่านั้น | `useAuth`, `useEquipments` |
+| `handle` prefix | Event handler | `handleSubmit`, `handleBorrow` |
+| `is/has/can` prefix | Boolean state/prop | `isLoading`, `isAuthenticated`, `hasError` |
+| `UPPER_SNAKE` | Constant ที่ไม่เปลี่ยนค่า | `API_URL`, `MAX_RETRY` (ไม่ค่อยใช้ใน React) |
+
+**กฎไฟล์:**
+- Component/Page → `PascalCase.tsx`: `EquipmentCard.tsx`, `LoginPage.tsx`
+- Hook → `camelCase.ts`: `useAuth.ts`, `useEquipments.ts`
+- Utility/Type → `camelCase.ts`: `index.ts`, `api.ts`
+- Style → ตาม component: `EquipmentCard.module.css` (ถ้าใช้ CSS Modules)
+
+---
+
+### Critical Bugs Section (เพิ่มใน P: Progress ของ Lab ที่เกี่ยวข้อง)
+
+```markdown
+### 🐛 Critical Bugs ที่พบบ่อย
+
+| Bug | ❌ ผิด | ✅ ถูก | ผลที่ตามมา |
+| :--- | :--- | :--- | :--- |
+| Array mutation | `arr.push(item)` | `[...arr, item]` | UI ไม่ re-render |
+| Object mutation | `obj.key = value` | `{ ...obj, key: value }` | UI ไม่ re-render |
+| 0 && render | `{count && <Item />}` | `{count > 0 && <Item />}` | แสดง "0" บนหน้าจอ |
+| ลืม preventDefault | `handleSubmit(e) {}` | `e.preventDefault()` บรรทัดแรก | หน้า refresh ตอน submit |
+| Stale state | `setX(x + 1)` ใน loop | `setX(prev => prev + 1)` | state ไม่อัปเดตครบ |
+```
+
+---
+
 ### รูปแบบ 6: TypeScript Sub-section (บังคับทุกหน้า)
 
 วางท้าย I: Information เสมอ:
@@ -334,7 +422,7 @@ const equipment = {}  // ❌ ไม่รู้ว่ามี field อะไ�
 | โค้ด 1 block ยาวเกิน 10 บรรทัด | ตัดเหลือแค่ส่วนที่แสดง concept — รันได้จริง |
 | bullet อธิบาย + ตารางซ้ำกัน | เลือกอย่างใดอย่างหนึ่ง |
 | อธิบาย concept เกิน 2 บรรทัด | ถ้ายาวกว่านั้นย้ายเข้า `:::details` |
-| Mermaid `graph` กับ text ภาษาไทย | ใช้ตาราง Markdown แทน |
+| Mermaid node label ภาษาไทย | node label ต้องอังกฤษ — Thai ไปวางนอก diagram เป็น paragraph |
 | เขียน "บทถัดไปเราจะเรียน..." | VitePress มี prev/next navigation อยู่แล้ว |
 | ใช้ `---` คั่น section ในไฟล์เนื้อหา | ใช้ `##` / `###` แทน |
 | ชื่อ component / variable แต่งขึ้นใหม่ | ดูจาก `project/frontend/src/` แล้วใช้ชื่อเดิม |

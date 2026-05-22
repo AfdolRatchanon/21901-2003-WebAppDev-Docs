@@ -47,14 +47,17 @@
 
 ---
 
-### Module 3 — Forms & Client-side Validation <Badge type="tip" text="สัปดาห์ 5–6" />
+### Module 3 — UI + Forms + Validation <Badge type="tip" text="สัปดาห์ 5–6" />
 
 | ประเภท | ไฟล์ | หัวข้อ | TypeScript Focus |
 | :--- | :--- | :--- | :--- |
-| เนื้อหา | [wk3-content1-tailwind](/wk3/wk3-content1-tailwind) | Controlled Form, onChange, Form State | `Union Types`, `Literal Types` |
-| ใบงาน | [wk3-lab1-asset-form](/wk3/wk3-lab1-asset-form) | Validate ฟอร์มเบิกอุปกรณ์ (required, pattern) | Type Guard |
+| เนื้อหา | [wk3-content1-tailwind](/wk3/wk3-content1-tailwind) | Tailwind CSS — Utility Classes | `Union Types`, `Literal Types` |
+| เนื้อหา | [wk3-content2-forms](/wk3/wk3-content2-forms) | Controlled Forms — onChange + value | `React.ChangeEvent<T>` |
+| เนื้อหา | [wk3-content3-validation](/wk3/wk3-content3-validation) | Form Validation + Zod | Zod schema types |
+| เนื้อหา | [wk3-content4-component-patterns](/wk3/wk3-content4-component-patterns) | Component Patterns — Function Props + Lifting State | `(id: number) => void` |
+| ใบงาน | [wk3-lab1-asset-form](/wk3/wk3-lab1-asset-form) | EquipmentPage + BorrowForm | Type Guard |
 
-**Learning Outcomes:** สร้าง Controlled Form ที่มี Validation พร้อมแสดง Error Message ได้
+**Learning Outcomes:** สร้าง Controlled Form ที่มี Validation พร้อมแสดง Error Message ได้ / ใช้ Function Props และ Lifting State Up ได้
 
 ---
 
@@ -69,13 +72,15 @@
 
 ---
 
-### Module 5 — Midterm Project Checkpoint <Badge type="danger" text="สัปดาห์ 9 (สอบกลางภาค)" />
+### Module 5 — State Management <Badge type="tip" text="สัปดาห์ 9–10" />
 
-| ประเภท | ไฟล์ | หัวข้อ |
-| :--- | :--- | :--- |
-| Project | [wk5-midterm-exam](/wk5/wk5-midterm-exam) | ส่งระบบ CRUD อุปกรณ์พร้อม Form Validation |
+| ประเภท | ไฟล์ | หัวข้อ | TypeScript Focus |
+| :--- | :--- | :--- | :--- |
+| เนื้อหา | [wk5-content1-props](/wk5/wk5-content1-props) | Props Drilling & useAuth | `AuthContextType` |
+| เนื้อหา | [wk5-content2-context](/wk5/wk5-content2-context) | Context API + useContext | `createContext<T>` |
+| ใบงาน | [wk5-lab1-auth-context](/wk5/wk5-lab1-auth-context) | AuthContext + AuthProvider + Navbar | `AuthContextType` |
 
-**เกณฑ์ประเมิน:** ระบบ CRUD ทำงานได้ / Form มี Validation / Code มี TypeScript Types / Commit History ใน Git
+**Learning Outcomes:** แก้ปัญหา Props Drilling ด้วย Context API ได้ / สร้าง AuthProvider และใช้ useAuthContext() ได้
 
 ---
 
@@ -94,8 +99,10 @@
 
 | ประเภท | ไฟล์ | หัวข้อ | TypeScript Focus |
 | :--- | :--- | :--- | :--- |
-| เนื้อหา | [wk7-content1-jwt](/wk7/wk7-content1-jwt) | WebSocket / SSE, Server-side Validation | `Mapped Types`, `Partial<T>` |
-| ใบงาน | [wk7-lab1-auth-flow](/wk7/wk7-lab1-auth-flow) | Live status อุปกรณ์ (ว่าง/ถูกเบิก) | Advanced Types |
+| เนื้อหา | [wk7-content1-jwt](/wk7/wk7-content1-jwt) | JWT: JSON Web Token | JWT payload types |
+| เนื้อหา | [wk7-content2-routes](/wk7/wk7-content2-routes) | React Router v6 + Protected Routes | `React.ReactNode` |
+| เนื้อหา | [wk7-content3-realtime](/wk7/wk7-content3-realtime) | Real-time ด้วย Socket.io | Socket event types |
+| ใบงาน | [wk7-lab1-auth-flow](/wk7/wk7-lab1-auth-flow) | Navbar + Auth Flow | Route guard types |
 
 **Learning Outcomes:** ใช้ WebSocket แสดงข้อมูล Real-time ได้ / ทำ Server-side Validation ป้องกัน Invalid Data ได้
 

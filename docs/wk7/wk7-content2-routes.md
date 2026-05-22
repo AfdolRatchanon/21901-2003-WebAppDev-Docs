@@ -177,6 +177,60 @@ function SomeComponent() {
 - `React.ReactNode` — type ของ children ที่รับ JSX, string, null ได้ทั้งหมด
 - `UserRole | null` — Union type รองรับทั้ง undefined (optional) และ null (จาก optional chaining)
 
+### useNavigate vs window.location
+
+::: code-group
+```tsx [✅ useNavigate — SPA navigation]
+import { useNavigate } from 'react-router-dom'
+
+export function LoginPage() {
+  const navigate = useNavigate()
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const success = await auth.login(email, password)
+    if (success) {
+      navigate('/')  // SPA navigation — ไม่ reload, state ยังอยู่
+    }
+  }
+}
+```
+```tsx [❌ window.location — full page reload]
+// ❌ ล้าง React state ทั้งหมด รวมถึง Context
+window.location.href = '/'   // reload ทุกครั้ง
+
+// ❌ hard refresh + clear history
+window.location.replace('/')
+```
+```tsx [💡 เมื่อไหรที่ window.location โอเค]
+// logout แบบ hard-reset จงใจ — ล้าง state ทั้งหมดตั้งใจ
+function logout() {
+  localStorage.clear()
+  window.location.href = '/login'  // ✅ ในกรณีนี้โอเค
+}
+```
+:::
+
+### navigate() patterns ที่ใช้ในโปรเจกต์
+
+```tsx
+const navigate = useNavigate()
+
+navigate('/')                          // ไปหน้า home
+navigate('/login', { replace: true }) // replace history — กด back ไม่ได้
+navigate(-1)                           // กลับหน้าก่อนหน้า
+```
+
+::: warning `replace: true` หลัง logout
+```tsx
+// ✅ หลัง logout — replace: true ป้องกัน back กลับมา protected route
+navigate('/login', { replace: true })
+
+// ❌ ไม่มี replace → กด back ได้ → อาจเห็นหน้าที่ต้อง login
+navigate('/login')
+```
+:::
+
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide

@@ -186,6 +186,120 @@ const eq: Equipment = { ..., status: 'avalable' }  // ❌ พิมพ์ผิ�
 ```
 :::
 
+### TypeScript Operators ที่ใช้ในโปรเจกต์
+
+::: code-group
+```ts [✅ 4 operators ที่ต้องรู้]
+// ! non-null assertion — บอก TS ว่า "ไม่ใช่ null แน่นอน"
+const root = document.getElementById('root')!
+
+// ?. optional chaining — เข้าถึง property โดยไม่ crash ถ้า null
+const role = auth.user?.role   // ถ้า user เป็น null → undefined (ไม่ crash)
+
+// ?? nullish coalescing — ใช้ค่า default ถ้าเป็น null หรือ undefined
+const name = stored ?? 'ผู้ใช้ทั่วไป'
+
+// as type assertion — บอก TS ว่า "เชื่อฉัน type นี้แน่"
+const user = JSON.parse(stored) as User  // parse string → บอกว่าเป็น User
+```
+```ts [❌ อย่าใช้ as แบบนี้]
+// as ไม่ตรวจสอบ runtime — ถ้า parse ผิด crash ตอนรัน
+const user = JSON.parse('invalid') as User  // ❌ TS ไม่แจ้ง แต่ runtime พัง
+// แก้: ใช้ try-catch + type guard แทน
+```
+```tsx [💡 ? กับ ! ต่างกัน]
+auth.user?.role  // ถ้า null → undefined (ปลอดภัย)
+auth.user!.role  // ถ้า null → runtime crash (ใช้เมื่อมั่นใจ 100%)
+```
+:::
+
+### type vs interface — กฎง่าย ๆ
+
+::: code-group
+```ts [✅ กฎ: object → interface, union → type]
+// Union Type → ใช้ type
+type EquipmentStatus = 'available' | 'borrowed' | 'maintenance'
+type UserRole        = 'admin' | 'teacher' | 'student'
+
+// Object shape → ใช้ interface
+interface Equipment {
+  id:     number
+  status: EquipmentStatus  // ใช้ Union type ที่สร้างไว้
+}
+```
+```ts [💡 Props ใช้ interface เสมอ]
+// ComponentName + Props = ชื่อ Props interface
+interface EquipmentCardProps {
+  name:     string
+  status:   EquipmentStatus
+  onBorrow: (id: number) => void
+}
+
+export function EquipmentCard({ name, status, onBorrow }: EquipmentCardProps) {}
+```
+:::
+
+### import type — ดีกว่า import ปกติสำหรับ Type
+
+::: code-group
+```ts [✅ import type — type-only import]
+// TypeScript ลบ import นี้ทิ้งตอน build — ไม่มี runtime cost
+import type { Equipment, User, EquipmentStatus } from '../types'
+
+// ใช้: component + API + hook ที่ import interface/type
+```
+```ts [❌ import ปกติกับ type — ทำได้แต่ไม่ดี]
+import { Equipment, useState } from 'react'  // ❌ Equipment ไม่ใช่ runtime value
+// แก้: แยก import type ออกจาก import ปกติ
+import { useState } from 'react'
+import type { Equipment } from '../types'
+```
+:::
+
+> กฎ: import Interface หรือ Type → ใช้ `import type` เสมอ
+
+### null vs undefined
+
+| | `null` | `undefined` |
+| :--- | :--- | :--- |
+| ความหมาย | ตั้งใจให้ว่าง | ยังไม่ได้กำหนดค่า |
+| ใช้เมื่อ | logout → user = null, ยังไม่ได้เลือก item | function ไม่ return อะไร |
+| โปรเจกต์นี้ | `user: User \| null`, `borrowingId: number \| null` | แทบไม่ใช้ใน state |
+
+```ts
+// ✅ ใช้ | null เมื่อตั้งใจให้ว่าง
+const [user, setUser]           = useState<User | null>(null)       // ยังไม่ login
+const [borrowingId, setBorrowingId] = useState<number | null>(null) // ยังไม่ได้เลือก
+```
+
+### Record<K, V> — object ที่ key จำกัดด้วย Union Type
+
+::: code-group
+```ts [✅ Record ใน EquipmentCard]
+// map EquipmentStatus → string (label หรือ className)
+const statusLabel: Record<EquipmentStatus, string> = {
+  available:   'ว่าง',
+  borrowed:    'ถูกยืม',
+  maintenance: 'ซ่อมบำรุง',
+}
+// ถ้าลืมใส่ key ใดใด → TypeScript แจ้ง Error ทันที
+
+const badgeClass: Record<EquipmentStatus, string> = {
+  available:   'bg-green-100 text-green-700',
+  borrowed:    'bg-red-100 text-red-700',
+  maintenance: 'bg-yellow-100 text-yellow-700',
+}
+
+// ใช้งาน: statusLabel[equipment.status] → 'ว่าง'
+```
+```ts [❌ plain object ไม่มี type]
+const statusLabel = {
+  available: 'ว่าง',
+  // ลืม borrowed → ไม่มี error แต่ runtime undefined
+}
+```
+:::
+
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide

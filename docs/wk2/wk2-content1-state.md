@@ -176,7 +176,7 @@ export function EquipmentCard({ name, category, status: initialStatus }: Equipme
 | :--- | :--- | :--- |
 | `useState<string>` | ข้อความ เช่น สถานะอุปกรณ์ | `useState<string>('available')` |
 | `useState<boolean>` | ค่า true/false เช่น toggle | `useState<boolean>(false)` |
-| `useState<number \| null>` | ตัวเลขที่อาจยังไม่มีค่า | `useState<number \| null>(null)` |
+| <code>useState&lt;number \| null&gt;</code> | ตัวเลขที่อาจยังไม่มีค่า | <code>useState&lt;number \| null&gt;(null)</code> |
 
 ::: code-group
 ```ts [✅ ถูกต้อง]
@@ -193,6 +193,101 @@ const [status, setStatus] = useState<string>('available')
 
 setStatus(42)     // ❌ number ไม่ใช่ string
 setStatus(true)   // ❌ boolean ไม่ใช่ string
+```
+:::
+
+### useState&lt;T&gt; กับ Array State
+
+เมื่อ state เป็น array ต้องระบุ Generic เสมอ เพราะ TypeScript ไม่รู้ type จากค่าเริ่มต้น `[]`:
+
+::: code-group
+```tsx [✅ ระบุ Generic ให้ array state]
+const [equipments, setEquipments] = useState<Equipment[]>([])
+const [names, setNames]           = useState<string[]>([])
+// TypeScript รู้ว่า equipments เป็น Equipment[] — ไม่ใช่ never[]
+```
+```tsx [❌ ไม่ระบุ Generic — TS เดาเป็น never[]]
+const [equipments, setEquipments] = useState([])
+// equipments: never[] — ใส่อะไรเข้าไปก็ Error
+```
+:::
+
+> `Generic<T>` แบบสร้างเองจะสอนเต็มใน wk3 — wk2 แค่ใช้ `useState<T>`
+
+### Array & Object Immutability
+
+React เปรียบเทียบ state ด้วย reference (ที่อยู่ใน memory) ไม่ใช่ค่าภายใน ถ้า mutate โดยตรง reference ไม่เปลี่ยน React จะไม่ re-render:
+
+::: code-group
+```tsx [✅ spread — สร้าง array/object ใหม่]
+// array: เพิ่ม item ใหม่
+setEquipments(prev => [...prev, newItem])
+
+// array: แก้ไข item
+setEquipments(prev => prev.map(eq =>
+  eq.id === id ? { ...eq, status: 'borrowed' } : eq
+))
+
+// object: แก้ค่า property
+setForm(prev => ({ ...prev, name: 'MacBook Pro' }))
+```
+```tsx [❌ mutate ตรง — UI ไม่ re-render]
+// array push: reference เดิม React ไม่รู้ว่าเปลี่ยน
+equipments.push(newItem)
+setEquipments(equipments)  // ❌ reference เดิม!
+
+// object assign
+form.name = 'MacBook Pro'  // ❌ mutate โดยตรง
+setForm(form)
+```
+:::
+
+### Functional setState — `prev =>`
+
+ใช้เมื่อ state ใหม่ขึ้นอยู่กับค่าเก่า (เพื่อหลีกเลี่ยง stale state):
+
+::: code-group
+```tsx [✅ functional setState — ได้ค่าล่าสุดเสมอ]
+// เพิ่ม count ทีละ 1 — ปลอดภัยแม้ React batch updates
+setCount(prev => prev + 1)
+
+// ลบ item จาก array
+setEquipments(prev => prev.filter(eq => eq.id !== id))
+```
+```tsx [❌ อ้างอิง state เก่าโดยตรง — อาจ stale]
+// ถ้า React batch หลาย setState พร้อมกัน
+// count อาจยังเป็นค่าเก่าอยู่
+setCount(count + 1)  // ❌ อาจได้ค่าผิดใน edge case
+```
+```tsx [💡 กฎง่าย ๆ]
+// state ใหม่ต้องอ้าง state เก่า → ใช้ prev =>
+// state ใหม่ไม่ต้องอ้าง state เก่า → ส่งค่าตรง ๆ ได้
+setStatus('borrowed')         // ✅ ส่งตรง
+setCount(prev => prev + 1)   // ✅ ต้อง prev =>
+```
+:::
+
+### Destructuring Syntax
+
+React ใช้ destructuring ทุกที่ — ต้องอ่านและเขียนได้คล่อง:
+
+::: code-group
+```tsx [✅ destructuring รูปแบบต่าง ๆ]
+// array destructuring — useState
+const [count, setCount] = useState(0)
+
+// object destructuring — Props
+function EquipmentCard({ name, status }: EquipmentCardProps) {
+  // ใช้ name และ status ได้เลยโดยไม่ต้อง props.name
+}
+
+// default value — ถ้าไม่ส่ง status มา ใช้ 'available'
+function Card({ status = 'available' }: CardProps) {}
+```
+```tsx [💡 nested destructuring]
+// ดึงค่าลึก 2 ระดับ
+const { user: { name } } = auth
+// เทียบเท่า: const name = auth.user.name
 ```
 :::
 

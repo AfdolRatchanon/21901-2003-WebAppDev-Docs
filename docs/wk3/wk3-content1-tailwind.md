@@ -249,6 +249,67 @@ const [equipments] = useState<Equipment[]>(mockEquipments)
 
 **สรุป:** `Record<string, T>` ใช้บ่อยมากใน Tailwind pattern เพื่อ map status → class names ✅
 
+### Responsive Prefixes — Mobile-First
+
+Tailwind ใช้ Mobile-First: ไม่มี prefix = ทุกขนาด, prefix = ขนาดนั้นขึ้นไป
+
+```
+ไม่มี prefix → mobile (ทุกขนาด)
+sm:           → 640px ขึ้นไป
+md:           → 768px ขึ้นไป
+lg:           → 1024px ขึ้นไป
+```
+
+::: code-group
+```tsx [✅ Responsive grid ใน EquipmentPage]
+{/* 1 col บน mobile, 2 col บน tablet, 3 col บน desktop */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  {equipments.map(eq => <EquipmentCard key={eq.id} {...eq} />)}
+</div>
+```
+```tsx [✅ Responsive padding และ typography]
+<div className="px-4 md:px-8 lg:px-16">
+  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+    ระบบเบิก-จ่ายอุปกรณ์
+  </h1>
+</div>
+```
+:::
+
+### Conditional className — Template Literal
+
+ใช้ template literal สำหรับ className ที่เปลี่ยนตาม condition:
+
+::: code-group
+```tsx [✅ template literal + ternary]
+{/* badge สี — ตาม status */}
+<span className={`px-2 py-1 rounded text-sm font-medium ${
+  status === 'available'
+    ? 'bg-green-100 text-green-700'
+    : status === 'borrowed'
+    ? 'bg-red-100 text-red-700'
+    : 'bg-yellow-100 text-yellow-700'
+}`}>
+  {status}
+</span>
+```
+```tsx [✅ ปุ่มที่มี hover + focus + disabled]
+<button
+  className="px-4 py-2 bg-blue-600 text-white rounded
+             hover:bg-blue-700 focus:ring-2 focus:ring-blue-500
+             disabled:opacity-50 disabled:cursor-not-allowed"
+  disabled={isLoading}
+>
+  {isLoading ? 'กำลังบันทึก...' : 'บันทึก'}
+</button>
+```
+```tsx [❌ string concatenation — อ่านยาก]
+<span className={"px-2 py-1 rounded " + (status === 'available' ? "bg-green-100" : "bg-red-100")}>
+  {/* ❌ มีช่องว่างพลาดได้ง่าย ใช้ template literal แทน */}
+</span>
+```
+:::
+
 ## 🛠️ A: Application
 
 ::: tip ✅ Mini-Checkpoint ก่อน Lab

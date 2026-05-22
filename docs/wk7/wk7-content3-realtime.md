@@ -12,6 +12,14 @@
 
 ## 📖 I: Information
 
+### ขั้นตอนที่ 0 — ติดตั้ง Socket.io Client
+
+```bash
+npm install socket.io-client
+```
+
+> หลังติดตั้ง import ได้ทันที: `import { io } from 'socket.io-client'`
+
 ### ขั้นตอนที่ 1 — WebSocket vs HTTP: เปรียบเทียบ
 
 | | HTTP (REST API) | WebSocket (Socket.io) |

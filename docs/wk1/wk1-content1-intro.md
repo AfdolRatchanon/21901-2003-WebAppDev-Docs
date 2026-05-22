@@ -18,6 +18,34 @@
 | **TypeScript** | เพิ่ม Type Safety ให้ JavaScript | Spell checker — แจ้งเตือนก่อน Error จริง |
 | **Vite** | Build tool เร็วมาก มี Hot Reload | ดู preview แบบ real-time ทันทีที่บันทึก |
 
+### React แก้ปัญหาอะไร
+
+HTML + JavaScript แบบเก่าต้องเลือก element แล้วแก้เองทุกครั้ง (Imperative) — React บอกแค่ "UI ควรเป็นยังไง" แล้วจัดการให้เอง (Declarative)
+
+```mermaid
+flowchart LR
+  A[HTML + JS\nImperative] -->|"document.getElementById\n.innerHTML = ..."| B[Update DOM manually]
+  C[React\nDeclarative] -->|"setState → React updates\nonly changed parts"| D[Virtual DOM diff]
+```
+
+HTML + JS ต้องสั่ง "ไปหา element นั้น แล้วเปลี่ยนค่านี้" — React แค่บอก "ถ้า isAvailable เป็น true ให้แสดงปุ่มนี้" แล้ว React จัดการ DOM เอง
+
+### Virtual DOM (conceptual)
+
+React เก็บ "สำเนา" ของ DOM ไว้ใน memory เรียกว่า Virtual DOM เมื่อ state เปลี่ยน React เปรียบเทียบ Virtual DOM เก่ากับใหม่ แล้วอัปเดต DOM จริงเฉพาะส่วนที่เปลี่ยน
+
+```
+① setStatus('borrowed')
+    ↓
+② React สร้าง Virtual DOM ใหม่
+    ↓
+③ เปรียบเทียบ (diff) กับ Virtual DOM เก่า
+    ↓
+④ อัปเดต DOM จริงเฉพาะ badge สถานะ — ส่วนอื่นไม่กระทบ
+```
+
+> 💡 นี่คือเหตุผลที่ React เร็วและทำไม key ใน `.map()` สำคัญ — React ใช้ key ระบุว่า item ไหนเปลี่ยนไป
+
 ### ขั้นตอนที่ 1 — สร้างโปรเจกต์ใหม่
 
 ```bash
@@ -38,17 +66,89 @@ Terminal จะแสดงผล:
 
 ### ขั้นตอนที่ 2 — โครงสร้างโฟลเดอร์
 
+โปรเจกต์ระบบเบิก-จ่ายอุปกรณ์ไอทีจะมีโครงสร้างนี้เมื่อเพิ่มโค้ดครบ wk7:
+
 ```
-my-equipment-system/
-├── src/
-│   ├── App.tsx       ← แก้ไขที่นี่บ่อยที่สุด
-│   └── main.tsx      ← Entry point — รันก่อนทุกอย่าง
-├── index.html        ← HTML template (มี <div id="root">)
-└── package.json
+src/
+├── components/          ← UI ย่อย ใช้ซ้ำได้
+│   ├── Navbar.tsx
+│   └── ProtectedRoute.tsx
+├── context/             ← Global state (wk5)
+│   ├── AuthContext.ts
+│   └── AuthProvider.tsx
+├── hooks/               ← Custom Hooks (wk2-3)
+│   ├── useAuth.ts
+│   └── useEquipments.ts
+├── pages/               ← หน้าหลักแต่ละ route (wk7)
+│   ├── LoginPage.tsx
+│   ├── EquipmentPage.tsx
+│   └── AdminPage.tsx
+├── types/               ← TypeScript Interfaces (wk2)
+│   └── index.ts
+├── api/                 ← Axios calls (wk4)
+│   └── equipmentApi.ts
+├── App.tsx              ← Routes + layout
+└── main.tsx             ← Entry point
 ```
 
-::: tip 💡 โฟลเดอร์สำคัญ
-เกือบทุกอย่างอยู่ใน `src/` — ไม่ต้องแตะไฟล์อื่นในช่วงแรก
+::: tip 💡 wk1 ตอนนี้
+ยังมีแค่ `App.tsx` กับ `main.tsx` — โฟลเดอร์อื่นจะสร้างเพิ่มทีละ wk
+:::
+
+### Naming Convention — กฎสากลที่ต้องใช้ทั้ง course
+
+| รูปแบบ | ใช้สำหรับ | ตัวอย่าง |
+| :--- | :--- | :--- |
+| `PascalCase` | Component, Interface, Type, Props | `EquipmentCard`, `Equipment`, `EquipmentCardProps` |
+| `camelCase` | variable, function, hook | `equipments`, `handleBorrow`, `useAuth` |
+| `handle` prefix | Event handler | `handleSubmit`, `handleBorrow`, `handleDelete` |
+| `is/has` prefix | Boolean state | `isLoading`, `isAuthenticated`, `hasError` |
+| `use` prefix | Custom Hook เท่านั้น | `useAuth`, `useEquipments` |
+
+**กฎไฟล์:**
+- Component → `PascalCase.tsx`: `EquipmentCard.tsx`, `LoginPage.tsx`
+- Hook → `camelCase.ts`: `useAuth.ts`
+- Type/util → `camelCase.ts`: `index.ts`, `api.ts`
+
+::: code-group
+```ts [✅ ถูกต้อง]
+export function EquipmentCard() {}    // Component → PascalCase
+const isLoading = false               // boolean → is prefix
+function handleBorrow(id: number) {}  // event handler → handle prefix
+```
+```ts [❌ ผิด]
+export function equipmentcard() {}    // ❌ Component ต้องเป็น PascalCase
+const loading = false                 // ❌ boolean ควรขึ้นต้น is/has
+function borrow(id: number) {}        // ❌ event handler ควรขึ้นต้น handle
+```
+:::
+
+### Named vs Default Export
+
+| | Named Export | Default Export |
+| :--- | :--- | :--- |
+| syntax | `export function Card()` | `export default function App()` |
+| import | `import { Card } from './Card'` | `import App from './App'` |
+| ชื่อตอน import | ต้องตรงกัน | ตั้งชื่อได้เอง |
+| กฎของโปรเจกต์นี้ | Component/Hook/Type ทั้งหมด | `App.tsx` เท่านั้น |
+
+### React.FC vs function declaration
+
+::: code-group
+```tsx [✅ ใช้ใน course นี้]
+export function EquipmentCard({ name }: EquipmentCardProps) {
+  return <div>{name}</div>
+}
+```
+```tsx [❌ React.FC — style เก่า ไม่แนะนำ]
+const EquipmentCard: React.FC<EquipmentCardProps> = ({ name }) => {
+  return <div>{name}</div>
+}
+```
+```tsx [💡 ทำไม function declaration ดีกว่า]
+// อ่านง่ายกว่า / TypeScript error ชัดกว่า / hoisting ดีกว่า
+// ถ้าเจอ React.FC ใน tutorial เก่า → แปลงเป็น function declaration
+```
 :::
 
 ### ขั้นตอนที่ 3 — อ่าน main.tsx
@@ -66,6 +166,52 @@ createRoot(document.getElementById('root')!).render( // ! = ไม่ใช่ n
 :::
 
 **สรุปการทำงาน:** Browser เปิด `index.html` → โหลด `main.tsx` → React วาง `<App />` ลงใน `<div id="root">`
+
+### CSS ใน React — 3 วิธี
+
+| วิธี | รูปแบบ | ใช้เมื่อไหร่ |
+| :--- | :--- | :--- |
+| Inline Style | <code v-pre>style={{ color: 'red' }}</code> | wk1–wk2 เน้นเรียน React ก่อน |
+| CSS file | `import './App.css'` + `className="card"` | โปรเจกต์ขนาดเล็ก |
+| Tailwind CSS | `className="text-red-500 p-4"` | **wk3 เป็นต้นไป** |
+
+::: info โปรเจกต์นี้
+wk1–wk2 ใช้ **inline style** ทั้งหมด (ง่าย ไม่ต้องตั้งค่า) — wk3 เปลี่ยนเป็น Tailwind ทั้งหมด
+:::
+
+```tsx
+// wk1: inline style — camelCase, double braces
+<div style={{ backgroundColor: '#1e40af', padding: '12px 24px', color: 'white' }}>
+  ระบบเบิก-จ่ายอุปกรณ์ไอที
+</div>
+```
+
+### .tsx vs .ts — ใช้อะไรเมื่อไหร่
+
+| Extension | ใช้เมื่อ | ตัวอย่าง |
+| :--- | :--- | :--- |
+| `.tsx` | ไฟล์มี JSX (`<div>`, `<Component />`) | `App.tsx`, `EquipmentCard.tsx` |
+| `.ts` | ไฟล์ TypeScript ล้วน ไม่มี JSX | `useAuth.ts`, `types/index.ts` |
+
+### React DevTools
+
+ติดตั้ง Extension "React Developer Tools" ใน Chrome/Edge:
+
+```
+📦 React DevTools → แสดง Component tree, props, state
+🌐 Network tab → ดู API request/response (wk4)
+💾 Application → Local Storage (wk6)
+```
+
+> เปิด DevTools → แท็บ **Components** → คลิก component ใดก็ได้ → เห็น props และ state ปัจจุบัน
+
+### tsconfig.json strict mode
+
+```json
+{ "compilerOptions": { "strict": true } }
+```
+
+`strict: true` เปิดกฎเข้มงวด เช่น ห้ามตัวแปรเป็น `any` โดยไม่ตั้งใจ, ต้องตรวจ null ก่อนใช้ ถ้าเห็น TypeScript Error ที่ดูเข้มงวด — อย่าแก้ tsconfig แก้โค้ดให้ถูกแทน
 
 #### 🔷 TypeScript ในบทนี้
 

@@ -1,6 +1,6 @@
 # Database Schema & API Response Types <Badge type="info" text="TPQI 10302" />
 
-> **บทนี้เตรียมอะไร:** บทนี้สอนสร้าง `src/types/index.ts` ที่รวม TypeScript interfaces ทั้งหมดของโปรเจกต์ รวมถึง `ApiResponse<T>` Generic wrapper และ Utility Types ที่ใช้ตลอด wk4 ถึง wk8
+> **บทนี้เตรียมอะไร:** บทนี้สอนสร้าง `src/types/index.ts` ที่รวม TypeScript interfaces ทั้งหมดของโปรเจกต์ รวมถึง <code>ApiResponse&lt;T&gt;</code> Generic wrapper และ Utility Types ที่ใช้ตลอด wk4 ถึง wk8
 
 ## 🎯 M: Motivation
 
@@ -99,7 +99,7 @@ export interface BorrowFormData {
 ```
 :::
 
-### ขั้นตอนที่ 2 — `Pick<T, K>` และ `Partial<T>` Utility Types
+### ขั้นตอนที่ 2 — <code>Pick&lt;T, K&gt;</code> และ <code>Partial&lt;T&gt;</code> Utility Types
 
 ::: code-group
 ```ts [✅ Pick — เลือกเฉพาะบาง field จาก Interface]
@@ -184,26 +184,26 @@ type EquipmentStatus = 'available' | 'borrowed' | 'maintenance'
 borrowedBy: string | null
 ```
 
-**สรุป:** Generic `ApiResponse<T>` + `Pick<T, K>` + Union Types ทำให้ TypeScript ตรวจสอบข้อมูล API ได้ครบ ✅
+**สรุป:** Generic <code>ApiResponse&lt;T&gt;</code> + <code>Pick&lt;T, K&gt;</code> + Union Types ทำให้ TypeScript ตรวจสอบข้อมูล API ได้ครบ ✅
 
 ## 🛠️ A: Application
 
 ::: tip ✅ Mini-Checkpoint ก่อน Lab
-- [ ] อธิบายได้ว่า `ApiResponse<T>` ทำงานอย่างไร และทำไม T ถึงต้องเป็น Generic type แทนการระบุ type ตรงๆ
-- [ ] บอกได้ว่า `Pick<Equipment, 'id' | 'name'>` ได้ผลลัพธ์ type อะไร และใช้ใน BorrowRecord ทำไม
+- [ ] อธิบายได้ว่า <code>ApiResponse&lt;T&gt;</code> ทำงานอย่างไร และทำไม T ถึงต้องเป็น Generic type แทนการระบุ type ตรงๆ
+- [ ] บอกได้ว่า <code>Pick&lt;Equipment, 'id' | 'name'&gt;</code> ได้ผลลัพธ์ type อะไร และใช้ใน BorrowRecord ทำไม
 :::
 
 ### 🤖 AI Prompt Guide
 
 ::: info 💬 ถาม AI
-"กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้างไฟล์ `src/types/index.ts` สำหรับระบบเบิก-จ่ายอุปกรณ์ไอที ที่มี: 1) Union types `EquipmentStatus` และ `UserRole` 2) interfaces `Equipment`, `User`, `BorrowRecord` (BorrowRecord มี nested `equipment: Pick<Equipment, ...>` และ `user: Pick<User, ...>`) 3) Generic `ApiResponse<T>` wrapper 4) Form data types: `EquipmentFormData`, `BorrowFormData` 5) `AuthContextType` ที่มี `login: (email, password) => Promise<boolean>` — อธิบาย `Pick<T, K>` ด้วย"
+"กำลังเรียน React 18 + TypeScript อยู่ ต้องการสร้างไฟล์ `src/types/index.ts` สำหรับระบบเบิก-จ่ายอุปกรณ์ไอที ที่มี: 1) Union types `EquipmentStatus` และ `UserRole` 2) interfaces `Equipment`, `User`, `BorrowRecord` (BorrowRecord มี nested <code>equipment: Pick&lt;Equipment, ...&gt;</code> และ <code>user: Pick&lt;User, ...&gt;</code>) 3) Generic <code>ApiResponse&lt;T&gt;</code> wrapper 4) Form data types: `EquipmentFormData`, `BorrowFormData` 5) `AuthContextType` ที่มี <code>login: (email, password) =&gt; Promise&lt;boolean&gt;</code> — อธิบาย <code>Pick&lt;T, K&gt;</code> ด้วย"
 :::
 
 ### 📝 PjBL Lab — ชิ้นงาน: `src/types/index.ts`
 
 **ขั้น 0: ระบุตัวตน (2 นาที)**
 
-- [ ] เปิด `EquipmentPage.tsx` → ตรวจสอบว่า `<footer>` ชื่อ-รหัสของตนเองอยู่ท้าย Component ✅
+- [ ] เปิด `EquipmentPage.tsx` → ตรวจสอบว่า `footer` ชื่อ-รหัสของตนเองอยู่ท้าย Component ✅
 
 **ขั้น 1: สร้าง src/types/index.ts (15 นาที)**
 
@@ -212,11 +212,11 @@ borrowedBy: string | null
 - [ ] ประกาศ `type UserRole = 'admin' | 'teacher' | 'student'`
 - [ ] เขียน `interface Equipment` ครบทุก field (id, name, category, serialNo, status, borrowedBy, createdAt, updatedAt)
 - [ ] เขียน `interface User` (id, email, name, role)
-- [ ] เขียน `interface ApiResponse<T>` (success, data, message?)
+- [ ] เขียน <code>interface ApiResponse&lt;T&gt;</code> (success, data, message?)
 
 **ขั้น 2: เพิ่ม BorrowRecord + Form Types (10 นาที)**
 
-- [ ] เขียน `interface BorrowRecord` พร้อม nested `equipment: Pick<Equipment, 'id' | 'name' | 'serialNo'>` และ `user: Pick<User, 'id' | 'name' | 'email'>`
+- [ ] เขียน `interface BorrowRecord` พร้อม nested <code>equipment: Pick&lt;Equipment, 'id' | 'name' | 'serialNo'&gt;</code> และ <code>user: Pick&lt;User, 'id' | 'name' | 'email'&gt;</code>
 - [ ] เขียน `interface EquipmentFormData` (name, category, serialNo)
 - [ ] เขียน `interface BorrowFormData` (equipmentId, purpose, expectedReturn)
 - [ ] เขียน `interface AuthContextType`
@@ -230,7 +230,7 @@ borrowedBy: string | null
 **ขั้นสุดท้าย: Submit**
 
 - [ ] `git add src/types/ && git commit -m "wk4: centralize all TypeScript types in src/types/index.ts"` → `git push`
-- [ ] เขียนสรุปใน Google Doc: `Pick<T, K>` คืออะไร, `ApiResponse<T>` ทำงานยังไง, ทำไม `borrowedBy` ต้องเป็น `string | null` ไม่ใช่ `string` พร้อม screenshot TypeScript Error เมื่อพิมพ์ field ผิด + ลิงก์ repo
+- [ ] เขียนสรุปใน Google Doc: <code>Pick&lt;T, K&gt;</code> คืออะไร, <code>ApiResponse&lt;T&gt;</code> ทำงานยังไง, ทำไม `borrowedBy` ต้องเป็น `string | null` ไม่ใช่ `string` พร้อม screenshot TypeScript Error เมื่อพิมพ์ field ผิด + ลิงก์ repo
 
 ## ✅ P: Progress
 
@@ -240,15 +240,15 @@ borrowedBy: string | null
 **แนวคำตอบ:** `string` รับค่าอะไรก็ได้ เช่น `'avaliable'` (พิมพ์ผิด) ก็ผ่าน TypeScript ส่วน `EquipmentStatus = 'available' | 'borrowed' | 'maintenance'` ทำให้ TypeScript ตรวจสอบว่าค่าต้องเป็นหนึ่งใน 3 ตัวนี้เท่านั้น นอกจากนี้ `statusConfig[eq.status]` ที่ใช้ใน wk3 จะได้ TypeScript รับประกันว่า key มีอยู่จริง
 :::
 
-::: details ❓ `Pick<Equipment, 'id' | 'name' | 'serialNo'>` คืออะไร — ทำไมต้องใช้ใน BorrowRecord?
-**แนวคำตอบ:** `Pick<T, K>` เป็น TypeScript Utility Type ที่สร้าง type ใหม่จากเฉพาะ key K ของ T API endpoint สำหรับ BorrowRecord ส่ง nested equipment มาแค่ 3 field (ไม่ใช่ทั้ง Equipment) การใช้ `Pick` ระบุชัดว่า field ไหนอยู่บ้าง ถ้าใช้ `Equipment` เต็มๆ TypeScript จะ Error ว่าขาด field เช่น `category`, `createdAt` ที่ Backend ไม่ส่งมา
+::: details ❓ <code>Pick&lt;Equipment, 'id' | 'name' | 'serialNo'&gt;</code> คืออะไร — ทำไมต้องใช้ใน BorrowRecord?
+**แนวคำตอบ:** <code>Pick&lt;T, K&gt;</code> เป็น TypeScript Utility Type ที่สร้าง type ใหม่จากเฉพาะ key K ของ T API endpoint สำหรับ BorrowRecord ส่ง nested equipment มาแค่ 3 field (ไม่ใช่ทั้ง Equipment) การใช้ `Pick` ระบุชัดว่า field ไหนอยู่บ้าง ถ้าใช้ `Equipment` เต็มๆ TypeScript จะ Error ว่าขาด field เช่น `category`, `createdAt` ที่ Backend ไม่ส่งมา
 :::
 
 ::: details ❓ `DateTime` ใน MySQL กลายเป็น `string` ใน TypeScript ได้อย่างไร?
 **แนวคำตอบ:** JSON ไม่มี `Date` type เป็น native — เมื่อ MySQL ส่ง DateTime มา, Backend แปลงเป็น ISO 8601 string เช่น `"2026-02-26T10:30:00.000Z"` ก่อนส่งใน JSON ดังนั้น Frontend TypeScript ประกาศเป็น `string` แต่ถ้าต้องการ Date object ใช้ `new Date(borrowedAt)` แปลงก่อน
 :::
 
-::: details ❓ ทำไม `AuthContextType.login` ถึง return `Promise<boolean>` แทน `Promise<void>`?
+::: details ❓ ทำไม `AuthContextType.login` ถึง return <code>Promise&lt;boolean&gt;</code> แทน <code>Promise&lt;void&gt;</code>?
 **แนวคำตอบ:** Login page ต้องรู้ว่า login สำเร็จหรือไม่ เพื่อตัดสินใจว่าจะ redirect หรือแสดง error — ถ้าคืน `void` หน้า Login ไม่รู้ว่าต้องทำอะไรต่อ การคืน `boolean` (true=สำเร็จ, false=ล้มเหลว) ทำให้ Logic ใน Component ชัดเจน: `const ok = await auth.login(...); if (!ok) setError('...')`
 :::
 
@@ -257,7 +257,7 @@ borrowedBy: string | null
 | ข้อผิดพลาด | สาเหตุ | วิธีแก้ |
 | :--- | :--- | :--- |
 | TypeScript error "Property does not exist" เมื่อพิมพ์ field ผิด | interface ไม่มี field ที่พิมพ์ไป — นี่คือพฤติกรรมที่ถูกต้อง | แก้ชื่อ field ให้ตรงกับที่ประกาศใน interface |
-| `equipment` ใน BorrowRecord แสดง error ว่าขาด field | ใช้ `Equipment` เต็มๆ แทน `Pick<Equipment, ...>` ทำให้ต้องระบุทุก field | เปลี่ยนเป็น `Pick<Equipment, 'id' \| 'name' \| 'serialNo'>` |
+| `equipment` ใน BorrowRecord แสดง error ว่าขาด field | ใช้ `Equipment` เต็มๆ แทน <code>Pick&lt;Equipment, ...&gt;</code> ทำให้ต้องระบุทุก field | เปลี่ยนเป็น <code>Pick&lt;Equipment, 'id' &#124; 'name' &#124; 'serialNo'&gt;</code> |
 | `import type` vs `import` ใช้ต่างกันอย่างไร | `import type` เป็น type-only import — ลบออกตอน build ทำให้ bundle เล็กลง | ใช้ `import type { Equipment }` สำหรับ TypeScript types ที่ไม่ต้องใช้ตอน runtime |
 
 ### 📋 Rubric (10 คะแนน)
@@ -265,7 +265,7 @@ borrowedBy: string | null
 | เกณฑ์ | ดีมาก (3-4) | พอใช้ (1-2) | ปรับปรุง (0) |
 | :--- | :--- | :--- | :--- |
 | Types ครบ | ทุก interface ถูกต้อง, Union types ใช้แทน string | มีบางส่วน, บางที่ใช้ `any` | ไม่มี types file |
-| Pick + Generic | `Pick<T,K>` และ `ApiResponse<T>` ถูกต้อง | มีแต่ไม่ครบ | ไม่ใช้ Generic |
+| Pick + Generic | <code>Pick&lt;T,K&gt;</code> และ <code>ApiResponse&lt;T&gt;</code> ถูกต้อง | มีแต่ไม่ครบ | ไม่ใช้ Generic |
 | Import แทน inline | ทุกไฟล์ import จาก types/index.ts | บางไฟล์ import | ยังนิยาม inline ทุกที่ |
 
 ### 📚 CLIL Vocabulary
@@ -274,9 +274,9 @@ borrowedBy: string | null
 | :--- | :--- | :--- |
 | `Database` | เดต-ตา-เบส | ระบบจัดเก็บข้อมูลถาวร — MySQL ในโปรเจกต์นี้ |
 | `Query` | เควียว-รี | คำสั่งดึงหรือแก้ไขข้อมูลใน Database เช่น SELECT, INSERT |
-| `Pick<T, K>` | พิค | TypeScript Utility Type — สร้าง type ใหม่จากเฉพาะ key K ของ T |
-| `Partial<T>` | พาร์-เชิล | TypeScript Utility Type — ทำให้ทุก field ของ T เป็น optional |
-| `Omit<T, K>` | โอ-มิท | TypeScript Utility Type — สร้าง type ใหม่โดยตัด key K ออก |
+| <code>Pick&lt;T, K&gt;</code> | พิค | TypeScript Utility Type — สร้าง type ใหม่จากเฉพาะ key K ของ T |
+| <code>Partial&lt;T&gt;</code> | พาร์-เชิล | TypeScript Utility Type — ทำให้ทุก field ของ T เป็น optional |
+| <code>Omit&lt;T, K&gt;</code> | โอ-มิท | TypeScript Utility Type — สร้าง type ใหม่โดยตัด key K ออก |
 | `ISO 8601` | ไอ-เอส-โอ แปด-หก-ศูนย์-หนึ่ง | รูปแบบ DateTime string มาตรฐาน: `"2026-02-26T10:30:00.000Z"` |
 | `Union Type` | ยู-เนียน ไทพ์ | `'a' \| 'b' \| 'c'` — type ที่รับค่าใดค่าหนึ่งใน set เท่านั้น |
 | `Nested Object` | เนส-เทด ออบ-เจ็กต์ | object ที่มี object อื่นอยู่ภายใน — เช่น `BorrowRecord.equipment` |

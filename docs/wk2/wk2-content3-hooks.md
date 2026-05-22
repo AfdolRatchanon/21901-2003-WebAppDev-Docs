@@ -231,7 +231,7 @@ Custom Hook ใช้ Generic Type สำหรับ state หลายตั�
 | ชนิด | ใช้เก็บ | ตัวอย่างในบทนี้ |
 | :--- | :--- | :--- |
 | `useState<Equipment[]>` | รายการอุปกรณ์ | `useState<Equipment[]>([])` |
-| `useState<string \| null>` | error message หรือ null | `useState<string \| null>(null)` |
+| <code>useState&lt;string \| null&gt;</code> | error message หรือ null | <code>useState&lt;string \| null&gt;(null)</code> |
 
 ::: code-group
 ```ts [✅ ถูกต้อง]

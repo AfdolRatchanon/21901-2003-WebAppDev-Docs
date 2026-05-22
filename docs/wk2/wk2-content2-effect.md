@@ -179,6 +179,86 @@ equipments.map(name => name.toUpperCase())  // ❌ 'name' is type 'never'
 ```
 :::
 
+### Hook Rules — กฎ 2 ข้อที่ห้ามทำผิด
+
+::: code-group
+```tsx [✅ Hook ที่ถูกต้อง — top level เสมอ]
+export function EquipmentList() {
+  const [data, setData] = useState<Equipment[]>([])  // top level ✅
+  useEffect(() => { /* ... */ }, [])                  // top level ✅
+  return <div>{/* ... */}</div>
+}
+```
+```tsx [❌ Hook ใน if / loop / function ซ้อน]
+export function EquipmentList() {
+  if (isAdmin) {
+    useState([])  // ❌ ห้ามเรียก Hook ใน if
+  }
+
+  for (let i = 0; i < 3; i++) {
+    useEffect(() => {})  // ❌ ห้ามเรียก Hook ใน loop
+  }
+}
+```
+:::
+
+**กฎที่ 1:** เรียก Hook ที่ top level ของ function เท่านั้น — ห้ามใน `if`, `for`, function ซ้อน
+**กฎที่ 2:** เรียก Hook ใน React Component หรือ Custom Hook เท่านั้น — ห้ามใน utility function ปกติ
+
+> เหตุผล: React track Hook โดยใช้ลำดับการเรียก — ถ้าลำดับเปลี่ยนทุก render React จะสับสน
+
+### useEffect Cleanup — ป้องกัน Memory Leak
+
+useEffect คืน cleanup function ที่รันตอน unmount หรือก่อน effect รันใหม่:
+
+::: code-group
+```tsx [✅ cleanup — Socket.io (wk7 จะใช้)]
+useEffect(() => {
+  const socket = io('/equipment')
+  socket.on('status-update', handleUpdate)
+
+  return () => {          // [!code ++]
+    socket.off('status-update', handleUpdate)  // [!code ++]
+    socket.disconnect()   // [!code ++]
+  }                       // [!code ++]
+}, [])
+```
+```tsx [✅ cleanup — Timer]
+useEffect(() => {
+  const timer = setInterval(() => {
+    setTime(new Date())
+  }, 1000)
+
+  return () => clearInterval(timer)  // cleanup ล้าง timer
+}, [])
+```
+```tsx [❌ ไม่มี cleanup → Memory Leak]
+useEffect(() => {
+  // socket เชื่อมแล้วไม่ disconnect
+  const socket = io('/equipment')
+  socket.on('status-update', handleUpdate)
+  // ❌ ไม่มี return cleanup → socket ยังทำงานหลัง unmount
+}, [])
+```
+:::
+
+### StrictMode Double Invoke (Development เท่านั้น)
+
+::: warning ⚠️ เห็น API ถูก call 2 ครั้ง?
+`<StrictMode>` ใน `main.tsx` ทำให้ React เรียก useEffect **2 ครั้ง** ในโหมด development เพื่อตรวจว่า cleanup function ถูกต้องไหม
+- **production**: เรียกครั้งเดียว — ไม่มีปัญหา
+- **วิธีแก้**: ไม่ต้องแก้โค้ด — มี cleanup function ที่ถูกต้องก็พอ
+:::
+
+```tsx
+// main.tsx — StrictMode คือเหตุผลที่ effect รัน 2 ครั้งใน dev
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>  {/* ← นี่คือสาเหตุ */}
+    <App />
+  </StrictMode>
+)
+```
+
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide

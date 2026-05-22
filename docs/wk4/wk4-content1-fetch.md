@@ -170,6 +170,65 @@ function updateEquipmentStatus(id: number, status: ..., borrowedBy?: string) { .
 
 **สรุป:** Generic types ใน Axios + Indexed Access Type ทำให้ TypeScript ตรวจสอบ API response ได้ครบทุกจุด ✅
 
+### CORS คืออะไร และทำไมนักเรียนจะเจอ
+
+Browser บล็อก HTTP request ข้าม origin เป็น default เพื่อป้องกัน XSS:
+
+```
+❌ ไม่มี Proxy:
+Browser (5173) → backend (3000) → CORS blocked
+
+✅ มี Vite Proxy:
+Browser (5173) → Vite dev server → forward → backend (3000)
+```
+
+::: warning ⚠️ เห็น "CORS policy" error?
+แก้ที่ **backend** ไม่ใช่ frontend — wk4 นักเรียนไม่ต้องแก้เพราะ Vite Proxy จัดการให้แล้ว
+:::
+
+```ts
+// vite.config.ts — อ่านเพื่อเข้าใจ ไม่ต้องแก้
+server: {
+  proxy: {
+    '/api':       'http://localhost:3000',
+    '/socket.io': 'http://localhost:3000',
+  }
+}
+```
+
+::: danger ⚠️ Dev Proxy ≠ Production
+Vite proxy ทำงานเฉพาะ development — ตอน deploy ต้องตั้ง CORS หรือ Nginx proxy จริง
+:::
+
+### HTTP Status Codes ที่ต้องรู้
+
+| Code | ความหมาย | React ทำอะไร |
+| :--- | :--- | :--- |
+| `200 OK` | สำเร็จ | แสดงข้อมูล |
+| `201 Created` | สร้างสำเร็จ (POST) | แสดง success message |
+| `400 Bad Request` | ข้อมูลที่ส่งไปผิด | แสดง validation error |
+| `401 Unauthorized` | ไม่มี token / หมดอายุ | redirect ไป `/login` |
+| `403 Forbidden` | มี token แต่ไม่มีสิทธิ์ | แสดง "ไม่มีสิทธิ์เข้าถึง" |
+| `404 Not Found` | ไม่พบข้อมูล | แสดง empty state |
+| `500 Server Error` | backend พัง | แสดง "เกิดข้อผิดพลาด กรุณาลองใหม่" |
+
+### Environment Variables ใน Vite
+
+```bash
+# .env — ไม่ commit ขึ้น git (.gitignore)
+VITE_API_URL=http://localhost:3000
+
+# .env.example — commit ขึ้น git (บอก teammate ว่าต้องมีตัวแปรอะไร)
+VITE_API_URL=http://localhost:3000
+```
+
+```ts
+// ใช้ใน code — prefix VITE_ บังคับ
+import.meta.env.VITE_API_URL  // 'http://localhost:3000'
+```
+
+> ตัวแปรที่ browser อ่านได้ต้องขึ้นต้นด้วย `VITE_` เท่านั้น — ตัวแปรอื่นถูกซ่อนโดย Vite อัตโนมัติ
+
 ## 🛠️ A: Application
 
 ::: tip ✅ Mini-Checkpoint ก่อน Lab

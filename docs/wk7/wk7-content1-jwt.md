@@ -155,6 +155,33 @@ apiClient.interceptors.response.use(
 - `as TokenPayload` — Type Assertion บอก TypeScript ว่า `jwt.verify()` return ตาม interface นี้
 - `process.env.JWT_SECRET ?? 'dev-secret'` — Nullish Coalescing กับ environment variable
 
+### JWT + localStorage Best Practices
+
+::: danger กฎที่ต้องปฏิบัติในโปรเจกต์นี้
+| ต้องทำ | ห้ามทำ |
+| :--- | :--- |
+| Token ต้องมี `exp` (expiry) | ❌ ไม่เก็บ password ในทุกกรณี |
+| Logout ต้องลบ token จาก localStorage | ❌ ไม่เก็บข้อมูล sensitive ใน JWT payload |
+| ตรวจ token ทุก API call (interceptor) | ❌ ไม่ใช้ JWT secret เดียวกันระหว่าง dev/prod |
+:::
+
+**JWT payload ไม่ใช่ encrypted** — decode ได้โดยไม่ต้องรู้ secret ดังนั้นห้ามเก็บ:
+- Password หรือ password hash
+- Credit card / bank account
+- ข้อมูลส่วนตัวที่ไม่จำเป็น
+
+```ts
+// ✅ payload ที่เหมาะสม — เก็บแค่ที่จำเป็น
+interface TokenPayload {
+  userId: number
+  role:   UserRole
+  exp:    number  // expiry timestamp
+}
+// ❌ ห้ามเพิ่ม: password, socialId, creditCard
+```
+
+**XSS mitigation:** ถ้าเว็บมี user-generated content ต้อง sanitize ก่อน render — ป้องกัน script inject ขโมย token จาก localStorage
+
 ## 🛠️ A: Application
 
 ### 🤖 AI Prompt Guide

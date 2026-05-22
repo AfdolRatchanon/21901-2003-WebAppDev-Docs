@@ -153,6 +153,65 @@ try { ... } catch { ... }
 
 **สรุป:** `useState<boolean>` + `async/await` + `try-catch-finally` คือ pattern มาตรฐาน async ใน React ✅
 
+### 3-State Pattern — data + isLoading + error
+
+Pattern มาตรฐานสำหรับทุก API call ใน React:
+
+```tsx
+const [equipments, setEquipments] = useState<Equipment[]>([])
+const [isLoading,  setIsLoading]  = useState(false)
+const [error,      setError]      = useState<string | null>(null)
+```
+
+```
+ลำดับ render:
+① isLoading = true  → แสดง "กำลังโหลด..."
+② error ≠ null      → แสดง error message (ถ้า fetch fail)
+③ data พร้อม        → แสดงรายการอุปกรณ์
+```
+
+::: code-group
+```tsx [✅ render pattern ที่ถูกต้อง]
+// เรียงลำดับ: loading → error → data
+if (isLoading) return <p className="text-center py-8">กำลังโหลด...</p>
+if (error)     return <p className="text-red-500">{error}</p>
+if (equipments.length === 0) return <p>ไม่พบอุปกรณ์</p>
+
+return (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {equipments.map(eq => <EquipmentCard key={eq.id} {...eq} />)}
+  </div>
+)
+```
+```tsx [💡 ASCII: state machine]
+// idle → loading → success
+//              └→ error
+```
+:::
+
+### Promise&lt;T&gt; return type — ต้องระบุเสมอ
+
+::: code-group
+```ts [✅ ระบุ return type ครบ]
+async function login(email: string, password: string): Promise<boolean> {
+  const res = await apiClient.post<ApiResponse<{ token: string }>>('/auth/login', { email, password })
+  return res.data.success
+}
+
+async function fetchEquipments(): Promise<Equipment[]> {
+  const res = await apiClient.get<ApiResponse<Equipment[]>>('/equipments')
+  return res.data.data
+}
+```
+```ts [❌ Promise(any) — TypeScript ช่วยไม่ได้]
+async function login(...): Promise<any> {  // ❌ any ทำให้ type checking พัง
+  return await apiClient.post('/auth/login', ...)
+}
+```
+:::
+
+> TypeScript ตรวจ caller ได้ถ้าระบุ return type ชัดเจน — caller รู้ว่า `await login(...)` คืน `boolean`
+
 ## 🛠️ A: Application
 
 ::: tip ✅ Mini-Checkpoint ก่อน Lab
@@ -227,7 +286,7 @@ try { ... } catch { ... }
 | :--- | :--- | :--- |
 | API ถูกเรียกซ้ำไม่หยุด (infinite loop) | `fetchEquipments` ไม่ได้ wrap ด้วย `useCallback` ทำให้สร้างใหม่ทุก render | เพิ่ม `useCallback(async () => {...}, [])` ครอบฟังก์ชัน fetch |
 | Loading ค้างตลอดเมื่อเกิด error | ไม่ได้ใส่ `setIsLoading(false)` ใน `finally` | ย้าย `setIsLoading(false)` เข้า `finally` block แทน try/catch |
-| Empty state แสดงก่อนข้อมูลโหลด | `{equipments.length === 0 && <p>ว่าง</p>}` ไม่มี `!isLoading` | เพิ่ม `!isLoading &&` เพื่อตรวจว่าโหลดเสร็จจริงก่อน |
+| Empty state แสดงก่อนข้อมูลโหลด | <code v-pre>{equipments.length === 0 && &lt;p&gt;ว่าง&lt;/p&gt;}</code> ไม่มี `!isLoading` | เพิ่ม `!isLoading &&` เพื่อตรวจว่าโหลดเสร็จจริงก่อน |
 
 ### 📋 Rubric (10 คะแนน)
 

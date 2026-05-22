@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
-export default defineConfig({
+export default withMermaid(defineConfig({
   // ⚠️ GitHub Pages: ถ้า deploy ไปที่ https://USERNAME.github.io/REPO-NAME/
   // ให้เปลี่ยน base เป็น '/REPO-NAME/'  เช่น  base: '/21901-2003/'
   // ถ้าใช้ custom domain หรือ root domain → ใช้ '/' (ค่าเริ่มต้น)
@@ -135,4 +136,4 @@ export default defineConfig({
     darkModeSwitchLabel: 'โหมดมืด',
     search: { provider: 'local' },
   },
-})
+}))

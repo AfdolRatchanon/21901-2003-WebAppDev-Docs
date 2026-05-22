@@ -12,6 +12,63 @@
 
 ## 📖 I: Information
 
+### TSX vs HTML — สิ่งที่ต่างกัน
+
+JSX (TypeScript + JSX = TSX) ใช้ syntax ต่างจาก HTML ในหลายจุด เพราะ JSX คือ JavaScript จริง ๆ:
+
+| HTML | TSX | เหตุผล |
+| :--- | :--- | :--- |
+| `class="card"` | `className="card"` | `class` เป็น keyword ใน JavaScript |
+| `for="email"` | `htmlFor="email"` | `for` เป็น keyword ใน JavaScript |
+| `onclick="fn()"` | `onClick={fn}` | camelCase + ส่ง function reference |
+| `<input>` | `<input />` | JSX ต้อง self-closing เสมอ |
+| `style="color:red"` | <code v-pre>style={{ color: 'red' }}</code> | double braces: outer `{}` = JS expression, inner `{}` = object |
+
+::: code-group
+```tsx [✅ TSX ถูกต้อง]
+<label htmlFor="name">ชื่ออุปกรณ์</label>
+<input id="name" className="input-field" />
+<button onClick={handleSubmit}>บันทึก</button>
+<img src="/logo.png" alt="logo" />  {/* self-closing */}
+```
+```tsx [❌ HTML style ใน JSX]
+<label for="name">ชื่ออุปกรณ์</label>  {/* ❌ for → htmlFor */}
+<div class="card">...</div>              {/* ❌ class → className */}
+<button onclick="handleSubmit()">บันทึก</button>  {/* ❌ onclick → onClick */}
+```
+:::
+
+### {} Rules — ใส่อะไรได้ใน JSX
+
+`{ }` ใน JSX หมายถึง "ตรงนี้คือ JavaScript expression":
+
+::: code-group
+```tsx [✅ ใส่ได้]
+<p>{equipmentName}</p>             {/* string */}
+<p>จำนวน: {count} ชิ้น</p>       {/* number */}
+<p>รวม: {count * 1000} บาท</p>   {/* arithmetic */}
+<p>{isAvailable ? 'ว่าง' : 'ถูกยืม'}</p>  {/* ternary */}
+{count > 0 && <Badge />}           {/* && (เช็ค > 0 เสมอ) */}
+{items.map(item => <li key={item.id}>{item.name}</li>)}  {/* .map() */}
+```
+```tsx [❌ ใส่ไม่ได้]
+{/* ❌ if/else statement — ต้องใช้ ternary แทน */}
+{if (isAvailable) { return <p>ว่าง</p> }}
+
+{/* ❌ for loop — ต้องใช้ .map() แทน */}
+{for (let i = 0; i < 5; i++) { <p>{i}</p> }}
+
+{/* ❌ object โดยตรง — JSX ไม่รู้จะ render ยังไง */}
+{equipment}
+```
+```tsx [💡 double braces]
+{/* outer {} = JS expression, inner {} = object literal */}
+<div style={{ color: 'red', padding: 12 }}>
+  สีแดง
+</div>
+```
+:::
+
 ### JSX คืออะไร?
 
 JSX คือ syntax ที่ผสม JavaScript กับ HTML ให้เขียนในไฟล์เดียวกัน เบื้องหลัง Vite แปลง JSX เป็น `React.createElement(...)` อัตโนมัติ ไม่ต้อง import React แยก:
@@ -79,6 +136,59 @@ return (
 ```
 :::
 
+### Fragment — ทำไม JSX return root เดียว
+
+JSX ต้อง return element เดียวเสมอ ถ้าต้องการ element หลายตัวโดยไม่มี wrapper ใช้ Fragment `<>...</>`:
+
+::: code-group
+```tsx [✅ Fragment — ไม่มี wrapper div]
+return (
+  <>
+    <h1>ระบบเบิก-จ่าย</h1>
+    <p>จำนวนอุปกรณ์: {count}</p>
+  </>
+)
+```
+```tsx [❌ หลาย root — JSX Error]
+return (
+  <h1>ระบบเบิก-จ่าย</h1>    {/* ❌ ไม่ได้ */}
+  <p>จำนวนอุปกรณ์: {count}</p>
+)
+```
+```tsx [💡 Fragment vs div]
+// div: สร้าง DOM node จริง → กระทบ CSS layout
+// <>: ไม่สร้าง DOM node — เหมาะกับ table row, list item
+```
+:::
+
+### Event Handler Types
+
+React ต้องระบุ type ของ event parameter — แต่ละ element ให้ type ต่างกัน:
+
+::: code-group
+```tsx [✅ Event types ที่ใช้บ่อย]
+// button click
+function handleBorrow(e: React.MouseEvent<HTMLButtonElement>) {
+  console.log('borrowed')
+}
+
+// input change
+function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  setValue(e.target.value)
+}
+
+// form submit
+function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault()  // ป้องกัน page refresh
+}
+```
+```tsx [💡 ใช้ TypeScript ช่วย — hover ดู type ได้เลย]
+// ใน VS Code: พิมพ์ onClick={ } แล้ว hover ที่ onClick
+// TypeScript บอก type ของ e ให้เลย
+const button = <button onClick={(e) => { /* e: MouseEvent */ }}>คลิก</button>
+```
+:::
+
 ### ขั้นตอนที่ 2 — แสดงรายการด้วย `.map()`
 
 เมื่อต้องแสดงหลายรายการ ใช้ `.map()` วน loop ไม่ต้องเขียนซ้ำทีละอัน:
@@ -110,6 +220,36 @@ return (
 :::
 
 **สรุปการทำงาน:** `equipments.map()` วน loop แต่ละ item → return JSX หนึ่งชิ้น → React นำมารวมเป็นรายการ
+
+### .filter() + .find() ก่อน .map()
+
+ใช้ `.filter()` กรองก่อน `.map()` — ไม่ render ทั้งหมดแล้วค่อย hide ด้วย CSS:
+
+::: code-group
+```tsx [✅ filter ก่อน map]
+{/* แสดงเฉพาะอุปกรณ์ที่ว่าง */}
+{equipments
+  .filter(eq => eq.status === 'available')
+  .map(eq => (
+    <div key={eq.id}>{eq.name}</div>
+  ))
+}
+```
+```tsx [❌ map ทั้งหมดแล้ว hide ด้วย CSS]
+{equipments.map(eq => (
+  {/* ❌ render ทุกอัน แล้วซ่อนบางอัน — สิ้นเปลือง */}
+  <div key={eq.id} style={{ display: eq.status === 'available' ? 'block' : 'none' }}>
+    {eq.name}
+  </div>
+))}
+```
+```tsx [💡 .find() — หา item เดียว]
+// หาอุปกรณ์จาก id
+const found = equipments.find(eq => eq.id === selectedId)
+// found เป็น Equipment | undefined — ต้องเช็กก่อนใช้
+if (found) { console.log(found.name) }
+```
+:::
 
 ::: tip 💡 ทำไม `key` ถึงสำคัญ?
 React ใช้ `key` รู้ว่า item ไหนเปลี่ยนแปลง — re-render เฉพาะ item ที่เปลี่ยน ไม่ใช่ทั้งรายการ ใช้ `id` จากข้อมูลจริง ไม่ใช้ index (0, 1, 2)
